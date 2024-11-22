@@ -1,0 +1,81 @@
+[gd_scene load_steps=15 format=3 uid="uid://dekvyqpte14fj"]
+
+[ext_resource type="PackedScene" uid="uid://clc5dre31iskm" path="res://addons/godot-xr-tools/xr/start_xr.tscn" id="1_t2lkr"]
+[ext_resource type="PackedScene" uid="uid://b8vb8h0jlqwl7" path="res://player.tscn" id="2_0wolr"]
+[ext_resource type="Script" path="res://addons/godot-xr-tools/objects/pickable.gd" id="3_evxgm"]
+
+[sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_j1wwd"]
+sky_horizon_color = Color(0.64625, 0.65575, 0.67075, 1)
+ground_horizon_color = Color(0.64625, 0.65575, 0.67075, 1)
+
+[sub_resource type="Sky" id="Sky_5u7k0"]
+sky_material = SubResource("ProceduralSkyMaterial_j1wwd")
+
+[sub_resource type="Environment" id="Environment_ygmnp"]
+background_mode = 2
+sky = SubResource("Sky_5u7k0")
+tonemap_mode = 2
+glow_enabled = true
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_w5d5h"]
+albedo_color = Color(0.430057, 0.430057, 0.430057, 1)
+
+[sub_resource type="PlaneMesh" id="PlaneMesh_dcheb"]
+material = SubResource("StandardMaterial3D_w5d5h")
+size = Vector2(10, 10)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_3dgeg"]
+albedo_color = Color(0.125911, 0.125911, 0.125911, 1)
+
+[sub_resource type="BoxMesh" id="BoxMesh_e0uh4"]
+material = SubResource("StandardMaterial3D_3dgeg")
+size = Vector3(1, 1.4, 0.5)
+
+[sub_resource type="ConvexPolygonShape3D" id="ConvexPolygonShape3D_jfvu4"]
+points = PackedVector3Array(-0.5, -0.7, -0.25, -0.5, -0.7, 0.25, -0.5, 0.699863, -0.25, 0.5, -0.7, -0.25, 0.5, -0.7, 0.25, -0.5, 0.699863, 0.25, 0.5, 0.699863, -0.25, 0.5, 0.699863, 0.25)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_672og"]
+
+[sub_resource type="BoxMesh" id="BoxMesh_4jqlu"]
+material = SubResource("StandardMaterial3D_672og")
+size = Vector3(0.1, 0.1, 0.1)
+
+[sub_resource type="ConvexPolygonShape3D" id="ConvexPolygonShape3D_qxl8w"]
+points = PackedVector3Array(0.05, 0.05, 0.05, 0.05, 0.05, -0.05, -0.05, 0.05, 0.05, 0.05, -0.05, 0.05, 0.05, -0.05, -0.05, -0.05, 0.05, -0.05, -0.05, -0.05, 0.05, -0.05, -0.05, -0.05)
+
+[node name="Main" type="Node3D"]
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Environment_ygmnp")
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
+transform = Transform3D(-0.866025, -0.433013, 0.25, 0, 0.5, 0.866025, -0.5, 0.75, -0.433013, 0, 0, 0)
+shadow_enabled = true
+
+[node name="StartXR" parent="." instance=ExtResource("1_t2lkr")]
+
+[node name="XROrigin3D" parent="." instance=ExtResource("2_0wolr")]
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="."]
+mesh = SubResource("PlaneMesh_dcheb")
+
+[node name="StaticBody3D" type="StaticBody3D" parent="."]
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="StaticBody3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -0.314185)
+mesh = SubResource("BoxMesh_e0uh4")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="StaticBody3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -0.314185)
+shape = SubResource("ConvexPolygonShape3D_jfvu4")
+
+[node name="XRToolsPickable" type="RigidBody3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.90221, -0.286901)
+collision_layer = 5
+script = ExtResource("3_evxgm")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="XRToolsPickable"]
+mesh = SubResource("BoxMesh_4jqlu")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="XRToolsPickable"]
+shape = SubResource("ConvexPolygonShape3D_qxl8w")
