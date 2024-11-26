@@ -1,8 +1,10 @@
-[gd_scene load_steps=15 format=3 uid="uid://dekvyqpte14fj"]
+[gd_scene load_steps=19 format=3 uid="uid://dekvyqpte14fj"]
 
 [ext_resource type="PackedScene" uid="uid://clc5dre31iskm" path="res://addons/godot-xr-tools/xr/start_xr.tscn" id="1_t2lkr"]
 [ext_resource type="PackedScene" uid="uid://b8vb8h0jlqwl7" path="res://player.tscn" id="2_0wolr"]
 [ext_resource type="Script" path="res://addons/godot-xr-tools/objects/pickable.gd" id="3_evxgm"]
+[ext_resource type="Script" path="res://addons/volume_layered_shader/scenes/controls/volume_layered_shader.gd" id="4_ib51u"]
+[ext_resource type="Script" path="res://addons/volume_layered_shader/scripts/resources/cpu/zipped_image_archive_cpu_Texture3D.gd" id="5_og0xm"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_j1wwd"]
 sky_horizon_color = Color(0.64625, 0.65575, 0.67075, 1)
@@ -43,6 +45,12 @@ size = Vector3(0.1, 0.1, 0.1)
 [sub_resource type="ConvexPolygonShape3D" id="ConvexPolygonShape3D_qxl8w"]
 points = PackedVector3Array(0.05, 0.05, 0.05, 0.05, 0.05, -0.05, -0.05, 0.05, 0.05, 0.05, -0.05, 0.05, 0.05, -0.05, -0.05, -0.05, 0.05, -0.05, -0.05, -0.05, 0.05, -0.05, -0.05, -0.05)
 
+[sub_resource type="ImageTexture3D" id="ImageTexture3D_p1smf"]
+script = ExtResource("5_og0xm")
+zip_file = "res://cthead-8bit.zip"
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_8y6aa"]
+
 [node name="Main" type="Node3D"]
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]
@@ -55,6 +63,7 @@ shadow_enabled = true
 [node name="StartXR" parent="." instance=ExtResource("1_t2lkr")]
 
 [node name="XROrigin3D" parent="." instance=ExtResource("2_0wolr")]
+transform = Transform3D(0.0718282, 0, -0.997417, 0, 1, 0, 0.997417, 0, 0.0718282, 0, 0, 0)
 
 [node name="MeshInstance3D" type="MeshInstance3D" parent="."]
 mesh = SubResource("PlaneMesh_dcheb")
@@ -79,3 +88,21 @@ mesh = SubResource("BoxMesh_4jqlu")
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="XRToolsPickable"]
 shape = SubResource("ConvexPolygonShape3D_qxl8w")
+
+[node name="XRToolsPickable2" type="RigidBody3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.93332, 1.4292, 0)
+collision_layer = 5
+script = ExtResource("3_evxgm")
+
+[node name="VolumeLayeredShader" type="Node3D" parent="XRToolsPickable2"]
+transform = Transform3D(1, 0, 0, 0, -2, 0, 0, 0, 1, -0.0168471, -0.00439358, -0.0224497)
+script = ExtResource("4_ib51u")
+texture = SubResource("ImageTexture3D_p1smf")
+num_layers = 300
+exclusion_planes = Array[NodePath]([NodePath("Marker3D")])
+
+[node name="Marker3D" type="Marker3D" parent="XRToolsPickable2/VolumeLayeredShader"]
+transform = Transform3D(-4.37114e-08, 0, -1, 0, 1, 0, 1, 0, -4.37114e-08, -0.224568, -0.00256753, -0.0146948)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="XRToolsPickable2"]
+shape = SubResource("BoxShape3D_8y6aa")
