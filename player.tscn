@@ -1,23 +1,51 @@
-[gd_scene load_steps=4 format=3 uid="uid://b8vb8h0jlqwl7"]
+[gd_scene load_steps=11 format=3 uid="uid://b8vb8h0jlqwl7"]
 
 [ext_resource type="PackedScene" uid="uid://bq86r4yll8po" path="res://addons/godot-xr-tools/hands/scenes/lowpoly/left_fullglove_low.tscn" id="1_6xita"]
+[ext_resource type="Script" path="res://debug_label.gd" id="1_31r2h"]
 [ext_resource type="PackedScene" uid="uid://xqimcf20s2jp" path="res://addons/godot-xr-tools/hands/scenes/lowpoly/right_fullglove_low.tscn" id="2_4pri4"]
 [ext_resource type="PackedScene" uid="uid://b4ysuy43poobf" path="res://addons/godot-xr-tools/functions/function_pickup.tscn" id="2_v33fx"]
+[ext_resource type="Material" uid="uid://dy6nhifvvmm73" path="res://addons/godot-xr-tools/hands/materials/caucasian_hand.tres" id="4_hmxr0"]
+[ext_resource type="Script" path="res://addons/godot-xr-tools/functions/movement_direct.gd" id="4_wfmft"]
+[ext_resource type="Script" path="res://addons/godot-xr-tools/functions/movement_turn.gd" id="5_jjl1l"]
+[ext_resource type="PackedScene" uid="uid://diyu06cw06syv" path="res://addons/godot-xr-tools/player/player_body.tscn" id="6_keit0"]
+[ext_resource type="PackedScene" uid="uid://cqhw276realc" path="res://addons/godot-xr-tools/functions/function_pointer.tscn" id="7_qssuy"]
+[ext_resource type="Material" uid="uid://rwfrc1fdcjsj" path="res://addons/godot-xr-tools/hands/materials/caucasian_hands_realistic.tres" id="8_8snm7"]
 
 [node name="XROrigin3D" type="XROrigin3D"]
 
 [node name="XRCamera3D" type="XRCamera3D" parent="."]
 
+[node name="DebugLabel" type="Label3D" parent="XRCamera3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.2, -0.1, -1.98502)
+visible = false
+text = "debug:"
+font_size = 16
+script = ExtResource("1_31r2h")
+
 [node name="LeftHandController" type="XRController3D" parent="."]
 tracker = &"left_hand"
 
+[node name="XRToolsMovementDirect" type="Node" parent="LeftHandController" groups=["movement_providers"]]
+script = ExtResource("4_wfmft")
+
 [node name="LeftHand" parent="LeftHandController" instance=ExtResource("1_6xita")]
+hand_material_override = ExtResource("4_hmxr0")
 
 [node name="FunctionPickup" parent="LeftHandController/LeftHand" instance=ExtResource("2_v33fx")]
+
+[node name="XRToolsMovementTurn" type="Node" parent="LeftHandController" groups=["movement_providers"]]
+script = ExtResource("5_jjl1l")
 
 [node name="RightHandController" type="XRController3D" parent="."]
 tracker = &"right_hand"
 
+[node name="FunctionPointer" parent="RightHandController" instance=ExtResource("7_qssuy")]
+show_laser = 2
+laser_length = 1
+
 [node name="RightHand" parent="RightHandController" instance=ExtResource("2_4pri4")]
+hand_material_override = ExtResource("8_8snm7")
 
 [node name="FunctionPickup" parent="RightHandController/RightHand" instance=ExtResource("2_v33fx")]
+
+[node name="PlayerBody" parent="." instance=ExtResource("6_keit0")]

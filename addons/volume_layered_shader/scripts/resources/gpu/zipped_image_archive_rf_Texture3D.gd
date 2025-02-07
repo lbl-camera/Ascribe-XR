@@ -26,50 +26,50 @@ extends ImageTexture3D
 class_name ZippedImageArchiveRFTexture3D
 
 @export var archive:ZippedImageArchive_RF_3D:
-	get:
-		return archive
-		
-	set(value):
-		if value == archive:
-			return
-		
-		if archive:
-			archive.zipfile_changed.disconnect(on_archive_changed)
-			
-		archive = value
+    get:
+        return archive
+        
+    set(value):
+        if value == archive:
+            return
+        
+        if archive:
+            archive.zipfile_changed.disconnect(on_archive_changed)
+            
+        archive = value
 
-		if archive:
-			archive.zipfile_changed.connect(on_archive_changed)
-			load_image_from_archive(archive)
+        if archive:
+            archive.zipfile_changed.connect(on_archive_changed)
+            load_image_from_archive(archive)
 
 func on_archive_changed():
-	load_image_from_archive(archive)
+    load_image_from_archive(archive)
 
 func _validate_property(property : Dictionary):
-	#Do not write image data to resource file
-	if property.name == "_images":
-		property.usage = PROPERTY_USAGE_NONE
-		
+    #Do not write image data to resource file
+    if property.name == "_images":
+        property.usage = PROPERTY_USAGE_NONE
+        
 func load_image_from_archive(archive:ZippedImageArchive_RF_3D):
-	var img_list:Array[Image] = archive.get_image_list().duplicate()
-	var size:Vector3i = archive.get_size()
-	#print("tex3d num img " + str(img_list.size()))
+    var img_list:Array[Image] = archive.get_image_list().duplicate()
+    var size:Vector3i = archive.get_size()
+    #print("tex3d num img " + str(img_list.size()))
 
-	#Generate mipmaps
-	var rd:RenderingDevice = RenderingServer.create_local_rendering_device()
-	var gen:MipmapGenerator_rf_3d = MipmapGenerator_rf_3d.new(rd)
-	var mipmap_images:Array[Image] = gen.calculate(img_list)
+    #Generate mipmaps
+    var rd:RenderingDevice = RenderingServer.create_local_rendering_device()
+    var gen:MipmapGenerator_rf_3d = MipmapGenerator_rf_3d.new(rd)
+    var mipmap_images:Array[Image] = gen.calculate(img_list)
 
-	create(Image.FORMAT_RF, size.x, size.y, size.z, false, img_list)
-	
-	#img_list.append_array(mipmap_images)
+    create(Image.FORMAT_RF, size.x, size.y, size.z, false, img_list)
+    
+    #img_list.append_array(mipmap_images)
 
-	#var mesh_size_base = Vector3i(img_list[0].get_width(), \
-		#img_list[0].get_height(), img_list.size())
-	#var mipmap_sizes:Array[Vector3i] = GLSLUtil.calc_mipmap_sizes(mesh_size_base)
+    #var mesh_size_base = Vector3i(img_list[0].get_width(), \
+        #img_list[0].get_height(), img_list.size())
+    #var mipmap_sizes:Array[Vector3i] = GLSLUtil.calc_mipmap_sizes(mesh_size_base)
 
-	#img_list = img_list.slice(0, img_list.size() - 1)
+    #img_list = img_list.slice(0, img_list.size() - 1)
 #
-	#create(Image.FORMAT_RF, size.x, size.y, size.z, true, img_list)
-	changed.emit()
-	
+    #create(Image.FORMAT_RF, size.x, size.y, size.z, true, img_list)
+    changed.emit()
+    

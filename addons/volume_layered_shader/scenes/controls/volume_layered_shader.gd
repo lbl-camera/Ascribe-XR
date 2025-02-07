@@ -25,6 +25,32 @@
 extends Node3D
 class_name VolumeLayers
 
+@export_file("*.bin") var bin_file:
+	get:
+		return bin_file
+	set(value):
+		var shape = Vector3i(256, 256, 10)
+		
+		# Open the binary file
+		var file = FileAccess.open(value, FileAccess.READ)
+		var data = file.get_buffer(file.get_length())
+		file.close()
+		
+		var images = Array()
+		var frame_size = shape[0] * shape[1]
+		for z in range(shape[2]):
+			var image = Image.new()
+			var start = z * frame_size
+			image.set_data(shape[0], shape[1], false, Image.FORMAT_L8, data.slice(start,start+frame_size))
+			images.append(image)
+		
+		# Create a 3D texture
+		var bin_texture = ImageTexture3D.new()
+		bin_texture.create(Image.FORMAT_L8, shape[0], shape[1], shape[2], false, images)
+		#bin_texture.init_ref()
+		texture = bin_texture
+		bin_file = value
+
 @export var texture:Texture3D:
 	get:
 		return texture
