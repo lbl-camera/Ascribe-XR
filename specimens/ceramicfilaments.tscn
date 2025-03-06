@@ -1,0 +1,20 @@
+[gd_scene load_steps=7 format=3 uid="uid://bx6rxoav0fuxa"]
+
+[ext_resource type="PackedScene" uid="uid://5wygpbthgiou" path="res://scenes/volumetric_specimen.tscn" id="1_bnu3e"]
+[ext_resource type="Texture2D" uid="uid://bmc6y14ggbbvd" path="res://sprites/thumbnails/ceramic.png" id="2_b2xfw"]
+[ext_resource type="Script" uid="uid://b5u4hxii0ib85" path="res://addons/volume_layered_shader/scripts/resources/gpu/zipped_image_archive_rf_3d.gd" id="2_sse6u"]
+[ext_resource type="Script" uid="uid://djpb2mc2fralt" path="res://addons/volume_layered_shader/scripts/resources/gpu/zipped_image_archive_rf_Texture3D.gd" id="3_3vm7v"]
+
+[sub_resource type="Resource" id="Resource_36cfm"]
+script = ExtResource("2_sse6u")
+zip_file = "res://filtered-20250114T214106Z-001.zip"
+
+[sub_resource type="ImageTexture3D" id="ImageTexture3D_kdl6u"]
+script = ExtResource("3_3vm7v")
+archive = SubResource("Resource_36cfm")
+
+[node name="Specimen" instance=ExtResource("1_bnu3e")]
+thumbnail = ExtResource("2_b2xfw")
+
+[node name="VolumeLayeredShader" parent="XRToolsPickable2" index="0"]
+texture = SubResource("ImageTexture3D_kdl6u")

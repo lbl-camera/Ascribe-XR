@@ -1,24 +1,24 @@
 [gd_scene load_steps=56 format=3 uid="uid://dekvyqpte14fj"]
 
-[ext_resource type="Script" path="res://main.gd" id="1_0avhv"]
+[ext_resource type="Script" uid="uid://cpf2s58hixs4l" path="res://main.gd" id="1_0avhv"]
 [ext_resource type="PackedScene" uid="uid://clc5dre31iskm" path="res://addons/godot-xr-tools/xr/start_xr.tscn" id="1_t2lkr"]
 [ext_resource type="PackedScene" uid="uid://b8vb8h0jlqwl7" path="res://player.tscn" id="2_0wolr"]
-[ext_resource type="Script" path="res://addons/godot-xr-tools/objects/pickable.gd" id="3_evxgm"]
+[ext_resource type="Script" uid="uid://cjd0s2hohacq0" path="res://addons/godot-xr-tools/objects/pickable.gd" id="3_evxgm"]
 [ext_resource type="ArrayMesh" uid="uid://bwff24rl1ei4j" path="res://office/obj/Monitor.obj" id="3_vvhro"]
-[ext_resource type="Script" path="res://addons/volume_layered_shader/scenes/controls/volume_layered_shader.gd" id="4_ib51u"]
+[ext_resource type="Script" uid="uid://bb2lef7rn0ovi" path="res://addons/volume_layered_shader/scenes/controls/volume_layered_shader.gd" id="4_ib51u"]
 [ext_resource type="Texture2D" uid="uid://de4pvfy8p7q5h" path="res://office/zh7knl1u.bmp" id="5_h0ep4"]
-[ext_resource type="Script" path="res://addons/godot-xr-tools/objects/grab_points/grab_driver.gd" id="7_csqch"]
+[ext_resource type="Script" uid="uid://b08al8e2v7l0t" path="res://addons/godot-xr-tools/objects/grab_points/grab_driver.gd" id="7_csqch"]
 [ext_resource type="ArrayMesh" uid="uid://dgoiegr57a13e" path="res://office/obj/cupboard1.obj" id="8_03skm"]
-[ext_resource type="Script" path="res://addons/volume_layered_shader/scripts/resources/gpu/zipped_image_archive_rf_3d.gd" id="9_mraib"]
+[ext_resource type="Script" uid="uid://b5u4hxii0ib85" path="res://addons/volume_layered_shader/scripts/resources/gpu/zipped_image_archive_rf_3d.gd" id="9_mraib"]
 [ext_resource type="ArrayMesh" uid="uid://dxw77np4ch2as" path="res://office/obj/Chair1.obj" id="9_svejs"]
-[ext_resource type="Script" path="res://addons/volume_layered_shader/scripts/resources/gpu/zipped_image_archive_rf_Texture3D.gd" id="10_06hux"]
+[ext_resource type="Script" uid="uid://djpb2mc2fralt" path="res://addons/volume_layered_shader/scripts/resources/gpu/zipped_image_archive_rf_Texture3D.gd" id="10_06hux"]
 [ext_resource type="ArrayMesh" uid="uid://bv26ff60ys8jl" path="res://office/obj/Table1.obj" id="11_maxyf"]
-[ext_resource type="Texture2D" uid="uid://bpvfn74sud0xj" path="res://Hospital_assets/k63r3o3l.bmp" id="13_brf6p"]
+[ext_resource type="Texture2D" uid="uid://bpvfn74sud0xj" path="res://k63r3o3l.bmp" id="13_brf6p"]
 [ext_resource type="ArrayMesh" uid="uid://tqr04krxjboq" path="res://office/obj/keyboard.obj" id="14_uxtt7"]
 [ext_resource type="PackedScene" uid="uid://clujaf3u776a3" path="res://addons/godot-xr-tools/objects/viewport_2d_in_3d.tscn" id="16_n04gh"]
 [ext_resource type="PackedScene" uid="uid://k4ikr7wcul8l" path="res://DataMenu.tscn" id="17_wsb5v"]
 [ext_resource type="PackedScene" uid="uid://muhwrdurb4my" path="res://heart.tscn" id="18_vxbvq"]
-[ext_resource type="Shader" path="res://water.gdshader" id="19_sqp8l"]
+[ext_resource type="Shader" uid="uid://doavwn8kauqot" path="res://water.gdshader" id="19_sqp8l"]
 [ext_resource type="Terrain3DAssets" uid="uid://dal3jhw6241qg" path="res://demo/data/assets.tres" id="20_ycc3m"]
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_friul"]
@@ -34,12 +34,12 @@ points = PackedVector3Array(-0.533154, -0.0380952, 0.352202, 2.4381, 3.77143, 0.
 sky_horizon_color = Color(0.64625, 0.65575, 0.67075, 1)
 ground_horizon_color = Color(0.64625, 0.65575, 0.67075, 1)
 
-[sub_resource type="Sky" id="Sky_5u7k0"]
+[sub_resource type="Sky" id="Sky_3fekw"]
 sky_material = SubResource("ProceduralSkyMaterial_j1wwd")
 
 [sub_resource type="Environment" id="Environment_ygmnp"]
 background_mode = 2
-sky = SubResource("Sky_5u7k0")
+sky = SubResource("Sky_3fekw")
 tonemap_mode = 2
 glow_enabled = true
 
@@ -63,13 +63,13 @@ size = Vector3(0.1, 0.1, 0.1)
 [sub_resource type="ConvexPolygonShape3D" id="ConvexPolygonShape3D_v5ijh"]
 points = PackedVector3Array(-0.05, -0.05, -0.05, 0.0499977, 0.05, 0.05, 0.0499977, 0.05, -0.05, 0.0499977, -0.05, 0.05, -0.05, 0.05, 0.05, 0.0499977, -0.05, -0.05, -0.05, 0.05, -0.05, -0.05, -0.05, 0.05)
 
-[sub_resource type="Resource" id="Resource_25k6i"]
+[sub_resource type="Resource" id="Resource_ovkmx"]
 script = ExtResource("9_mraib")
 zip_file = "res://filtered-20250114T214106Z-001.zip"
 
 [sub_resource type="ImageTexture3D" id="ImageTexture3D_5gihw"]
 script = ExtResource("10_06hux")
-archive = SubResource("Resource_25k6i")
+archive = SubResource("Resource_ovkmx")
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_8y6aa"]
 size = Vector3(0.7, 0.7, 0.7)
@@ -206,7 +206,6 @@ transform = Transform3D(0.201939, 0, 0, 0, 0.201939, 0, 0, 0, 1, -0.00336808, 0.
 collision_layer = 5242880
 scene = ExtResource("17_wsb5v")
 unshaded = true
-scene_properties_keys = PackedStringArray()
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]
 environment = SubResource("Environment_ygmnp")

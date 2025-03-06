@@ -1,12 +1,13 @@
-[gd_scene load_steps=11 format=3 uid="uid://b8vb8h0jlqwl7"]
+[gd_scene load_steps=12 format=3 uid="uid://b8vb8h0jlqwl7"]
 
 [ext_resource type="PackedScene" uid="uid://bq86r4yll8po" path="res://addons/godot-xr-tools/hands/scenes/lowpoly/left_fullglove_low.tscn" id="1_6xita"]
-[ext_resource type="Script" path="res://debug_label.gd" id="1_31r2h"]
+[ext_resource type="Script" uid="uid://bpes0gqpr3oa0" path="res://debug_label.gd" id="1_31r2h"]
 [ext_resource type="PackedScene" uid="uid://xqimcf20s2jp" path="res://addons/godot-xr-tools/hands/scenes/lowpoly/right_fullglove_low.tscn" id="2_4pri4"]
+[ext_resource type="PackedScene" path="res://addons/godot-xr-tools/misc/vr_common_shader_cache.tscn" id="2_ai0f7"]
 [ext_resource type="PackedScene" uid="uid://b4ysuy43poobf" path="res://addons/godot-xr-tools/functions/function_pickup.tscn" id="2_v33fx"]
 [ext_resource type="Material" uid="uid://dy6nhifvvmm73" path="res://addons/godot-xr-tools/hands/materials/caucasian_hand.tres" id="4_hmxr0"]
-[ext_resource type="Script" path="res://addons/godot-xr-tools/functions/movement_direct.gd" id="4_wfmft"]
-[ext_resource type="Script" path="res://addons/godot-xr-tools/functions/movement_turn.gd" id="5_jjl1l"]
+[ext_resource type="Script" uid="uid://dp3sljpx8t7p4" path="res://addons/godot-xr-tools/functions/movement_direct.gd" id="4_wfmft"]
+[ext_resource type="Script" uid="uid://f2l1m6cis5bq" path="res://addons/godot-xr-tools/functions/movement_turn.gd" id="5_jjl1l"]
 [ext_resource type="PackedScene" uid="uid://diyu06cw06syv" path="res://addons/godot-xr-tools/player/player_body.tscn" id="6_keit0"]
 [ext_resource type="PackedScene" uid="uid://cqhw276realc" path="res://addons/godot-xr-tools/functions/function_pointer.tscn" id="7_qssuy"]
 [ext_resource type="Material" uid="uid://rwfrc1fdcjsj" path="res://addons/godot-xr-tools/hands/materials/caucasian_hands_realistic.tres" id="8_8snm7"]
@@ -21,6 +22,8 @@ visible = false
 text = "debug:"
 font_size = 16
 script = ExtResource("1_31r2h")
+
+[node name="VRCommonShaderCache" parent="XRCamera3D" instance=ExtResource("2_ai0f7")]
 
 [node name="LeftHandController" type="XRController3D" parent="."]
 tracker = &"left_hand"

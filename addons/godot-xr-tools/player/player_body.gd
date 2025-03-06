@@ -222,6 +222,10 @@ func _ready():
     # Propagate defaults
     _update_enabled()
     _update_player_radius()
+    
+    if XrSimulator.enabled:
+        XRToolsUserSettings.player_height = 10
+        #override_player_height('simulator', 1)
 
 
 func set_enabled(new_value) -> void:
