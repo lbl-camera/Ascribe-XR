@@ -1,6 +1,7 @@
-[gd_scene load_steps=5 format=3 uid="uid://5wygpbthgiou"]
+[gd_scene load_steps=6 format=3 uid="uid://5wygpbthgiou"]
 
 [ext_resource type="PackedScene" uid="uid://bajc3fgqqv584" path="res://scenes/specimen.tscn" id="1_86lm3"]
+[ext_resource type="Script" uid="uid://po8ew5vgyu4d" path="res://scenes/volumetric_specimen.gd" id="2_idt6j"]
 [ext_resource type="Script" uid="uid://cjd0s2hohacq0" path="res://addons/godot-xr-tools/objects/pickable.gd" id="3_sicv5"]
 [ext_resource type="Script" uid="uid://bb2lef7rn0ovi" path="res://addons/volume_layered_shader/scenes/controls/volume_layered_shader.gd" id="4_2yfeg"]
 
@@ -8,6 +9,8 @@
 size = Vector3(0.7, 0.7, 0.7)
 
 [node name="Specimen" instance=ExtResource("1_86lm3")]
+script = ExtResource("2_idt6j")
+data_file = ""
 
 [node name="XRToolsPickable2" type="RigidBody3D" parent="." index="0"]
 collision_layer = 4

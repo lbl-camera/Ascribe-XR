@@ -63,10 +63,11 @@ shader_parameter/wave_scale = 4.0
 shader_parameter/height_scale = 0.0
 shader_parameter/wave_dir1 = Vector2(1, 0)
 shader_parameter/wave_dir2 = Vector2(0, 1)
-shader_parameter/wave_speed = 0.015
+shader_parameter/wave_speed = 0.2
 
 [node name="Specimen" instance=ExtResource("1_ab2iy")]
 thumbnail = ExtResource("2_2rt0i")
+scale_mode = 1
 
 [node name="Terrain3D" type="Terrain3D" parent="." index="0"]
 data_directory = "res://terrain"

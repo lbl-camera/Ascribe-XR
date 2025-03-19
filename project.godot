@@ -11,7 +11,7 @@ config_version=5
 [application]
 
 config/name="ascribe-xr"
-run/main_scene="res://main.tscn"
+run/main_scene="uid://do7g4piyhqxid"
 config/features=PackedStringArray("4.4", "Forward Plus")
 config/icon="res://icon.svg"
 
@@ -20,8 +20,8 @@ config/icon="res://icon.svg"
 XRToolsUserSettings="*res://addons/godot-xr-tools/user_settings/user_settings.gd"
 XRToolsRumbleManager="*res://addons/godot-xr-tools/rumble/rumble_manager.gd"
 XrSimulator="*res://addons/xr-simulator/XRSimulator.tscn"
-Panku="*res://addons/panku_console/console.tscn"
 Ascribemain="*res://ascribemain.gd"
+Panku="*res://addons/panku_console/console.tscn"
 
 [editor]
 

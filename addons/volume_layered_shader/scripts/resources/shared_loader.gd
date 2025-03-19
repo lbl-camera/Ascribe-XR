@@ -12,4 +12,3 @@ func load_into(image:Image, buf:PackedByteArray, suffix:String):
         _:
             push_error('Unhandled extension in zip: ' + suffix)
             return
-    print_debug('loaded: ' + suffix)
