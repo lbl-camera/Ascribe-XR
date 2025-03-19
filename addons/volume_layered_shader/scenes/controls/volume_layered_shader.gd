@@ -30,26 +30,26 @@ class_name VolumeLayers
         return bin_file
     set(value):
         if value:
-              var shape = Vector3i(256, 256, 10)
-              
-              # Open the binary file
-              var file = FileAccess.open(value, FileAccess.READ)
-              var data = file.get_buffer(file.get_length())
-              file.close()
-              
-              var images = Array()
-              var frame_size = shape[0] * shape[1]
-              for z in range(shape[2]):
-                 var image = Image.new()
-                 var start = z * frame_size
-                 image.set_data(shape[0], shape[1], false, Image.FORMAT_L8, data.slice(start,start+frame_size))
-                 images.append(image)
-              
-              # Create a 3D texture
-              var bin_texture = ImageTexture3D.new()
-              bin_texture.create(Image.FORMAT_L8, shape[0], shape[1], shape[2], false, images)
-              #bin_texture.init_ref()
-              texture = bin_texture
+            var shape = Vector3i(256, 256, 10)
+
+            # Open the binary file
+            var file = FileAccess.open(value, FileAccess.READ)
+            var data = file.get_buffer(file.get_length())
+            file.close()
+
+            var images = Array()
+            var frame_size = shape[0] * shape[1]
+            for z in range(shape[2]):
+                var image = Image.new()
+                var start = z * frame_size
+                image.set_data(shape[0], shape[1], false, Image.FORMAT_L8, data.slice(start,start+frame_size))
+                images.append(image)
+
+            # Create a 3D texture
+            var bin_texture = ImageTexture3D.new()
+            bin_texture.create(Image.FORMAT_L8, shape[0], shape[1], shape[2], false, images)
+            #bin_texture.init_ref()
+            texture = bin_texture
         bin_file = value
 
 @export var texture:Texture3D:
@@ -58,15 +58,15 @@ class_name VolumeLayers
     set(value):
         if texture == value:
             return
-        
+
         if texture:
             texture.changed.disconnect(on_texture_changed)
-            
+
         texture = value
-        
+
         if texture:
             texture.changed.connect(on_texture_changed)
-        
+
 
 
 @export var num_layers:int = 10:
@@ -128,18 +128,18 @@ var mesh_inst:MeshInstance3D
 
 func on_texture_changed():
     rebuild_layers = true
-    
+
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
     mesh_inst = MeshInstance3D.new()
     add_child(mesh_inst)
-    
+
     var mesh:BoxMesh = BoxMesh.new()
-#	mesh.flip_faces = true
+    #	mesh.flip_faces = true
     mesh.flip_faces = false
     mesh_inst.mesh = mesh
-    
+
     var mat:Material = preload("res://addons/volume_layered_shader/materials/volume_layered_shader.tres").duplicate()
     mesh_inst.set_surface_override_material(0, mat)
     pass # Replace with function body.
@@ -148,21 +148,21 @@ func _ready():
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process(delta):
     #print("<0>")
-#	if rebuild_layers:
+    #	if rebuild_layers:
     if !texture:
         return
-    
+
     var x:float = texture.get_width()
     var y:float = texture.get_height()
     var z:float = texture.get_depth()
-    
+
     #print("texture size  ", Vector3i(x, y, z))
-    
+
     var basis:Basis = Basis.IDENTITY
     basis = basis * Basis.from_euler(Vector3(deg_to_rad(-90), 0, 0))
     basis = basis * Basis.from_scale(Vector3(x, y, z) / min(x, y, z))
     mesh_inst.transform = Transform3D(basis)
-    
+
     var mat:ShaderMaterial = mesh_inst.get_surface_override_material(0)
     mat.set_shader_parameter("texture_volume", texture)
     mat.set_shader_parameter("layers", num_layers)
@@ -170,7 +170,7 @@ func _process(delta):
     mat.set_shader_parameter("color_scalar", color_scalar)
     mat.set_shader_parameter("gamma", gamma)
     mat.set_shader_parameter("gradient", gradient)
-    
+
     var plane_count:int = 0
     var plane_list:PackedFloat32Array
     for node_path in exclusion_planes:
@@ -188,7 +188,6 @@ func _process(delta):
             plane_list.append(p.y)
             plane_list.append(p.z)
             plane_list.append(p.d)
-            
+
     mat.set_shader_parameter("num_exclusion_planes", plane_count)
     mat.set_shader_parameter("exclusion_planes", plane_list)
-        
