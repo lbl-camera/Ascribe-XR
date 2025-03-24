@@ -38,6 +38,8 @@ hand_material_override = ExtResource("4_hmxr0")
 
 [node name="FunctionPickup" parent="LeftHandController/LeftHand" instance=ExtResource("2_v33fx")]
 ranged_distance = 10.0
+ranged_angle = 15.0
+impulse_factor = 2.0
 
 [node name="XRToolsMovementTurn" type="Node" parent="LeftHandController" groups=["movement_providers"]]
 script = ExtResource("5_jjl1l")
@@ -61,6 +63,8 @@ hand_material_override = ExtResource("8_8snm7")
 
 [node name="FunctionPickup" parent="RightHandController/RightHand" instance=ExtResource("2_v33fx")]
 ranged_distance = 10.0
+ranged_angle = 15.0
+impulse_factor = 2.0
 
 [node name="PlayerBody" parent="." instance=ExtResource("6_keit0")]
 collision_mask = 3
