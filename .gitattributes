@@ -1,3 +1,4 @@
 # Normalize EOL for all files that Git considers text files.
 * text=auto eol=lf
 /specimens/ceramicfilaments.tres filter=lfs diff=lfs merge=lfs -text
+/scenes/sci-fi_lab.glb filter=lfs diff=lfs merge=lfs -text
