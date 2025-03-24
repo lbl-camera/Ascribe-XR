@@ -1,0 +1,103 @@
+[gd_scene load_steps=3 format=3 uid="uid://iesva21db3ri"]
+
+[ext_resource type="Texture2D" uid="uid://cv7ck0xkk6jb5" path="res://sprites/thumbnails/glass.png" id="1_j5gb6"]
+[ext_resource type="Texture2D" uid="uid://bdkn8xfqv0wa3" path="res://sprites/thumbnails/crystal.png" id="2_xcpp4"]
+
+[node name="Panel" type="Panel"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="CanvasLayer" type="CanvasLayer" parent="."]
+
+[node name="MarginContainer" type="MarginContainer" parent="CanvasLayer"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="CanvasLayer/MarginContainer"]
+layout_mode = 2
+
+[node name="GridContainer" type="GridContainer" parent="CanvasLayer/MarginContainer/VBoxContainer"]
+layout_mode = 2
+columns = 2
+
+[node name="Label2" type="Label" parent="CanvasLayer/MarginContainer/VBoxContainer/GridContainer"]
+layout_mode = 2
+text = "Load Progress"
+
+[node name="ProgressBar" type="ProgressBar" parent="CanvasLayer/MarginContainer/VBoxContainer/GridContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+max_value = 1.0
+
+[node name="Label" type="Label" parent="CanvasLayer/MarginContainer/VBoxContainer/GridContainer"]
+layout_mode = 2
+text = "Model Scale"
+
+[node name="Scale" type="HSlider" parent="CanvasLayer/MarginContainer/VBoxContainer/GridContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 1
+min_value = 0.001
+step = 0.001
+value = 1.0
+exp_edit = true
+
+[node name="ScrollContainer" type="ScrollContainer" parent="CanvasLayer/MarginContainer/VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="MaterialList" type="ItemList" parent="CanvasLayer/MarginContainer/VBoxContainer/ScrollContainer"]
+unique_name_in_owner = true
+clip_contents = false
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+item_count = 2
+max_columns = 4
+same_column_width = true
+icon_mode = 0
+fixed_icon_size = Vector2i(200, 200)
+item_0/text = "Glass"
+item_0/icon = ExtResource("1_j5gb6")
+item_1/text = "Crystal"
+item_1/icon = ExtResource("2_xcpp4")
+
+[node name="FileDialog" type="FileDialog" parent="."]
+unique_name_in_owner = true
+auto_translate_mode = 1
+title = "Open a File"
+initial_position = 1
+exclusive = false
+ok_button_text = "Open"
+dialog_close_on_escape = false
+file_mode = 0
+access = 2
+
+[node name="CanvasLayer2" type="CanvasLayer" parent="."]
+visible = false
+
+[node name="GridContainer" type="GridContainer" parent="CanvasLayer2"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+size_flags_vertical = 3
+columns = 2
+
+[node name="Label2" type="Label" parent="CanvasLayer2/GridContainer"]
+layout_mode = 2
+text = "Load Progress"
+
+[node name="ProgressBar" type="ProgressBar" parent="CanvasLayer2/GridContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 4
+max_value = 1.0
