@@ -8,3 +8,6 @@
 *.apk
 *.exe
 *.pck
+
+# keystore
+*.keystore
