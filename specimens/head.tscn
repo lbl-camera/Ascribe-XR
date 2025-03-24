@@ -1,0 +1,15 @@
+[gd_scene load_steps=4 format=3 uid="uid://crsrxhqfrmgan"]
+
+[ext_resource type="PackedScene" uid="uid://5wygpbthgiou" path="res://scenes/volumetric_specimen.tscn" id="1_mrxbh"]
+[ext_resource type="Texture2D" uid="uid://ckne1iwfftpnl" path="res://sprites/thumbnails/head.png" id="2_djjrt"]
+[ext_resource type="ImageTexture3D" uid="uid://b0how7igvt52i" path="res://specimens/head.tres" id="3_mrxbh"]
+
+[node name="Specimen" instance=ExtResource("1_mrxbh")]
+thumbnail = ExtResource("2_djjrt")
+
+[node name="XRToolsPickable2" parent="." index="0"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.407841, 0)
+
+[node name="VolumeLayeredShader" parent="XRToolsPickable2" index="0"]
+texture = ExtResource("3_mrxbh")
+num_layers = 400
