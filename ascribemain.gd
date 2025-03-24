@@ -4,11 +4,13 @@ extends Node3D
 var world_3d : Node3D
 var current_3d_scene : Node3D
 var mainmenu : Node3D
+var specimen_ui_viewport
 
 # Called when the node enters the scene tree for the first time.
 func _ready() -> void:
     world_3d = $/root/Main/Sketchfab_Scene
     mainmenu = $/root/Main/mainmenu
+    specimen_ui_viewport = $/root/Main/SpecimenUIViewport
 #    current_3d_scene = $mainmenu
 
 
@@ -17,11 +19,11 @@ var loading_scene: String
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process(delta: float) -> void:
     process_scene_load()
-    
+
 func load_3d_scene_path(new_scene: String) -> void:
     ResourceLoader.load_threaded_request(new_scene)
     loading_scene = new_scene
-    
+
 func load_3d_scene(new_scene: PackedScene) -> void:
     change_3d_scene(new_scene)
 
@@ -30,7 +32,7 @@ func process_scene_load():
         var progress = []
         var status: int = ResourceLoader.load_threaded_get_status(loading_scene, progress)
         print_debug(progress)
-    
+
         if status in [ResourceLoader.THREAD_LOAD_FAILED, ResourceLoader.THREAD_LOAD_INVALID_RESOURCE]:
             loading_scene = ""
         elif status == ResourceLoader.THREAD_LOAD_LOADED:
@@ -42,6 +44,7 @@ func change_3d_scene(new_scene: PackedScene, delete: bool = true, keep_running: 
     # reset world
     world_3d.show()
     $/root/Main/Floor.hide()
+    specimen_ui_viewport.scene = null
 
     if current_3d_scene != null:
         if delete:
@@ -49,12 +52,10 @@ func change_3d_scene(new_scene: PackedScene, delete: bool = true, keep_running: 
         elif keep_running:
             current_3d_scene.visible = false # keeps in memory and running
         else:
-            self.remove_child(current_3d_scene) # keeps in memory, does not run
+            $/root/Main.remove_child(current_3d_scene) # keeps in memory, does not run
     $/root/Main/GPUParticles3D.emitting = true
     var specimen: Specimen = new_scene.instantiate()
 #    self.add_child(specimen)
-    get_tree().create_timer(.5).timeout.connect(spawn_callback.bind(specimen))
-    current_3d_scene = specimen
 
     match specimen.scale_mode:
         Specimen.ScaleMode.TABLE:
@@ -65,6 +66,12 @@ func change_3d_scene(new_scene: PackedScene, delete: bool = true, keep_running: 
             # hide environment
             world_3d.hide()
             $/root/Main/Floor.hide()
+
+    if specimen.ui:
+        specimen_ui_viewport.scene = specimen.ui
+        
+    get_tree().create_timer(.5).timeout.connect(spawn_callback.bind(specimen))
+    current_3d_scene = specimen
 
     toggle_mainmenu()
 
@@ -79,4 +86,4 @@ func _unhandled_input(event: InputEvent) -> void:
         toggle_mainmenu()
 
 func spawn_callback(node: Node3D) -> void:
-    add_child(node)
+    $/root/Main.add_child(node)
