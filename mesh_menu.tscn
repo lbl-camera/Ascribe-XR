@@ -1,7 +1,9 @@
-[gd_scene load_steps=3 format=3 uid="uid://iesva21db3ri"]
+[gd_scene load_steps=5 format=3 uid="uid://iesva21db3ri"]
 
 [ext_resource type="Texture2D" uid="uid://cv7ck0xkk6jb5" path="res://sprites/thumbnails/glass.png" id="1_j5gb6"]
 [ext_resource type="Texture2D" uid="uid://bdkn8xfqv0wa3" path="res://sprites/thumbnails/crystal.png" id="2_xcpp4"]
+[ext_resource type="Texture2D" uid="uid://dv3rnewqurbgf" path="res://sprites/thumbnails/brick.png" id="3_xcpp4"]
+[ext_resource type="Texture2D" uid="uid://bqp0yertmv3ld" path="res://sprites/thumbnails/water.png" id="4_i7f86"]
 
 [node name="Panel" type="Panel"]
 anchors_preset = 15
@@ -10,36 +12,73 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="CanvasLayer" type="CanvasLayer" parent="."]
+[node name="SettingsLayer" type="CanvasLayer" parent="."]
+unique_name_in_owner = true
+visible = false
 
-[node name="MarginContainer" type="MarginContainer" parent="CanvasLayer"]
+[node name="MarginContainer" type="MarginContainer" parent="SettingsLayer"]
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+theme_override_constants/margin_left = 20
+theme_override_constants/margin_top = 20
+theme_override_constants/margin_right = 20
+theme_override_constants/margin_bottom = 20
 
-[node name="VBoxContainer" type="VBoxContainer" parent="CanvasLayer/MarginContainer"]
+[node name="VBoxContainer" type="VBoxContainer" parent="SettingsLayer/MarginContainer"]
 layout_mode = 2
 
-[node name="GridContainer" type="GridContainer" parent="CanvasLayer/MarginContainer/VBoxContainer"]
+[node name="MaterialMenu" type="Control" parent="SettingsLayer/MarginContainer/VBoxContainer"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="Label" type="Label" parent="SettingsLayer/MarginContainer/VBoxContainer/MaterialMenu"]
+layout_mode = 2
+offset_right = 1112.0
+offset_bottom = 23.0
+text = "Material"
+horizontal_alignment = 1
+
+[node name="ScrollContainer" type="ScrollContainer" parent="SettingsLayer/MarginContainer/VBoxContainer/MaterialMenu"]
+layout_mode = 2
+offset_top = 27.0
+offset_right = 1112.0
+offset_bottom = 581.0
+size_flags_vertical = 3
+
+[node name="MaterialList" type="ItemList" parent="SettingsLayer/MarginContainer/VBoxContainer/MaterialMenu/ScrollContainer"]
+unique_name_in_owner = true
+clip_contents = false
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+item_count = 4
+max_columns = 4
+same_column_width = true
+icon_mode = 0
+fixed_icon_size = Vector2i(200, 200)
+item_0/text = "Glass"
+item_0/icon = ExtResource("1_j5gb6")
+item_1/text = "Crystal"
+item_1/icon = ExtResource("2_xcpp4")
+item_2/text = "Brick"
+item_2/icon = ExtResource("3_xcpp4")
+item_3/text = "Water"
+item_3/icon = ExtResource("4_i7f86")
+
+[node name="GridContainer" type="GridContainer" parent="SettingsLayer/MarginContainer/VBoxContainer"]
 layout_mode = 2
 columns = 2
 
-[node name="Label2" type="Label" parent="CanvasLayer/MarginContainer/VBoxContainer/GridContainer"]
-layout_mode = 2
-text = "Load Progress"
-
-[node name="ProgressBar" type="ProgressBar" parent="CanvasLayer/MarginContainer/VBoxContainer/GridContainer"]
-unique_name_in_owner = true
-layout_mode = 2
-max_value = 1.0
-
-[node name="Label" type="Label" parent="CanvasLayer/MarginContainer/VBoxContainer/GridContainer"]
+[node name="Label" type="Label" parent="SettingsLayer/MarginContainer/VBoxContainer/GridContainer"]
 layout_mode = 2
 text = "Model Scale"
 
-[node name="Scale" type="HSlider" parent="CanvasLayer/MarginContainer/VBoxContainer/GridContainer"]
+[node name="Scale" type="HSlider" parent="SettingsLayer/MarginContainer/VBoxContainer/GridContainer"]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
@@ -49,41 +88,25 @@ step = 0.001
 value = 1.0
 exp_edit = true
 
-[node name="ScrollContainer" type="ScrollContainer" parent="CanvasLayer/MarginContainer/VBoxContainer"]
-layout_mode = 2
-size_flags_vertical = 3
-
-[node name="MaterialList" type="ItemList" parent="CanvasLayer/MarginContainer/VBoxContainer/ScrollContainer"]
-unique_name_in_owner = true
-clip_contents = false
-layout_mode = 2
-size_flags_horizontal = 3
-size_flags_vertical = 3
-item_count = 2
-max_columns = 4
-same_column_width = true
-icon_mode = 0
-fixed_icon_size = Vector2i(200, 200)
-item_0/text = "Glass"
-item_0/icon = ExtResource("1_j5gb6")
-item_1/text = "Crystal"
-item_1/icon = ExtResource("2_xcpp4")
-
 [node name="FileDialog" type="FileDialog" parent="."]
 unique_name_in_owner = true
 auto_translate_mode = 1
 title = "Open a File"
 initial_position = 1
+size = Vector2i(1100, 550)
+visible = true
 exclusive = false
 ok_button_text = "Open"
 dialog_close_on_escape = false
 file_mode = 0
 access = 2
+filters = PackedStringArray("*.fbx", "*.stl")
 
-[node name="CanvasLayer2" type="CanvasLayer" parent="."]
+[node name="LoadingLayer" type="CanvasLayer" parent="."]
+unique_name_in_owner = true
 visible = false
 
-[node name="GridContainer" type="GridContainer" parent="CanvasLayer2"]
+[node name="GridContainer" type="GridContainer" parent="LoadingLayer"]
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
@@ -92,11 +115,12 @@ grow_vertical = 2
 size_flags_vertical = 3
 columns = 2
 
-[node name="Label2" type="Label" parent="CanvasLayer2/GridContainer"]
+[node name="Label2" type="Label" parent="LoadingLayer/GridContainer"]
 layout_mode = 2
 text = "Load Progress"
 
-[node name="ProgressBar" type="ProgressBar" parent="CanvasLayer2/GridContainer"]
+[node name="ProgressBar" type="ProgressBar" parent="LoadingLayer/GridContainer"]
+unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 4
