@@ -54,18 +54,17 @@ func scan_and_create_buttons():
     dirty = false
 
 
-func get_thumbnail(scene: PackedScene) -> Texture2D:
-    var thumbnail_index: int = scene._bundled.names.find('thumbnail')
-    if thumbnail_index > -1:
-        return scene._bundled.variants[thumbnail_index] as CompressedTexture2D
+func get_property_from_scene(scene: PackedScene, property: String, default=null):
+    var property_index: int = scene._bundled.names.find(property)
+    if property_index > -1:
+        return scene._bundled.variants[property_index] #as CompressedTexture2D
     else:
-        return null
-
+        return default
 
 func create_button(scene: PackedScene):
     if scene:
         var button = Button.new()
-        button.text = scene.resource_name
+        button.text = get_property_from_scene(scene, "display_name", "")
         button.custom_minimum_size = button_size
         button.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
         button.size_flags_vertical = Control.SIZE_SHRINK_CENTER
@@ -74,7 +73,7 @@ func create_button(scene: PackedScene):
         %GridContainer.add_child(button)
         #button.set_owner(get_tree().edited_scene_root)
 
-        var thumbnail: Texture2D = get_thumbnail(scene)
+        var thumbnail: Texture2D = get_property_from_scene(scene, "thumbnail")
         if thumbnail:  # Ensure the scene provides a thumbnail atrribute
             var vbox = VBoxContainer.new()
             vbox.set_anchors_and_offsets_preset(PRESET_FULL_RECT)
