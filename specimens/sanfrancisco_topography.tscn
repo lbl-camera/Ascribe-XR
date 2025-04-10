@@ -66,6 +66,7 @@ shader_parameter/wave_dir2 = Vector2(0, 1)
 shader_parameter/wave_speed = 0.2
 
 [node name="Specimen" instance=ExtResource("1_ab2iy")]
+display_name = "San Francisco Topography"
 thumbnail = ExtResource("2_2rt0i")
 scale_mode = 1
 
