@@ -1,35 +1,12 @@
-/*
-* MIT License
-*
-* Copyright (c) 2023 Mark McKay
-* https://github.com/blackears/godot_volume_layers
-*
-* Permission is hereby granted, free of charge, to any person obtaining a copy
-* of this software and associated documentation files (the "Software"), to deal
-* in the Software without restriction, including without limitation the rights
-* to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-* copies of the Software, and to permit persons to whom the Software is
-* furnished to do so, subject to the following conditions:
-*
-* The above copyright notice and this permission notice shall be included in all
-* copies or substantial portions of the Software.
-*
-* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-* IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-* FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-* AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-* LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-* OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-* SOFTWARE.
-*/
-
 shader_type spatial;
 render_mode unshaded, cull_front;
 
 const int MAX_EXCLUSION_PLANES = 4;
+const int MAX_STEPS = 128*2;
+const float STEP_SIZE = 0.01/2.;
 
-uniform sampler3D texture_volume : source_color,filter_linear_mipmap,repeat_disable;
-uniform sampler2D gradient: filter_linear_mipmap,repeat_disable;
+uniform sampler3D texture_volume : source_color, filter_linear_mipmap, repeat_disable;
+uniform sampler2D gradient : filter_linear_mipmap, repeat_disable;
 uniform float zoom = 2;
 uniform int layers = 2;
 uniform float opacity = 1;
@@ -40,110 +17,94 @@ uniform vec4[MAX_EXCLUSION_PLANES] exclusion_planes;
 
 varying vec3 pos_local;
 varying vec3 pos_world;
-
+varying mat3 inv_model_rotation; // Precomputed rotation matrix
+varying vec3 inv_model_translation; // Precomputed translation vector
+varying vec3 world_camera;
+varying vec3 world_position;
 
 void vertex() {
-	pos_local = VERTEX;
-	pos_world = (MODEL_MATRIX * vec4(VERTEX, 1.0)).xyz;
+	world_position = VERTEX;
+	world_camera = (inverse(MODELVIEW_MATRIX) * vec4(0, 0, 0, 1)).xyz; //object space
+	//world_camera = ( CAMERA_MATRIX  * vec4(0, 0, 0, 1)).xyz; //uncomment this to raymarch in world space
 }
 
-vec3 isect_plane(vec3 view_origin, vec3 view_dir, vec3 plane_point, vec3 plane_dir)
-{
-	float s = dot((plane_point - view_origin), plane_dir) / dot(view_dir, plane_dir);
-	return s * view_dir + view_origin;
+// Function to check if a point is outside of an exclusion plane
+bool is_outside_exclusion_planes(vec3 point) {
+    for (int i = 0; i < num_exclusion_planes; ++i) {
+        // Exclusion planes are stored in vec4 (x, y, z) as the normal and w as the distance
+        vec4 plane = exclusion_planes[i];
+        // Dot product between point and plane normal and check if it's greater than the plane's distance
+        if (dot(point, plane.xyz) > plane.w) {
+            return true; // Point is outside this exclusion plane
+        }
+    }
+    return false;
 }
 
+// Raymarching function
+vec4 raymarch(vec3 ray_origin, vec3 ray_dir) {
+    vec4 accumulated_color = vec4(0.0, 0.0, 0.0, 0.0);
+    float total_opacity = 0.0;
+
+    for (int i = 0; i < MAX_STEPS; ++i) {
+        // Step along the ray
+        ray_origin += ray_dir * STEP_SIZE;
+
+        // Sample the texture volume
+        vec3 tex_sample_pt = ((ray_origin * zoom) / 2.0) + vec3(0.5, 0.5, 0.5);
+
+        // Skip invalid samples
+        if (any(lessThan(tex_sample_pt, vec3(0.0))) || any(greaterThan(tex_sample_pt, vec3(1.0)))) 
+            break;
+            
+        // Check if the current point is outside of any exclusion planes
+        if (is_outside_exclusion_planes(ray_origin)) {
+            continue; // Skip this sample if it's outside of an exclusion plane
+        }
+
+        vec4 sample = texture(texture_volume, tex_sample_pt);
+        sample = texture(gradient, vec2(pow(sample.r, gamma), 0));
+
+        // Accumulate color and opacity
+        float sample_opacity = sample.a * opacity;
+        accumulated_color.rgb += sample.rgb * sample_opacity * (1.0 - total_opacity);
+        total_opacity += sample_opacity;
+
+        // If the opacity reaches 1, we can break out early
+        if (total_opacity >= 1.0)
+            break;
+    }
+
+    accumulated_color.a = total_opacity;
+    return accumulated_color;
+}
 
 void fragment() {
-	vec3 model_origin_world = MODEL_MATRIX[3].xyz;
-	vec3 plane_norm = normalize(CAMERA_POSITION_WORLD - model_origin_world);
+    vec3 ro = world_camera;
+    vec3 rd = normalize(world_position - ro);
+    
+    // Assuming your cube is centered at (0, 0, 0) and has size 1 (you can adjust this to your volume's size).
+    vec3 half_extents = vec3(0.5, 0.5, 0.5); // Adjust this to match the cube's half-extents
 
-	vec4 col = vec4(0, 0, 0, 0);
+    // Ray-box intersection logic to clamp ray origin to the surface of the cube
+    vec3 t_min = ( -half_extents - ro ) / rd; // Compute entry point of the ray
+    vec3 t_max = ( half_extents - ro ) / rd;  // Compute exit point of the ray
 
-	for (int layer_idx = 0; layer_idx < layers; ++layer_idx)
-	{
-		float layer_frac = float(layer_idx + 1) / float(layers + 1);
-		vec3 plane_origin = model_origin_world + plane_norm * (layer_frac - .5) * 2.0;
+    // Ensure t_min is less than t_max
+    vec3 t_near = min(t_min, t_max);
+    vec3 t_far = max(t_min, t_max);
 
-		vec3 p_world = isect_plane(CAMERA_POSITION_WORLD, pos_world - CAMERA_POSITION_WORLD, plane_origin, plane_norm);
+    // Find the largest of the entry points to determine where the ray first enters the box
+    float t_entry = max(max(t_near.x, t_near.y), t_near.z);
+    // The ray origin should be adjusted to this entry point
+    ro += rd * t_entry;
 
-		bool plane_test_passed = true;
-		for (int i = 0; i < min(num_exclusion_planes, MAX_EXCLUSION_PLANES); ++i)
-		{
-			if (dot(vec4(p_world, -1.0), exclusion_planes[i]) > 0.0) {
-				plane_test_passed = false;
-				break;
-			}
-		}
-		if (!plane_test_passed)
-			continue;
+    // Now perform raymarching from the adjusted origin
+    vec4 col = raymarch(ro, rd);
 
-		mat4 inv_model_mtx = inverse(MODEL_MATRIX);
-		vec3 p_local = (inv_model_mtx * vec4(p_world, 1.0)).xyz;
+    // Apply color scalar
+    col *= color_scalar;
 
-
-		vec3 tex_sample_pt = ((p_local * zoom) / 2.0 + vec3(.5, .5, .5));
-		vec4 layer_col = texture(texture_volume, tex_sample_pt);
-		if (tex_sample_pt.x < 0.0 || tex_sample_pt.x > 1.0
-			|| tex_sample_pt.y < 0.0 || tex_sample_pt.y > 1.0
-			|| tex_sample_pt.z < 0.0 || tex_sample_pt.z > 1.0)
-			continue;
-
-		layer_col = texture(gradient, vec2(pow(layer_col.r, gamma), 0));
-		layer_col.a *= opacity;
-		layer_col *= color_scalar;
-
-		col = mix(col, layer_col, layer_col.a);
-	}
-
-	ALBEDO = col.xyz;
-	ALPHA = col.a;
+    ALBEDO = col.rgb;
+    ALPHA = col.a;
 }
-
-/*
-void fragment_2() {
-	vec3 model_origin_world = MODEL_MATRIX[3].xyz;
-	vec3 plane_norm = normalize(CAMERA_POSITION_WORLD - model_origin_world);
-
-	vec4 col;
-
-	for (int layer_idx = 0; layer_idx < layers; ++layer_idx)
-	{
-		float layer_frac = float(layer_idx + 1) / float(layers + 1);
-		vec3 plane_origin = model_origin_world + plane_norm * (layer_frac - .5) * 2.0;
-
-		vec3 p_world = isect_plane(CAMERA_POSITION_WORLD, pos_world - CAMERA_POSITION_WORLD, plane_origin, plane_norm);
-
-		bool plane_test_passed = true;
-		for (int i = 0; i < min(num_exclusion_planes, MAX_EXCLUSION_PLANES); ++i)
-		{
-			if (dot(vec4(p_world, -1.0), exclusion_planes[i]) > 0.0) {
-				plane_test_passed = false;
-				break;
-			}
-		}
-		if (!plane_test_passed)
-			continue;
-
-		mat4 inv_model_mtx = inverse(MODEL_MATRIX);
-		vec3 p_local = (inv_model_mtx * vec4(p_world, 1.0)).xyz;
-
-
-		vec3 tex_sample_pt = ((p_local * zoom) / 2.0 + vec3(.5, .5, .5));
-		vec4 layer_col = texture(texture_volume, tex_sample_pt);
-		if (tex_sample_pt.x < 0.0 || tex_sample_pt.x > 1.0
-			|| tex_sample_pt.y < 0.0 || tex_sample_pt.y > 1.0
-			|| tex_sample_pt.z < 0.0 || tex_sample_pt.z > 1.0)
-			continue;
-
-		layer_col = texture(gradient, vec2(pow(layer_col.r, gamma), 0));
-		layer_col.a *= opacity;
-		layer_col *= color_scalar;
-
-		col = mix(col, layer_col, layer_col.a);
-	}
-
-	ALBEDO = col.xyz;
-	ALPHA = col.a;
-}
-*/
