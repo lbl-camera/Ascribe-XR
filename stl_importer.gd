@@ -13,6 +13,7 @@ func import(source_file):
         process_binary_stl(file, surface_tool)
     
     var final_mesh = surface_tool.commit()
+    
     return final_mesh
     
 func is_ascii_stl(file):
