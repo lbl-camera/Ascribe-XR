@@ -4,12 +4,11 @@ importer="scene"
 importer_version=1
 type="PackedScene"
 uid="uid://cw7vr3jd574bl"
-path="res://.godot/imported/sci-fi_lab.glb-f7ca0a71802e40040f7fe92f5d318dab.scn"
+valid=false
 
 [deps]
 
 source_file="res://scenes/sci-fi_lab.glb"
-dest_files=["res://.godot/imported/sci-fi_lab.glb-f7ca0a71802e40040f7fe92f5d318dab.scn"]
 
 [params]
 
