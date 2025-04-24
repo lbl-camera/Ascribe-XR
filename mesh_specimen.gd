@@ -83,7 +83,7 @@ func _on_file_dialog_file_selected(path: String) -> void:
         
 func make_pickable(node: Node3D) -> Node3D:
     var collision: CollisionShape3D = CollisionShape3D.new()
-    var pickable: XRToolsPickable = XRToolsPickable.new()
+    var pickable: MultiplayerPickableObject = MultiplayerPickableObject.new()
     pickable.add_child(node)
     pickable.add_child(collision)
     pickable.ranged_grab_method = XRToolsPickable.RangedMethod.LERP
