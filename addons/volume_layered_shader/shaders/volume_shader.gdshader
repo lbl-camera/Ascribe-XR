@@ -54,9 +54,9 @@ vec4 raymarch(vec3 ray_origin, vec3 ray_dir) {
         vec3 tex_sample_pt = ((ray_origin * zoom) / 2.0) + vec3(0.5, 0.5, 0.5);
 
         // Skip invalid samples
-        if (any(lessThan(tex_sample_pt, vec3(0.0))) || any(greaterThan(tex_sample_pt, vec3(1.0)))) 
+        if (any(lessThan(tex_sample_pt, vec3(0.0))) || any(greaterThan(tex_sample_pt, vec3(1.0))))
             break;
-            
+
         // Check if the current point is outside of any exclusion planes
         if (is_outside_exclusion_planes(ray_origin)) {
             continue; // Skip this sample if it's outside of an exclusion plane
@@ -82,7 +82,7 @@ vec4 raymarch(vec3 ray_origin, vec3 ray_dir) {
 void fragment() {
     vec3 ro = world_camera;
     vec3 rd = normalize(world_position - ro);
-    
+
     // Assuming your cube is centered at (0, 0, 0) and has size 1 (you can adjust this to your volume's size).
     vec3 half_extents = vec3(0.5, 0.5, 0.5); // Adjust this to match the cube's half-extents
 

@@ -57,7 +57,7 @@ void fragment() {
         vec3 tex_sample_pt = ((p_local * zoom) / 2.0) + vec3(0.5, 0.5, 0.5);
 
         // Skip invalid samples
-        if (any(lessThan(tex_sample_pt, vec3(0.0))) || any(greaterThan(tex_sample_pt, vec3(1.0)))) 
+        if (any(lessThan(tex_sample_pt, vec3(0.0))) || any(greaterThan(tex_sample_pt, vec3(1.0))))
             continue;
 
         vec4 layer_col = texture(texture_volume, tex_sample_pt);
