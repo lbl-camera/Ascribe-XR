@@ -1,0 +1,28 @@
+[gd_scene load_steps=4 format=3 uid="uid://d0exl0n5q6gvy"]
+
+[ext_resource type="PackedScene" uid="uid://c8l60rnugru40" path="res://addons/godot-xr-tools/objects/pickable.tscn" id="1_jqoqb"]
+[ext_resource type="Script" uid="uid://bfl1vx683175r" path="res://multiplayer_pickable.gd" id="2_3cpjn"]
+
+[sub_resource type="SceneReplicationConfig" id="SceneReplicationConfig_ag8uh"]
+properties/0/path = NodePath(".:replicated_position")
+properties/0/spawn = true
+properties/0/replication_mode = 1
+properties/1/path = NodePath(".:replicated_rotation")
+properties/1/spawn = true
+properties/1/replication_mode = 1
+properties/2/path = NodePath(".:replicated_linear_velocity")
+properties/2/spawn = true
+properties/2/replication_mode = 1
+properties/3/path = NodePath(".:replicated_angular_velocity")
+properties/3/spawn = true
+properties/3/replication_mode = 1
+
+[node name="MultiplayerPickableObject" instance=ExtResource("1_jqoqb")]
+script = ExtResource("2_3cpjn")
+replicated_position = Vector3(0, 0, 0)
+replicated_rotation = Vector3(0, 0, 0)
+replicated_linear_velocity = Vector3(0, 0, 0)
+replicated_angular_velocity = Vector3(0, 0, 0)
+
+[node name="MultiplayerSynchronizer" type="MultiplayerSynchronizer" parent="." index="1"]
+replication_config = SubResource("SceneReplicationConfig_ag8uh")
