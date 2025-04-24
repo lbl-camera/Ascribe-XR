@@ -3,20 +3,16 @@ extends Specimen
 var stl_importer = preload("res://stl_importer.gd")
 
 var loading_file: String
-var specimen_scene: MeshInstance3D#Node3D
+var specimen_scene: Node3D
 var specimen_collision: CollisionShape3D
 var specimen_base_scale: float = 1
 static var TABLE_SIZE: float = 1
 
-# TODO: populate dynamically?
-static var MATERIALS: Dictionary[String, Shader] = {
-    "glass": preload("res://shaders/glass.gdshader"),
-    "crystal": preload("res://shaders/crystal.gdshader"),
-}
 
 func _ready():
-    if OS.is_debug_build():
-        _on_file_dialog_file_selected(r"C:\Users\rp\Documents\vr-start\skullandmore.stl")
+    pass
+    #if OS.is_debug_build():
+        #_on_file_dialog_file_selected(r"C:\Users\rp\Documents\vr-start\skullandmore.stl")
 
 ## Return the [AABB] of the node.
 func get_node_aabb(node : Node, exclude_top_level_transform: bool = true) -> AABB:
@@ -67,10 +63,13 @@ func process_mesh_load() -> void:
             specimen_scene.queue_free()
         make_pickable(mesh_scene.instantiate())
         loading_file = ""
+        ui_instance.get_node("%LoadingLayer").hide()
+        ui_instance.get_node("%SettingsLayer").show()
 
 func _on_file_dialog_file_selected(path: String) -> void:
     var extension: String = path.get_extension()
     if extension in ['fbx']:
+        ui_instance.get_node("LoadingLayer").show()
         ResourceLoader.load_threaded_request(path)
         loading_file = path
     elif extension == 'stl':
@@ -78,16 +77,20 @@ func _on_file_dialog_file_selected(path: String) -> void:
         var mesh_instance = MeshInstance3D.new()
         mesh_instance.mesh = mesh
         make_pickable(mesh_instance)
+        ui_instance.get_node("%SettingsLayer").show()
+        ui_instance.get_node("%MaterialMenu").show()
+    
         
 func make_pickable(node: Node3D) -> Node3D:
     var collision: CollisionShape3D = CollisionShape3D.new()
-    var pickable: XRToolsPickable = XRToolsPickable.new()
+    var pickable: MultiplayerPickableObject = MultiplayerPickableObject.new()
     pickable.add_child(node)
     pickable.add_child(collision)
     pickable.ranged_grab_method = XRToolsPickable.RangedMethod.LERP
     pickable.second_hand_grab = XRToolsPickable.SecondHandGrab.SWAP
     pickable.ranged_grab_speed = 10
     pickable.freeze = true
+    pickable.set_collision_layer_value(1, false)
     pickable.set_collision_layer_value(3, true)
     for i in [1,2,3]:
         pickable.set_collision_mask_value(i, true)
@@ -118,7 +121,7 @@ func _on_materiallist_item_selected(index:int):
     set_shader(material_name)
 
 func set_shader(material_name:String="glass"):
-    var shader = MATERIALS[material_name.to_lower()]
+    var shader = load("res://shaders/" + material_name.to_lower() + ".gdshader")
     var material: ShaderMaterial = ShaderMaterial.new()
     material.shader = shader
     specimen_scene.set_surface_override_material(0, material)

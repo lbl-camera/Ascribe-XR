@@ -15,13 +15,16 @@ run/main_scene="uid://do7g4piyhqxid"
 config/features=PackedStringArray("4.4", "Forward Plus")
 config/icon="res://icon.svg"
 
+[audio]
+
+driver/enable_input=true
+
 [autoload]
 
 XRToolsUserSettings="*res://addons/godot-xr-tools/user_settings/user_settings.gd"
 XRToolsRumbleManager="*res://addons/godot-xr-tools/rumble/rumble_manager.gd"
 XrSimulator="*res://addons/xr-simulator/XRSimulator.tscn"
-Ascribemain="*res://ascribemain.gd"
-Panku="*res://addons/panku_console/console.tscn"
+Ascribemain="*res://main.gd"
 STLImportPlugin="*res://addons/stl_importer/import_plugin.gd"
 
 [editor]
@@ -32,7 +35,7 @@ version_control/autoload_on_startup=true
 
 [editor_plugins]
 
-enabled=PackedStringArray("res://addons/godot-xr-tools/plugin.cfg", "res://addons/panku_console/plugin.cfg", "res://addons/script-ide/plugin.cfg", "res://addons/volume_layered_shader/plugin.cfg")
+enabled=PackedStringArray("res://addons/gd-plug-ui/plugin.cfg", "res://addons/godot-xr-tools/plugin.cfg", "res://addons/script-ide/plugin.cfg", "res://addons/volume_layered_shader/plugin.cfg")
 
 [input]
 
@@ -65,10 +68,6 @@ toggle_console={
 3d_physics/layer_21="Pointable Objects"
 3d_physics/layer_22="Hand Pose Areas"
 3d_physics/layer_23="UI Objects"
-
-[panku]
-
-disable_on_release=true
 
 [rendering]
 

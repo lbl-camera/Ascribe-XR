@@ -20,15 +20,15 @@ signal pointing_event(event)
 
 ## Enumeration of laser show modes
 enum LaserShow {
-	HIDE = 0,		## Hide laser
-	SHOW = 1,		## Show laser
-	COLLIDE = 2,	## Only show laser on collision
+    HIDE = 0,		## Hide laser
+    SHOW = 1,		## Show laser
+    COLLIDE = 2,	## Only show laser on collision
 }
 
 ## Enumeration of laser length modes
 enum LaserLength {
-	FULL = 0,		## Full length
-	COLLIDE = 1		## Draw to collision
+    FULL = 0,		## Full length
+    COLLIDE = 1		## Draw to collision
 }
 
 

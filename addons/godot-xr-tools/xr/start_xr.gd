@@ -60,6 +60,7 @@ func _ready() -> void:
 
 ## Initialize the XR interface
 func initialize() -> bool:
+        
     # Check for OpenXR interface
     xr_interface = XRServer.find_interface('OpenXR')
     if xr_interface:
