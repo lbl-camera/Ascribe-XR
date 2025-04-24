@@ -52,4 +52,3 @@ func surrender_authority(pickable, by):
 func _ready():
     super()
     grabbed.connect(take_authority.rpc)
-    released.connect(surrender_authority.rpc)
