@@ -5,7 +5,7 @@ extends Specimen
     set(value):
         if value:
             var volume_texture: ImageTexture3D = make_texture(value)
-            $XRToolsPickable2/VolumeLayeredShader.texture = volume_texture
+            $MultiplayerPickableObject/VolumeLayeredShader.texture = volume_texture
 
 func texture_from_bin(data_file: String) -> ImageTexture3D:
     var shape: Vector3i = Vector3i(256, 256, 10)

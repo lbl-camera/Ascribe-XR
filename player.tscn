@@ -29,6 +29,8 @@ script = ExtResource("1_31r2h")
 
 [node name="VRCommonShaderCache" parent="XRCamera3D" instance=ExtResource("2_ai0f7")]
 
+[node name="AudioStreamPlayer" type="AudioStreamPlayer3D" parent="XRCamera3D"]
+
 [node name="AudioListener3D" type="AudioListener3D" parent="XRCamera3D"]
 current = true
 
