@@ -73,7 +73,8 @@ func processtalkstreamends():
         opusframecount = 0
         currentlytalking = true
         if audiostreamplaybackmicrophone == null and not $AudioStreamPlayerMicrophone.playing != true:
-            $AudioStreamPlayerMicrophone.playing = true
+            #$AudioStreamPlayerMicrophone.playing = true
+            print("RP commented a line here that he didn't understand but fixed stuff :S")
             print("Set microphone playing again (switched off by system)")
 
     elif not talking and currentlytalking:
