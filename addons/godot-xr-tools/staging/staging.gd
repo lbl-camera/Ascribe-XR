@@ -85,47 +85,47 @@ var _tween : Tween
 
 
 func _ready():
-	# Do not initialise if in the editor
-	if Engine.is_editor_hint():
-		return
+    # Do not initialise if in the editor
+    if Engine.is_editor_hint():
+        return
 
-	# Specify the camera to track
-	if xr_camera:
-		$LoadingScreen.set_camera(xr_camera)
+    # Specify the camera to track
+    if xr_camera:
+        $LoadingScreen.set_camera(xr_camera)
 
-	# We start by loading our main level scene
-	load_scene(main_scene)
+    # We start by loading our main level scene
+    load_scene(main_scene)
 
 
 # Verifies our staging has a valid configuration.
 func _get_configuration_warnings() -> PackedStringArray:
-	var warnings := PackedStringArray()
+    var warnings := PackedStringArray()
 
-	# Report missing XR Origin
-	var test_origin : XROrigin3D = XRHelpers.get_xr_origin(self)
-	if !test_origin:
-		warnings.append("No XROrigin3D node found, please add one")
+    # Report missing XR Origin
+    var test_origin : XROrigin3D = XRHelpers.get_xr_origin(self)
+    if !test_origin:
+        warnings.append("No XROrigin3D node found, please add one")
 
-	# Report missing XR Camera
-	var test_camera : XRCamera3D = XRHelpers.get_xr_camera(self)
-	if !test_camera:
-		warnings.append("No XRCamera3D node found, please add one to your XROrigin3D node")
+    # Report missing XR Camera
+    var test_camera : XRCamera3D = XRHelpers.get_xr_camera(self)
+    if !test_camera:
+        warnings.append("No XRCamera3D node found, please add one to your XROrigin3D node")
 
-	# Report main scene not specified
-	if main_scene == "":
-		warnings.append("No main scene selected")
+    # Report main scene not specified
+    if main_scene == "":
+        warnings.append("No main scene selected")
 
-	# Report main scene invalid
-	if !FileAccess.file_exists(main_scene):
-		warnings.append("Main scene doesn't exist")
+    # Report main scene invalid
+    if !FileAccess.file_exists(main_scene):
+        warnings.append("Main scene doesn't exist")
 
-	# Return warnings
-	return warnings
+    # Return warnings
+    return warnings
 
 
 # Add support for is_xr_class on XRTools classes
 func is_xr_class(name : String) -> bool:
-	return name == "XRToolsStaging"
+    return name == "XRToolsStaging"
 
 
 ## This function loads the [param p_scene_path] scene file.
@@ -136,129 +136,129 @@ func is_xr_class(name : String) -> bool:
 ## See [method XRToolsSceneBase.scene_loaded] for details on how to implement
 ## advanced scene-switching.
 func load_scene(p_scene_path : String, user_data = null) -> void:
-	# Do not load if in the editor
-	if Engine.is_editor_hint():
-		return
+    # Do not load if in the editor
+    if Engine.is_editor_hint():
+        return
 
-	if !xr_origin:
-		return
+    if !xr_origin:
+        return
 
-	if !xr_camera:
-		return
+    if !xr_camera:
+        return
 
-	# Start the threaded loading of the scene. If the scene is already cached
-	# then this will finish immediately with THREAD_LOAD_LOADED
-	ResourceLoader.load_threaded_request(p_scene_path)
+    # Start the threaded loading of the scene. If the scene is already cached
+    # then this will finish immediately with THREAD_LOAD_LOADED
+    ResourceLoader.load_threaded_request(p_scene_path)
 
-	# If a current scene is visible then fade it out and unload it.
-	if current_scene:
-		# Report pre-exiting and remove the scene signals
-		current_scene.scene_pre_exiting(user_data)
-		_remove_signals(current_scene)
+    # If a current scene is visible then fade it out and unload it.
+    if current_scene:
+        # Report pre-exiting and remove the scene signals
+        current_scene.scene_pre_exiting(user_data)
+        _remove_signals(current_scene)
 
-		# Fade to black
-		if _tween:
-			_tween.kill()
-		_tween = get_tree().create_tween()
-		_tween.tween_method(set_fade, 0.0, 1.0, 1.0)
-		await _tween.finished
+        # Fade to black
+        if _tween:
+            _tween.kill()
+        _tween = get_tree().create_tween()
+        _tween.tween_method(set_fade, 0.0, 1.0, 1.0)
+        await _tween.finished
 
-		# Now we remove our scene
-		emit_signal("scene_exiting", current_scene, user_data)
-		current_scene.scene_exiting(user_data)
-		$Scene.remove_child(current_scene)
-		current_scene.queue_free()
-		current_scene = null
+        # Now we remove our scene
+        emit_signal("scene_exiting", current_scene, user_data)
+        current_scene.scene_exiting(user_data)
+        $Scene.remove_child(current_scene)
+        current_scene.queue_free()
+        current_scene = null
 
-	# If a continue-prompt is desired or the new scene has not finished
-	# loading, then switch to the loading screen.
-	if prompt_for_continue or \
-		ResourceLoader.load_threaded_get_status(p_scene_path) != ResourceLoader.THREAD_LOAD_LOADED:
+    # If a continue-prompt is desired or the new scene has not finished
+    # loading, then switch to the loading screen.
+    if prompt_for_continue or \
+        ResourceLoader.load_threaded_get_status(p_scene_path) != ResourceLoader.THREAD_LOAD_LOADED:
 
-		# Make our loading screen visible again and reset some stuff
-		xr_origin.set_process_internal(true)
-		xr_origin.current = true
-		xr_camera.current = true
-		$LoadingScreen.progress = 0.0
-		$LoadingScreen.enable_press_to_continue = false
-		$LoadingScreen.follow_camera = true
-		$LoadingScreen.visible = true
-		switching_to_loading_scene.emit(user_data)
+        # Make our loading screen visible again and reset some stuff
+        xr_origin.set_process_internal(true)
+        xr_origin.current = true
+        xr_camera.current = true
+        $LoadingScreen.progress = 0.0
+        $LoadingScreen.enable_press_to_continue = false
+        $LoadingScreen.follow_camera = true
+        $LoadingScreen.visible = true
+        switching_to_loading_scene.emit(user_data)
 
-		# Fade to visible
-		if _tween:
-			_tween.kill()
-		_tween = get_tree().create_tween()
-		_tween.tween_method(set_fade, 1.0, 0.0, 1.0)
-		await _tween.finished
+        # Fade to visible
+        if _tween:
+            _tween.kill()
+        _tween = get_tree().create_tween()
+        _tween.tween_method(set_fade, 1.0, 0.0, 1.0)
+        await _tween.finished
 
-	# If the loading screen is visible then show the progress and optionally
-	# wait for the continue. Once done fade out the loading screen.
-	if $LoadingScreen.visible:
-		# Loop waiting for the scene to load
-		var res : ResourceLoader.ThreadLoadStatus
-		while true:
-			var progress := []
-			res = ResourceLoader.load_threaded_get_status(p_scene_path, progress)
-			if res != ResourceLoader.THREAD_LOAD_IN_PROGRESS:
-				break;
+    # If the loading screen is visible then show the progress and optionally
+    # wait for the continue. Once done fade out the loading screen.
+    if $LoadingScreen.visible:
+        # Loop waiting for the scene to load
+        var res : ResourceLoader.ThreadLoadStatus
+        while true:
+            var progress := []
+            res = ResourceLoader.load_threaded_get_status(p_scene_path, progress)
+            if res != ResourceLoader.THREAD_LOAD_IN_PROGRESS:
+                break;
 
-			$LoadingScreen.progress = progress[0]
-			await get_tree().create_timer(0.1).timeout
+            $LoadingScreen.progress = progress[0]
+            await get_tree().create_timer(0.1).timeout
 
-		# Handle load error
-		if res != ResourceLoader.THREAD_LOAD_LOADED:
-			# Report the error to the log and console
-			push_error("Error ", res, " loading resource ", p_scene_path)
+        # Handle load error
+        if res != ResourceLoader.THREAD_LOAD_LOADED:
+            # Report the error to the log and console
+            push_error("Error ", res, " loading resource ", p_scene_path)
 
-			# Halt if running in the debugger
-			# gdlint:ignore=expression-not-assigned
-			breakpoint
+            # Halt if running in the debugger
+            # gdlint:ignore=expression-not-assigned
+            breakpoint
 
-			# Terminate with a non-zero error code to indicate failure
-			get_tree().quit(1)
+            # Terminate with a non-zero error code to indicate failure
+            get_tree().quit(1)
 
-		# Wait for user to be ready
-		if prompt_for_continue:
-			$LoadingScreen.enable_press_to_continue = true
-			await $LoadingScreen.continue_pressed
+        # Wait for user to be ready
+        if prompt_for_continue:
+            $LoadingScreen.enable_press_to_continue = true
+            await $LoadingScreen.continue_pressed
 
-		# Fade to black
-		if _tween:
-			_tween.kill()
-		_tween = get_tree().create_tween()
-		_tween.tween_method(set_fade, 0.0, 1.0, 1.0)
-		await _tween.finished
+        # Fade to black
+        if _tween:
+            _tween.kill()
+        _tween = get_tree().create_tween()
+        _tween.tween_method(set_fade, 0.0, 1.0, 1.0)
+        await _tween.finished
 
-		# Hide our loading screen
-		$LoadingScreen.follow_camera = false
-		$LoadingScreen.visible = false
-		xr_origin.set_process_internal(false)
+        # Hide our loading screen
+        $LoadingScreen.follow_camera = false
+        $LoadingScreen.visible = false
+        xr_origin.set_process_internal(false)
 
-	# Get the loaded scene
-	var new_scene : PackedScene = ResourceLoader.load_threaded_get(p_scene_path)
+    # Get the loaded scene
+    var new_scene : PackedScene = ResourceLoader.load_threaded_get(p_scene_path)
 
-	# Setup our new scene
-	current_scene = new_scene.instantiate()
-	current_scene_path = p_scene_path
-	$Scene.add_child(current_scene)
-	_add_signals(current_scene)
+    # Setup our new scene
+    current_scene = new_scene.instantiate()
+    current_scene_path = p_scene_path
+    $Scene.add_child(current_scene)
+    _add_signals(current_scene)
 
-	# We create a small delay here to give tracking some time to update our nodes...
-	await get_tree().create_timer(0.1).timeout
-	current_scene.scene_loaded(user_data)
-	scene_loaded.emit(current_scene, user_data)
+    # We create a small delay here to give tracking some time to update our nodes...
+    await get_tree().create_timer(0.1).timeout
+    current_scene.scene_loaded(user_data)
+    scene_loaded.emit(current_scene, user_data)
 
-	# Fade to visible
-	if _tween:
-		_tween.kill()
-	_tween = get_tree().create_tween()
-	_tween.tween_method(set_fade, 1.0, 0.0, 1.0)
-	await _tween.finished
+    # Fade to visible
+    if _tween:
+        _tween.kill()
+    _tween = get_tree().create_tween()
+    _tween.tween_method(set_fade, 1.0, 0.0, 1.0)
+    await _tween.finished
 
-	# Report new scene visible
-	current_scene.scene_visible(user_data)
-	scene_visible.emit(current_scene, user_data)
+    # Report new scene visible
+    current_scene.scene_visible(user_data)
+    scene_visible.emit(current_scene, user_data)
 
 
 ## This method sets the fade-alpha for scene transitions. The [param p_value]
@@ -268,36 +268,36 @@ func load_scene(p_scene_path : String, user_data = null) -> void:
 ## Note that our AABB is set to HUGE so it should always be rendered
 ## unless hidden.
 func set_fade(p_value : float):
-	XRToolsFade.set_fade("staging", Color(0, 0, 0, p_value))
+    XRToolsFade.set_fade("staging", Color(0, 0, 0, p_value))
 
 
 func _add_signals(p_scene : XRToolsSceneBase):
-	p_scene.connect("request_exit_to_main_menu", _on_exit_to_main_menu)
-	p_scene.connect("request_load_scene", _on_load_scene)
-	p_scene.connect("request_reset_scene", _on_reset_scene)
+    p_scene.connect("request_exit_to_main_menu", _on_exit_to_main_menu)
+    p_scene.connect("request_load_scene", _on_load_scene)
+    p_scene.connect("request_reset_scene", _on_reset_scene)
 
 
 func _remove_signals(p_scene : XRToolsSceneBase):
-	p_scene.disconnect("request_exit_to_main_menu", _on_exit_to_main_menu)
-	p_scene.disconnect("request_load_scene", _on_load_scene)
-	p_scene.disconnect("request_reset_scene", _on_reset_scene)
+    p_scene.disconnect("request_exit_to_main_menu", _on_exit_to_main_menu)
+    p_scene.disconnect("request_load_scene", _on_load_scene)
+    p_scene.disconnect("request_reset_scene", _on_reset_scene)
 
 
 func _on_exit_to_main_menu():
-	load_scene(main_scene)
+    load_scene(main_scene)
 
 
 func _on_load_scene(p_scene_path : String, user_data):
-	load_scene(p_scene_path, user_data)
+    load_scene(p_scene_path, user_data)
 
 
 func _on_reset_scene(user_data):
-	load_scene(current_scene_path, user_data)
+    load_scene(current_scene_path, user_data)
 
 
 func _on_StartXR_xr_started():
-	emit_signal("xr_started")
+    emit_signal("xr_started")
 
 
 func _on_StartXR_xr_ended():
-	emit_signal("xr_ended")
+    emit_signal("xr_ended")

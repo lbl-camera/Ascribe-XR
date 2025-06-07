@@ -1,0 +1,188 @@
+[gd_scene load_steps=27 format=3 uid="uid://do7g4piyhqxid"]
+
+[ext_resource type="Script" uid="uid://bl1kbl82hwxv5" path="res://scripts/ascribemain.gd" id="1_wh57r"]
+[ext_resource type="PackedScene" uid="uid://b8vb8h0jlqwl7" path="res://scenes/player.tscn" id="2_cym13"]
+[ext_resource type="PackedScene" uid="uid://clc5dre31iskm" path="res://addons/godot-xr-tools/xr/start_xr.tscn" id="3_u14qs"]
+[ext_resource type="PackedScene" uid="uid://dqgio4hj2pep0" path="res://scenes/mainmenu.tscn" id="4_g577c"]
+[ext_resource type="PackedScene" uid="uid://dmxg0n8x5t8o1" path="res://scenes/sci-fi_lab.tscn" id="5_7amqy"]
+[ext_resource type="PackedScene" uid="uid://clujaf3u776a3" path="res://addons/godot-xr-tools/objects/viewport_2d_in_3d.tscn" id="7_54uq5"]
+[ext_resource type="PackedScene" uid="uid://cfmoahalri06d" path="res://addons/player-networking2/NetworkGateway.tscn" id="8_l4ajn"]
+[ext_resource type="PackedScene" uid="uid://bgw2tanm4il3j" path="res://avatars/tunnelvrplayeravatar/VRPlayerAvatar.tscn" id="9_xk2ox"]
+[ext_resource type="PackedScene" uid="uid://wtpox7m5vu2b" path="res://addons/godot-xr-tools/effects/fade.tscn" id="10_4pnrr"]
+
+[sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_7arsa"]
+sky_horizon_color = Color(0.64625, 0.65575, 0.67075, 1)
+ground_horizon_color = Color(0.64625, 0.65575, 0.67075, 1)
+
+[sub_resource type="Sky" id="Sky_1xke3"]
+sky_material = SubResource("ProceduralSkyMaterial_7arsa")
+
+[sub_resource type="Environment" id="Environment_u3xr8"]
+background_mode = 2
+sky = SubResource("Sky_1xke3")
+tonemap_mode = 2
+glow_enabled = true
+
+[sub_resource type="PlaneMesh" id="PlaneMesh_x70eu"]
+size = Vector2(400, 400)
+
+[sub_resource type="ConcavePolygonShape3D" id="ConcavePolygonShape3D_hbosa"]
+data = PackedVector3Array(200, 0, 200, -200, 0, 200, 200, 0, -200, -200, 0, 200, -200, 0, -200, 200, 0, -200)
+
+[sub_resource type="Curve" id="Curve_opt8v"]
+_limits = [0.0, 42.8, 0.0, 1.0]
+_data = [Vector2(0, 0), 0.0, 0.0, 0, 0, Vector2(0.501348, 5.69454), 0.0, 0.0, 0, 0, Vector2(1, 0), 0.0, 0.0, 0, 0]
+point_count = 3
+
+[sub_resource type="CurveTexture" id="CurveTexture_gwpjq"]
+curve = SubResource("Curve_opt8v")
+
+[sub_resource type="Curve" id="Curve_dbsq1"]
+_data = [Vector2(0, 1), 0.0, 0.0, 0, 0, Vector2(0.808625, 0.643021), 0.0, 0.0, 0, 0, Vector2(1, 0), 0.0, 0.0, 0, 0]
+point_count = 3
+
+[sub_resource type="CurveTexture" id="CurveTexture_t38f3"]
+curve = SubResource("Curve_dbsq1")
+
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_gpljf"]
+emission_shape_scale = Vector3(4, 4, 4)
+emission_shape = 1
+emission_sphere_radius = 0.05
+radial_velocity_min = 0.199978
+radial_velocity_max = 0.199978
+gravity = Vector3(0, 0.1, 0)
+tangential_accel_min = 0.199998
+tangential_accel_max = 0.199998
+scale_min = 2.0
+scale_max = 2.0
+scale_curve = SubResource("CurveTexture_t38f3")
+color = Color(0.46, 0.757, 1, 1)
+alpha_curve = SubResource("CurveTexture_gwpjq")
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_y21xb"]
+transparency = 1
+blend_mode = 1
+shading_mode = 0
+vertex_color_use_as_albedo = true
+billboard_mode = 3
+billboard_keep_scale = true
+particles_anim_h_frames = 1
+particles_anim_v_frames = 1
+particles_anim_loop = false
+
+[sub_resource type="QuadMesh" id="QuadMesh_euaxi"]
+material = SubResource("StandardMaterial3D_y21xb")
+size = Vector2(0.1, 0.1)
+
+[sub_resource type="QuadMesh" id="QuadMesh_t38f3"]
+resource_local_to_scene = true
+size = Vector2(3, 2)
+
+[sub_resource type="ViewportTexture" id="ViewportTexture_rggbi"]
+viewport_path = NodePath("Viewport")
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_8mub2"]
+transparency = 1
+cull_mode = 2
+albedo_texture = SubResource("ViewportTexture_rggbi")
+texture_filter = 1
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_tjbaa"]
+resource_local_to_scene = true
+size = Vector3(3, 2, 0.02)
+
+[sub_resource type="SceneReplicationConfig" id="SceneReplicationConfig_tjbaa"]
+properties/0/path = NodePath(".:position")
+properties/0/spawn = true
+properties/0/replication_mode = 1
+
+[node name="Main" type="Node3D"]
+script = ExtResource("1_wh57r")
+
+[node name="XROrigin3D" parent="." instance=ExtResource("2_cym13")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.11907, 0)
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Environment_u3xr8")
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
+transform = Transform3D(-0.866025, -0.433013, 0.25, 0, 0.5, 0.866025, -0.5, 0.75, -0.433013, 0, 0.0276108, 0)
+shadow_enabled = true
+
+[node name="StartXR" parent="." instance=ExtResource("3_u14qs")]
+
+[node name="Floor" type="StaticBody3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.0231537, 0)
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Floor"]
+mesh = SubResource("PlaneMesh_x70eu")
+skeleton = NodePath("../..")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Floor"]
+shape = SubResource("ConcavePolygonShape3D_hbosa")
+
+[node name="mainmenu" parent="." instance=ExtResource("4_g577c")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -1.48147)
+
+[node name="Sketchfab_Scene" parent="." instance=ExtResource("5_7amqy")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.00717, 0, -1.72411)
+
+[node name="spawnmarker1" type="Marker3D" parent="Sketchfab_Scene"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.96063, 0.941911, -0.340131)
+
+[node name="GPUParticles3D" type="GPUParticles3D" parent="."]
+transform = Transform3D(2, 0, 0, 0, 2, 0, 0, 0, 2, -0.044663, 0.766067, -1.89914)
+emitting = false
+amount = 128
+one_shot = true
+process_material = SubResource("ParticleProcessMaterial_gpljf")
+draw_pass_1 = SubResource("QuadMesh_euaxi")
+
+[node name="SpecimenUIViewport" parent="." instance=ExtResource("7_54uq5")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.59675, -3.139)
+screen_size = Vector2(3, 1.68)
+viewport_size = Vector2(1152, 648)
+unshaded = true
+
+[node name="ViewportNetworkGateway" parent="." instance=ExtResource("7_54uq5")]
+transform = Transform3D(-4.37114e-08, 0, 1, 0, 1, 0, -1, 0, -4.37114e-08, -4.90758, 1.63634, 1.13298)
+visible = false
+viewport_size = Vector2(690, 400)
+
+[node name="Viewport" parent="ViewportNetworkGateway" index="0"]
+size = Vector2i(690, 400)
+
+[node name="NetworkGateway" parent="ViewportNetworkGateway/Viewport" index="0" instance=ExtResource("8_l4ajn")]
+playersnodepath = NodePath("../../../Players")
+localplayerscene = ""
+
+[node name="Screen" parent="ViewportNetworkGateway" index="1"]
+mesh = SubResource("QuadMesh_t38f3")
+surface_material_override/0 = SubResource("StandardMaterial3D_8mub2")
+
+[node name="StaticBody3D" parent="ViewportNetworkGateway" index="2"]
+viewport_size = Vector2(690, 400)
+
+[node name="CollisionShape3D" parent="ViewportNetworkGateway/StaticBody3D" index="0"]
+shape = SubResource("BoxShape3D_tjbaa")
+
+[node name="Players" type="Node3D" parent="."]
+
+[node name="VRPlayerAvatar" parent="Players" instance=ExtResource("9_xk2ox")]
+
+[node name="Specimens" type="Node3D" parent="."]
+
+[node name="SpecimenSynchronizer" type="MultiplayerSynchronizer" parent="."]
+root_path = NodePath("../Specimens")
+replication_config = SubResource("SceneReplicationConfig_tjbaa")
+
+[node name="SpecimenSpawner" type="MultiplayerSpawner" parent="."]
+_spawnable_scenes = PackedStringArray("uid://cm41tbtpd2i76")
+spawn_path = NodePath("../Specimens")
+
+[node name="Fade" parent="." instance=ExtResource("10_4pnrr")]
+
+[node name="Sprite3D" type="Sprite3D" parent="."]
+transform = Transform3D(-1.31134e-08, 0, 0.3, 0, 0.3, 0, -0.3, 0, -1.31134e-08, -4.99377, 1.11662, -0.638908)
+
+[editable path="ViewportNetworkGateway"]

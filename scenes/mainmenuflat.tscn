@@ -1,8 +1,8 @@
 [gd_scene load_steps=4 format=3 uid="uid://buycbcke7jh2k"]
 
-[ext_resource type="Theme" uid="uid://ckuoidwkfc7y2" path="res://scenes/ascribemenu.tres" id="1_6lio1"]
-[ext_resource type="Script" uid="uid://cwakntoyiquke" path="res://scenes/mainmenuflat.gd" id="2_sb560"]
-[ext_resource type="Texture2D" uid="uid://dcr68kgvh1b7l" path="res://sprites/logo/logowhite.png" id="3_a84cs"]
+[ext_resource type="Theme" uid="uid://ckuoidwkfc7y2" path="res://assets/ascribemenu.tres" id="1_6lio1"]
+[ext_resource type="Script" uid="uid://cwakntoyiquke" path="res://scripts/mainmenuflat.gd" id="2_sb560"]
+[ext_resource type="Texture2D" uid="uid://dcr68kgvh1b7l" path="res://assets/textures/logo/logowhite.png" id="3_a84cs"]
 
 [node name="Panel" type="Panel"]
 custom_minimum_size = Vector2(3000, 3000)
