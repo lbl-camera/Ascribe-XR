@@ -1,8 +1,8 @@
 [gd_scene load_steps=6 format=3 uid="uid://5wygpbthgiou"]
 
 [ext_resource type="PackedScene" uid="uid://bajc3fgqqv584" path="res://scenes/specimen.tscn" id="1_86lm3"]
-[ext_resource type="Script" uid="uid://po8ew5vgyu4d" path="res://scenes/volumetric_specimen.gd" id="2_idt6j"]
-[ext_resource type="PackedScene" uid="uid://d0exl0n5q6gvy" path="res://multiplayer_pickable_object.tscn" id="3_idt6j"]
+[ext_resource type="Script" uid="uid://po8ew5vgyu4d" path="res://scripts/volumetric_specimen.gd" id="2_idt6j"]
+[ext_resource type="PackedScene" uid="uid://d0exl0n5q6gvy" path="res://scenes/multiplayer_pickable_object.tscn" id="3_idt6j"]
 [ext_resource type="Script" uid="uid://bb2lef7rn0ovi" path="res://addons/volume_layered_shader/scenes/controls/volume_layered_shader.gd" id="4_2yfeg"]
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_dobnj"]

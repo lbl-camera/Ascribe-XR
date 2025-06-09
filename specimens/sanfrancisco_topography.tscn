@@ -1,9 +1,9 @@
 [gd_scene load_steps=11 format=3 uid="uid://bwkle0tfb1dx4"]
 
 [ext_resource type="PackedScene" uid="uid://bajc3fgqqv584" path="res://scenes/specimen.tscn" id="1_ab2iy"]
-[ext_resource type="Texture2D" uid="uid://110lbuv82kk" path="res://sprites/thumbnails/sfbay.png" id="2_2rt0i"]
-[ext_resource type="Terrain3DAssets" uid="uid://dal3jhw6241qg" path="res://demo/data/assets.tres" id="2_6pg86"]
-[ext_resource type="Shader" uid="uid://doavwn8kauqot" path="res://water.gdshader" id="3_3r1ry"]
+[ext_resource type="Texture2D" uid="uid://110lbuv82kk" path="res://assets/textures/thumbnails/sfbay.png" id="2_7640c"]
+[ext_resource type="Shader" uid="uid://doavwn8kauqot" path="res://shaders/water_terrain.gdshader" id="3_3r1ry"]
+[ext_resource type="Terrain3DAssets" uid="uid://dal3jhw6241qg" path="res://assets/textures/assets.tres" id="3_7640c"]
 
 [sub_resource type="Gradient" id="Gradient_jyt1c"]
 offsets = PackedFloat32Array(0.2, 1)
@@ -67,13 +67,13 @@ shader_parameter/wave_speed = 0.2
 
 [node name="Specimen" instance=ExtResource("1_ab2iy")]
 display_name = "San Francisco Topography"
-thumbnail = ExtResource("2_2rt0i")
+thumbnail = ExtResource("2_7640c")
 scale_mode = 1
 
 [node name="Terrain3D" type="Terrain3D" parent="." index="0"]
-data_directory = "res://terrain"
+data_directory = "res://specimen_data/terrain"
 material = SubResource("Terrain3DMaterial_sovs1")
-assets = ExtResource("2_6pg86")
+assets = ExtResource("3_7640c")
 top_level = true
 metadata/_edit_lock_ = true
 

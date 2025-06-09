@@ -13,7 +13,9 @@ config_version=5
 config/name="ascribe-xr"
 run/main_scene="uid://do7g4piyhqxid"
 config/features=PackedStringArray("4.4", "Forward Plus")
-config/icon="res://icon.svg"
+boot_splash/image="uid://dcr68kgvh1b7l"
+config/icon="uid://dcr68kgvh1b7l"
+config/windows_native_icon="res://textures/logo/logowhite.ico"
 
 [audio]
 
@@ -24,7 +26,7 @@ driver/enable_input=true
 XRToolsUserSettings="*res://addons/godot-xr-tools/user_settings/user_settings.gd"
 XRToolsRumbleManager="*res://addons/godot-xr-tools/rumble/rumble_manager.gd"
 XrSimulator="*res://addons/xr-simulator/XRSimulator.tscn"
-Ascribemain="*res://main.gd"
+Ascribemain="*res://scripts/main.gd"
 STLImportPlugin="*res://addons/stl_importer/import_plugin.gd"
 
 [editor]
@@ -76,4 +78,5 @@ textures/vram_compression/import_etc2_astc=true
 [xr]
 
 openxr/enabled=true
+openxr/default_action_map="uid://wjd3nesv07uu"
 shaders/enabled=true
