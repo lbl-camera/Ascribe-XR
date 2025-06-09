@@ -6,7 +6,7 @@
 [ext_resource type="PackedScene" uid="uid://dqgio4hj2pep0" path="res://scenes/mainmenu.tscn" id="4_g577c"]
 [ext_resource type="PackedScene" uid="uid://dmxg0n8x5t8o1" path="res://scenes/sci-fi_lab.tscn" id="5_7amqy"]
 [ext_resource type="PackedScene" uid="uid://clujaf3u776a3" path="res://addons/godot-xr-tools/objects/viewport_2d_in_3d.tscn" id="7_54uq5"]
-[ext_resource type="PackedScene" uid="uid://cfmoahalri06d" path="res://addons/player-networking2/NetworkGateway.tscn" id="8_l4ajn"]
+[ext_resource type="PackedScene" uid="uid://cfmoahalri06d" path="res://addons/player-networking/NetworkGateway.tscn" id="8_l4ajn"]
 [ext_resource type="PackedScene" uid="uid://bgw2tanm4il3j" path="res://avatars/tunnelvrplayeravatar/VRPlayerAvatar.tscn" id="9_xk2ox"]
 [ext_resource type="PackedScene" uid="uid://wtpox7m5vu2b" path="res://addons/godot-xr-tools/effects/fade.tscn" id="10_4pnrr"]
 
