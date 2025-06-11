@@ -4,11 +4,11 @@
 [ext_resource type="Script" uid="uid://bpes0gqpr3oa0" path="res://scripts/debug_label.gd" id="1_31r2h"]
 [ext_resource type="Script" uid="uid://b6aqndnmwhunf" path="res://scripts/player.gd" id="1_ivps1"]
 [ext_resource type="PackedScene" uid="uid://xqimcf20s2jp" path="res://addons/godot-xr-tools/hands/scenes/lowpoly/right_fullglove_low.tscn" id="2_4pri4"]
-[ext_resource type="PackedScene" uid="uid://c10layv7ur0i8" path="res://addons/godot-xr-tools/misc/vr_common_shader_cache.tscn" id="2_ai0f7"]
+[ext_resource type="PackedScene" uid="uid://btknduttnmoxf" path="res://addons/godot-xr-tools/misc/vr_common_shader_cache.tscn" id="2_ai0f7"]
 [ext_resource type="PackedScene" uid="uid://b4ysuy43poobf" path="res://addons/godot-xr-tools/functions/function_pickup.tscn" id="2_v33fx"]
 [ext_resource type="Material" uid="uid://dy6nhifvvmm73" path="res://addons/godot-xr-tools/hands/materials/caucasian_hand.tres" id="4_hmxr0"]
-[ext_resource type="Script" uid="uid://dp3sljpx8t7p4" path="res://addons/godot-xr-tools/functions/movement_direct.gd" id="4_wfmft"]
-[ext_resource type="Script" uid="uid://f2l1m6cis5bq" path="res://addons/godot-xr-tools/functions/movement_turn.gd" id="5_jjl1l"]
+[ext_resource type="Script" uid="uid://c1wsk3oks3238" path="res://addons/godot-xr-tools/functions/movement_direct.gd" id="4_wfmft"]
+[ext_resource type="Script" uid="uid://dx1o2tdva2hmb" path="res://addons/godot-xr-tools/functions/movement_turn.gd" id="5_jjl1l"]
 [ext_resource type="PackedScene" uid="uid://diyu06cw06syv" path="res://addons/godot-xr-tools/player/player_body.tscn" id="6_keit0"]
 [ext_resource type="PackedScene" uid="uid://cqhw276realc" path="res://addons/godot-xr-tools/functions/function_pointer.tscn" id="7_qssuy"]
 [ext_resource type="Material" uid="uid://rwfrc1fdcjsj" path="res://addons/godot-xr-tools/hands/materials/caucasian_hands_realistic.tres" id="8_8snm7"]
@@ -76,6 +76,7 @@ collision_mask = 5242884
 [node name="VirtualKeyboard" parent="." instance=ExtResource("13_bwjto")]
 transform = Transform3D(1, 0, 0, 0, 0.75354, 0.657402, 0, -0.657402, 0.75354, 0, -0.49593, -0.728043)
 visible = false
+scene_properties_keys = PackedStringArray("virtual_keyboard_2d.gd")
 
 [node name="Fade" parent="." instance=ExtResource("14_606se")]
 

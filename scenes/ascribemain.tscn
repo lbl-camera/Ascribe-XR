@@ -142,12 +142,16 @@ draw_pass_1 = SubResource("QuadMesh_euaxi")
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.59675, -3.139)
 screen_size = Vector2(3, 1.68)
 viewport_size = Vector2(1152, 648)
+transparent = 1
 unshaded = true
+scene_properties_keys = PackedStringArray()
 
 [node name="ViewportNetworkGateway" parent="." instance=ExtResource("7_54uq5")]
 transform = Transform3D(-4.37114e-08, 0, 1, 0, 1, 0, -1, 0, -4.37114e-08, -4.90758, 1.63634, 1.13298)
 visible = false
 viewport_size = Vector2(690, 400)
+transparent = 1
+scene_properties_keys = PackedStringArray()
 
 [node name="Viewport" parent="ViewportNetworkGateway" index="0"]
 size = Vector2i(690, 400)
