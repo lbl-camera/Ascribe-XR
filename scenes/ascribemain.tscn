@@ -1,4 +1,4 @@
-[gd_scene load_steps=29 format=3 uid="uid://do7g4piyhqxid"]
+[gd_scene load_steps=33 format=3 uid="uid://do7g4piyhqxid"]
 
 [ext_resource type="Script" uid="uid://bl1kbl82hwxv5" path="res://scripts/ascribemain.gd" id="1_wh57r"]
 [ext_resource type="PackedScene" uid="uid://b8vb8h0jlqwl7" path="res://scenes/player.tscn" id="2_cym13"]
@@ -76,6 +76,24 @@ particles_anim_loop = false
 material = SubResource("StandardMaterial3D_y21xb")
 size = Vector2(0.1, 0.1)
 
+[sub_resource type="QuadMesh" id="QuadMesh_wh57r"]
+resource_local_to_scene = true
+size = Vector2(3, 1.68)
+
+[sub_resource type="ViewportTexture" id="ViewportTexture_u14qs"]
+viewport_path = NodePath("Viewport")
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_g577c"]
+transparency = 1
+cull_mode = 2
+shading_mode = 0
+albedo_texture = SubResource("ViewportTexture_u14qs")
+texture_filter = 1
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_7amqy"]
+resource_local_to_scene = true
+size = Vector3(3, 1.68, 0.02)
+
 [sub_resource type="QuadMesh" id="QuadMesh_t38f3"]
 resource_local_to_scene = true
 size = Vector2(3, 2)
@@ -148,6 +166,21 @@ viewport_size = Vector2(1152, 648)
 unshaded = true
 scene_properties_keys = PackedStringArray("story_ui.gd")
 
+[node name="Viewport" parent="StoryUIViewport" index="0"]
+size = Vector2i(1152, 648)
+
+[node name="Screen" parent="StoryUIViewport" index="1"]
+mesh = SubResource("QuadMesh_wh57r")
+surface_material_override/0 = SubResource("StandardMaterial3D_g577c")
+
+[node name="StaticBody3D" parent="StoryUIViewport" index="2"]
+collision_layer = 5242880
+screen_size = Vector2(3, 1.68)
+viewport_size = Vector2(1152, 648)
+
+[node name="CollisionShape3D" parent="StoryUIViewport/StaticBody3D" index="0"]
+shape = SubResource("BoxShape3D_7amqy")
+
 [node name="SpecimenUIViewport" parent="." instance=ExtResource("7_54uq5")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.59675, -3.139)
 screen_size = Vector2(3, 1.68)
@@ -196,4 +229,5 @@ spawn_path = NodePath("../Specimens")
 transform = Transform3D(-1.31134e-08, 0, 0.3, 0, 0.3, 0, -0.3, 0, -1.31134e-08, -4.99377, 1.11662, -0.638908)
 texture = ExtResource("11_wh57r")
 
+[editable path="StoryUIViewport"]
 [editable path="ViewportNetworkGateway"]
