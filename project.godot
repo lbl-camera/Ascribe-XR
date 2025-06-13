@@ -15,7 +15,7 @@ run/main_scene="uid://do7g4piyhqxid"
 config/features=PackedStringArray("4.4", "Forward Plus")
 boot_splash/image="uid://dcr68kgvh1b7l"
 config/icon="uid://dcr68kgvh1b7l"
-config/windows_native_icon="res://textures/logo/logowhite.ico"
+config/windows_native_icon="res://assets/textures/logo/logowhite.ico"
 
 [audio]
 
