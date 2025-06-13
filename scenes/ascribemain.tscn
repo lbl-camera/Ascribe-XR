@@ -1,4 +1,4 @@
-[gd_scene load_steps=28 format=3 uid="uid://do7g4piyhqxid"]
+[gd_scene load_steps=29 format=3 uid="uid://do7g4piyhqxid"]
 
 [ext_resource type="Script" uid="uid://bl1kbl82hwxv5" path="res://scripts/ascribemain.gd" id="1_wh57r"]
 [ext_resource type="PackedScene" uid="uid://b8vb8h0jlqwl7" path="res://scenes/player.tscn" id="2_cym13"]
@@ -10,6 +10,7 @@
 [ext_resource type="PackedScene" uid="uid://cfmoahalri06d" path="res://addons/player-networking/NetworkGateway.tscn" id="8_l4ajn"]
 [ext_resource type="PackedScene" uid="uid://bgw2tanm4il3j" path="res://avatars/tunnelvrplayeravatar/VRPlayerAvatar.tscn" id="9_xk2ox"]
 [ext_resource type="PackedScene" uid="uid://wtpox7m5vu2b" path="res://addons/godot-xr-tools/effects/fade.tscn" id="10_4pnrr"]
+[ext_resource type="Texture2D" uid="uid://n8in475h2ylx" path="res://assets/textures/sprites/controls.png" id="11_wh57r"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_7arsa"]
 sky_horizon_color = Color(0.64625, 0.65575, 0.67075, 1)
@@ -79,13 +80,13 @@ size = Vector2(0.1, 0.1)
 resource_local_to_scene = true
 size = Vector2(3, 2)
 
-[sub_resource type="ViewportTexture" id="ViewportTexture_8mub2"]
+[sub_resource type="ViewportTexture" id="ViewportTexture_cym13"]
 viewport_path = NodePath("Viewport")
 
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_wh57r"]
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_u14qs"]
 transparency = 1
 cull_mode = 2
-albedo_texture = SubResource("ViewportTexture_8mub2")
+albedo_texture = SubResource("ViewportTexture_cym13")
 texture_filter = 1
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_tjbaa"]
@@ -167,7 +168,7 @@ localplayerscene = ""
 
 [node name="Screen" parent="ViewportNetworkGateway" index="1"]
 mesh = SubResource("QuadMesh_t38f3")
-surface_material_override/0 = SubResource("StandardMaterial3D_wh57r")
+surface_material_override/0 = SubResource("StandardMaterial3D_u14qs")
 
 [node name="StaticBody3D" parent="ViewportNetworkGateway" index="2"]
 viewport_size = Vector2(690, 400)
@@ -193,5 +194,6 @@ spawn_path = NodePath("../Specimens")
 
 [node name="Sprite3D" type="Sprite3D" parent="."]
 transform = Transform3D(-1.31134e-08, 0, 0.3, 0, 0.3, 0, -0.3, 0, -1.31134e-08, -4.99377, 1.11662, -0.638908)
+texture = ExtResource("11_wh57r")
 
 [editable path="ViewportNetworkGateway"]
