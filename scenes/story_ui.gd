@@ -5,6 +5,8 @@ var story: PackedStringArray:
         story = value
         page = 0
         
+        self.visible = len(story)
+        
 var page: int = 0:
     set(value):
         if value > len(story) or value < 0 or not len(story):
