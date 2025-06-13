@@ -1,10 +1,11 @@
-[gd_scene load_steps=27 format=3 uid="uid://do7g4piyhqxid"]
+[gd_scene load_steps=28 format=3 uid="uid://do7g4piyhqxid"]
 
 [ext_resource type="Script" uid="uid://bl1kbl82hwxv5" path="res://scripts/ascribemain.gd" id="1_wh57r"]
 [ext_resource type="PackedScene" uid="uid://b8vb8h0jlqwl7" path="res://scenes/player.tscn" id="2_cym13"]
 [ext_resource type="PackedScene" uid="uid://clc5dre31iskm" path="res://addons/godot-xr-tools/xr/start_xr.tscn" id="3_u14qs"]
 [ext_resource type="PackedScene" uid="uid://dqgio4hj2pep0" path="res://scenes/mainmenu.tscn" id="4_g577c"]
 [ext_resource type="PackedScene" uid="uid://dmxg0n8x5t8o1" path="res://scenes/sci-fi_lab.tscn" id="5_7amqy"]
+[ext_resource type="PackedScene" uid="uid://dbp3m7l7qf3o7" path="res://scenes/story_ui.tscn" id="7_8mub2"]
 [ext_resource type="PackedScene" uid="uid://clujaf3u776a3" path="res://addons/godot-xr-tools/objects/viewport_2d_in_3d.tscn" id="7_54uq5"]
 [ext_resource type="PackedScene" uid="uid://cfmoahalri06d" path="res://addons/player-networking/NetworkGateway.tscn" id="8_l4ajn"]
 [ext_resource type="PackedScene" uid="uid://bgw2tanm4il3j" path="res://avatars/tunnelvrplayeravatar/VRPlayerAvatar.tscn" id="9_xk2ox"]
@@ -78,13 +79,13 @@ size = Vector2(0.1, 0.1)
 resource_local_to_scene = true
 size = Vector2(3, 2)
 
-[sub_resource type="ViewportTexture" id="ViewportTexture_rggbi"]
+[sub_resource type="ViewportTexture" id="ViewportTexture_8mub2"]
 viewport_path = NodePath("Viewport")
 
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_8mub2"]
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_wh57r"]
 transparency = 1
 cull_mode = 2
-albedo_texture = SubResource("ViewportTexture_rggbi")
+albedo_texture = SubResource("ViewportTexture_8mub2")
 texture_filter = 1
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_tjbaa"]
@@ -138,6 +139,14 @@ one_shot = true
 process_material = SubResource("ParticleProcessMaterial_gpljf")
 draw_pass_1 = SubResource("QuadMesh_euaxi")
 
+[node name="StoryUIViewport" parent="." instance=ExtResource("7_54uq5")]
+transform = Transform3D(0.707107, 0, -0.707107, 0, 1, 0, 0.707107, 0, 0.707107, 2.51358, 1.35711, -0.465601)
+screen_size = Vector2(3, 1.68)
+scene = ExtResource("7_8mub2")
+viewport_size = Vector2(1152, 648)
+unshaded = true
+scene_properties_keys = PackedStringArray("story_ui.gd")
+
 [node name="SpecimenUIViewport" parent="." instance=ExtResource("7_54uq5")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.59675, -3.139)
 screen_size = Vector2(3, 1.68)
@@ -158,7 +167,7 @@ localplayerscene = ""
 
 [node name="Screen" parent="ViewportNetworkGateway" index="1"]
 mesh = SubResource("QuadMesh_t38f3")
-surface_material_override/0 = SubResource("StandardMaterial3D_8mub2")
+surface_material_override/0 = SubResource("StandardMaterial3D_wh57r")
 
 [node name="StaticBody3D" parent="ViewportNetworkGateway" index="2"]
 viewport_size = Vector2(690, 400)

@@ -2,15 +2,16 @@ extends Specimen
 
 var stl_importer = preload("res://tools/stl_importer.gd")
 
-var loading_file: String
+@export_file("*.stl", "*.fbx") var loading_file: String
 var specimen_scene: Node3D
 var specimen_collision: CollisionShape3D
 var specimen_base_scale: float = 1
 static var TABLE_SIZE: float = 1
 
-
 func _ready():
-    pass
+    if loading_file:
+        _on_file_dialog_file_selected(loading_file)
+        ui_instance.get_node("%FileDialog").hide()
     #if OS.is_debug_build():
         #_on_file_dialog_file_selected(r"C:\Users\rp\Documents\vr-start\skullandmore.stl")
 

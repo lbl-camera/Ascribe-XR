@@ -7,6 +7,7 @@
 
 [node name="Specimen" instance=ExtResource("1_xchh8")]
 script = ExtResource("2_6ounj")
+loading_file = ""
 display_name = "Load Mesh File"
 thumbnail = ExtResource("3_d63jp")
 ui = ExtResource("3_6ounj")

@@ -11,6 +11,7 @@ size = Vector3(0.7, 0.7, 0.7)
 [node name="Specimen" instance=ExtResource("1_86lm3")]
 script = ExtResource("2_idt6j")
 data_file = ""
+story_text = ""
 
 [node name="MultiplayerPickableObject" parent="." index="0" instance=ExtResource("3_idt6j")]
 gravity_scale = 0.0

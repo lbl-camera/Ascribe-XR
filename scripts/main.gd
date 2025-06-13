@@ -4,7 +4,8 @@ extends Node3D
 var world_3d : Node3D
 var current_3d_scene : Node3D
 var mainmenu : Node3D
-var specimen_ui_viewport
+var specimen_ui_viewport: Node3D
+var story_ui_viewport: Node3D
 var specimens_root: Node3D
 var specimen_spawner: MultiplayerSpawner
 var specimen_synchronizer: MultiplayerSynchronizer
@@ -14,6 +15,7 @@ func _ready() -> void:
     world_3d = $/root/Main/Sketchfab_Scene
     mainmenu = $/root/Main/mainmenu
     specimen_ui_viewport = $/root/Main/SpecimenUIViewport
+    story_ui_viewport = $/root/Main/StoryUIViewport
     specimens_root = $/root/Main/Specimens
     specimen_spawner = $/root/Main/SpecimenSpawner
     specimen_synchronizer = $/root/Main/SpecimenSynchronizer
@@ -79,6 +81,11 @@ func change_3d_scene(new_scene: PackedScene, delete: bool = true, keep_running: 
 
     if specimen.ui:
         specimen_ui_viewport.scene = specimen.ui
+        
+    if specimen.story_text:
+        story_ui_viewport.get_node("Viewport/StoryUI").story = specimen.story_text
+    else:
+        story_ui_viewport.get_node("Viewport/StoryUI").story = PackedStringArray()
         
 
     get_tree().create_timer(.5).timeout.connect(spawn_callback.bind(specimen))
