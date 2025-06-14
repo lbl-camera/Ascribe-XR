@@ -2,12 +2,12 @@
 
 [ext_resource type="Shader" uid="uid://516smykyoob2" path="res://addons/volume_layered_shader/shaders/volume_shader.gdshader" id="1_6cohb"]
 
-[sub_resource type="Gradient" id="Gradient_4ehgp"]
+[sub_resource type="Gradient" id="Gradient_2r7k8"]
 offsets = PackedFloat32Array(0, 0.0410256, 1)
 colors = PackedColorArray(0.541176, 0.160784, 0.85098, 0, 0.541176, 0.160784, 0.85098, 0, 1, 1, 1, 1)
 
 [sub_resource type="GradientTexture1D" id="GradientTexture1D_yr4w7"]
-gradient = SubResource("Gradient_4ehgp")
+gradient = SubResource("Gradient_2r7k8")
 
 [resource]
 resource_local_to_scene = true

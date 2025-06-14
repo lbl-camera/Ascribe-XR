@@ -26,6 +26,7 @@ void vertex() {
 	world_position = VERTEX;
 	world_camera = (inverse(MODELVIEW_MATRIX) * vec4(0, 0, 0, 1)).xyz; //object space
 	//world_camera = ( CAMERA_MATRIX  * vec4(0, 0, 0, 1)).xyz; //uncomment this to raymarch in world space
+	world_camera += EYE_OFFSET;
 }
 
 // Function to check if a point is outside of an exclusion plane
@@ -107,4 +108,7 @@ void fragment() {
 
     ALBEDO = col.rgb;
     ALPHA = col.a;
+	
+	if (VIEW_INDEX == VIEW_RIGHT)
+		ALBEDO.g = 1.0;
 }
