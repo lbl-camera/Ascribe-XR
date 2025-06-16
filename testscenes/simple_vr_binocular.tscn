@@ -1,0 +1,50 @@
+[gd_scene load_steps=7 format=3 uid="uid://bqy6dv7ehalg0"]
+
+[ext_resource type="Script" uid="uid://bb2lef7rn0ovi" path="res://addons/volume_layered_shader/scenes/controls/volume_layered_shader.gd" id="1_4yqcb"]
+[ext_resource type="Script" uid="uid://k8ofmiidh3ht" path="res://testscenes/simple_vr_binocular.gd" id="1_l1ilt"]
+[ext_resource type="ImageTexture3D" uid="uid://b0how7igvt52i" path="res://specimen_data/head.tres" id="3_gsj57"]
+[ext_resource type="PackedScene" uid="uid://clc5dre31iskm" path="res://addons/godot-xr-tools/xr/start_xr.tscn" id="4_gsj57"]
+
+[sub_resource type="BoxMesh" id="BoxMesh_gsj57"]
+size = Vector3(0.01, 0.01, 0.01)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_6nhic"]
+shading_mode = 0
+albedo_color = Color(1, 1, 0.0196078, 1)
+
+[node name="SimpleVRbinocular" type="Node3D"]
+script = ExtResource("1_l1ilt")
+
+[node name="XROrigin3D" type="XROrigin3D" parent="."]
+
+[node name="XRCamera3D" type="XRCamera3D" parent="XROrigin3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0.951721)
+
+[node name="XRController3D" type="XRController3D" parent="XROrigin3D"]
+tracker = &"right_hand"
+
+[node name="StudyObject" type="Node3D" parent="XROrigin3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.32021, 0)
+
+[node name="VolumeLayeredShader" type="Node3D" parent="XROrigin3D/StudyObject"]
+transform = Transform3D(0.25, 0, -3.7749e-08, 0, -0.5, 0, 3.7749e-08, 0, 0.25, 0, 0, 0)
+script = ExtResource("1_4yqcb")
+texture = ExtResource("3_gsj57")
+num_layers = 800
+
+[node name="Marker3D" type="Marker3D" parent="XROrigin3D/StudyObject/VolumeLayeredShader"]
+transform = Transform3D(-4.37114e-08, 0, -1, 0, 1, 0, 1, 0, -4.37114e-08, -0.224568, -0.00256753, -0.0146948)
+
+[node name="NosePos" type="MeshInstance3D" parent="XROrigin3D/StudyObject"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.0422972, -0.0530127, 0.293584)
+mesh = SubResource("BoxMesh_gsj57")
+surface_material_override/0 = SubResource("StandardMaterial3D_6nhic")
+
+[node name="HeadCentre" type="MeshInstance3D" parent="XROrigin3D/StudyObject"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.094517, 0.0275439, -0.041752)
+mesh = SubResource("BoxMesh_gsj57")
+surface_material_override/0 = SubResource("StandardMaterial3D_6nhic")
+
+[node name="StartXR" parent="." instance=ExtResource("4_gsj57")]
+
+[connection signal="input_vector2_changed" from="XROrigin3D/XRController3D" to="." method="_on_xr_controller_3d_input_vector_2_changed"]
