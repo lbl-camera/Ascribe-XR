@@ -31,6 +31,7 @@ transform = Transform3D(0.25, 0, -3.7749e-08, 0, -0.5, 0, 3.7749e-08, 0, 0.25, 0
 script = ExtResource("1_4yqcb")
 texture = ExtResource("3_gsj57")
 num_layers = 800
+gamma = 0.943
 
 [node name="Marker3D" type="Marker3D" parent="XROrigin3D/StudyObject/VolumeLayeredShader"]
 transform = Transform3D(-4.37114e-08, 0, -1, 0, 1, 0, 1, 0, -4.37114e-08, -0.224568, -0.00256753, -0.0146948)
@@ -41,7 +42,7 @@ mesh = SubResource("BoxMesh_gsj57")
 surface_material_override/0 = SubResource("StandardMaterial3D_6nhic")
 
 [node name="HeadCentre" type="MeshInstance3D" parent="XROrigin3D/StudyObject"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.094517, 0.0275439, -0.041752)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.042, 0.028, -0.042)
 mesh = SubResource("BoxMesh_gsj57")
 surface_material_override/0 = SubResource("StandardMaterial3D_6nhic")
 
