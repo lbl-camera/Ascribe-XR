@@ -3,7 +3,6 @@
 extends Node
 
 const DIRECTORY_SETUP: String = "res://addons/terrain_3d/menu/directory_setup.tscn"
-
 var plugin: EditorPlugin
 var dialog: ConfirmationDialog
 var select_dir_btn: Button
@@ -29,17 +28,17 @@ func _init() -> void:
 func directory_setup_popup() -> void:
 	dialog = load(DIRECTORY_SETUP).instantiate()
 	dialog.hide()
-	
+
 	# Nodes
 	select_dir_btn = dialog.get_node("Margin/VBox/DirHBox/SelectDir")
 	selected_dir_le = dialog.get_node("Margin/VBox/DirHBox/LineEdit")
 
 	if plugin.terrain.data_directory:
 		selected_dir_le.text = plugin.terrain.data_directory
-		
+
 	# Icons
 	plugin.ui.set_button_editor_icon(select_dir_btn, "Folder")
-	
+
 	#Signals
 	select_dir_btn.pressed.connect(_on_select_file_pressed.bind(EditorFileDialog.FILE_MODE_OPEN_DIR))
 	dialog.confirmed.connect(_on_close_requested)
@@ -74,9 +73,9 @@ func _on_ok_pressed() -> void:
 	if not DirAccess.dir_exists_absolute(selected_dir_le.text):
 		push_error("Directory doesn't exist: ", selected_dir_le.text)
 		return
-	# Check if directory empty of terrain files		
+	# Check if directory empty of terrain files
 	var data_found: bool = false
-	var files: Array = DirAccess.get_files_at(selected_dir_le.text)
+	var files: Array     = DirAccess.get_files_at(selected_dir_le.text)
 	for file in files:
 		if file.begins_with("terrain3d") || file.ends_with(".res"):
 			data_found = true

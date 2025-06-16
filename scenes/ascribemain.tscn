@@ -80,14 +80,14 @@ size = Vector2(0.1, 0.1)
 resource_local_to_scene = true
 size = Vector2(3, 1.68)
 
-[sub_resource type="ViewportTexture" id="ViewportTexture_u14qs"]
+[sub_resource type="ViewportTexture" id="ViewportTexture_wh57r"]
 viewport_path = NodePath("Viewport")
 
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_g577c"]
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_cym13"]
 transparency = 1
 cull_mode = 2
 shading_mode = 0
-albedo_texture = SubResource("ViewportTexture_u14qs")
+albedo_texture = SubResource("ViewportTexture_wh57r")
 texture_filter = 1
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_7amqy"]
@@ -98,13 +98,13 @@ size = Vector3(3, 1.68, 0.02)
 resource_local_to_scene = true
 size = Vector2(3, 2)
 
-[sub_resource type="ViewportTexture" id="ViewportTexture_cym13"]
+[sub_resource type="ViewportTexture" id="ViewportTexture_u14qs"]
 viewport_path = NodePath("Viewport")
 
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_u14qs"]
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_g577c"]
 transparency = 1
 cull_mode = 2
-albedo_texture = SubResource("ViewportTexture_cym13")
+albedo_texture = SubResource("ViewportTexture_u14qs")
 texture_filter = 1
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_tjbaa"]
@@ -159,8 +159,9 @@ process_material = SubResource("ParticleProcessMaterial_gpljf")
 draw_pass_1 = SubResource("QuadMesh_euaxi")
 
 [node name="StoryUIViewport" parent="." instance=ExtResource("7_54uq5")]
-transform = Transform3D(0.707107, 0, -0.707107, 0, 1, 0, 0.707107, 0, 0.707107, 2.51358, 1.35711, -0.465601)
+transform = Transform3D(0.707107, 0, -0.707107, 0, 1, 0, 0.707107, 0, 0.707107, 2.51358, 1.57187, -2.0405)
 screen_size = Vector2(3, 1.68)
+collision_layer = 5242880
 scene = ExtResource("7_8mub2")
 viewport_size = Vector2(1152, 648)
 unshaded = true
@@ -171,7 +172,7 @@ size = Vector2i(1152, 648)
 
 [node name="Screen" parent="StoryUIViewport" index="1"]
 mesh = SubResource("QuadMesh_wh57r")
-surface_material_override/0 = SubResource("StandardMaterial3D_g577c")
+surface_material_override/0 = SubResource("StandardMaterial3D_cym13")
 
 [node name="StaticBody3D" parent="StoryUIViewport" index="2"]
 collision_layer = 5242880
@@ -201,7 +202,7 @@ localplayerscene = ""
 
 [node name="Screen" parent="ViewportNetworkGateway" index="1"]
 mesh = SubResource("QuadMesh_t38f3")
-surface_material_override/0 = SubResource("StandardMaterial3D_u14qs")
+surface_material_override/0 = SubResource("StandardMaterial3D_g577c")
 
 [node name="StaticBody3D" parent="ViewportNetworkGateway" index="2"]
 viewport_size = Vector2(690, 400)

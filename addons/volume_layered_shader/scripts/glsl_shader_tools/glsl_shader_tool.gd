@@ -25,8 +25,9 @@
 extends RefCounted
 class_name GLSLShaderTool
 
-var rd:RenderingDevice
+var rd: RenderingDevice
 
-func _init(rd:RenderingDevice):
-    self.rd = rd
-    
+
+func _init(rd: RenderingDevice):
+	self.rd = rd
+

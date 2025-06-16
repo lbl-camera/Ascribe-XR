@@ -3,7 +3,7 @@
 @tool
 extends ConfirmationDialog
 
-var lod: int = 0
+var lod: int            = 0
 var description: String = ""
 
 

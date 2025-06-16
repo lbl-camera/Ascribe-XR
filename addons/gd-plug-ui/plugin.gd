@@ -1,9 +1,8 @@
 @tool
 extends EditorPlugin
-const Utils = preload("Utils.gd")
+const Utils          = preload("Utils.gd")
 const PluginSettings = preload("scene/plugin_settings/PluginSettings.tscn")
-
-var plugin_config = ConfigFile.new()
+var plugin_config   = ConfigFile.new()
 var plugin_settings = PluginSettings.instantiate()
 var plugins_tab
 var plugins_tab_update_btn
@@ -33,23 +32,27 @@ func _enter_tree():
 						break
 	plugin_settings.load_gd_plug()
 
+
 func _on_plugin_settings_gd_plug_loaded(gd_plug):
 	check_compatibility(gd_plug.VERSION)
+
 
 func _on_plugin_settings_updated():
 	if plugins_tab_update_btn:
 		plugins_tab_update_btn.emit_signal("pressed") # Programmatically press update button in "Plugins" tab
+
 
 func _exit_tree():
 	if is_instance_valid(plugin_settings):
 		remove_control_from_container(EditorPlugin.CONTAINER_PROJECT_SETTING_TAB_LEFT, plugin_settings)
 		plugin_settings.queue_free()
 
+
 func check_compatibility(gd_plug_version):
 	plugin_config.load("res://addons/gd-plug-ui/plugin.cfg")
 	var gd_plug_ui_version = plugin_config.get_value("plugin", "version", "0.0.0")
-	var later_or_equal = ""
-	var before = ""
+	var later_or_equal     = ""
+	var before             = ""
 	match gd_plug_ui_version:
 		"0.2.0":
 			later_or_equal = "0.2.5"
@@ -64,7 +67,7 @@ func check_compatibility(gd_plug_version):
 	var is_version_expected = Utils.expected_version(gd_plug_version, later_or_equal, before)
 	if not is_version_expected:
 		var dialog = AcceptDialog.new()
-		var text = "gd-plug-ui(%s) is not compatible with " % gd_plug_ui_version
+		var text   = "gd-plug-ui(%s) is not compatible with " % gd_plug_ui_version
 		text += "current gd-plug(%s), " % gd_plug_version
 		text += "expected >=%s" % later_or_equal if before.length() == 0 else " expected >=%s or %s<" % [later_or_equal, before]
 		dialog.dialog_text = text

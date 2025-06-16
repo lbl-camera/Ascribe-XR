@@ -2,17 +2,14 @@
 # Menu for Terrain3D
 extends HBoxContainer
 
-
 const DirectoryWizard: Script = preload("res://addons/terrain_3d/menu/directory_setup.gd")
-const Packer: Script = preload("res://addons/terrain_3d/menu/channel_packer.gd")
-const Baker: Script = preload("res://addons/terrain_3d/menu/baker.gd")
-
+const Packer: Script          = preload("res://addons/terrain_3d/menu/channel_packer.gd")
+const Baker: Script           = preload("res://addons/terrain_3d/menu/baker.gd")
 var plugin: EditorPlugin
-var menu_button: MenuButton = MenuButton.new()
+var menu_button: MenuButton          = MenuButton.new()
 var directory_setup: DirectoryWizard = DirectoryWizard.new()
-var packer: Packer = Packer.new()
-var baker: Baker = Baker.new()
-
+var packer: Packer                   = Packer.new()
+var baker: Baker                     = Baker.new()
 # These are IDs and order must be consistent with add_item and set_disabled IDs
 enum {
 	MENU_DIRECTORY_SETUP,
@@ -32,17 +29,17 @@ func _enter_tree() -> void:
 	baker.plugin = plugin
 	add_child(directory_setup)
 	add_child(baker)
-	
+
 	menu_button.text = "Terrain3D"
-	menu_button.get_popup().add_item("Directory Setup...", 	MENU_DIRECTORY_SETUP)
-	menu_button.get_popup().add_item("Pack Textures...", MENU_PACK_TEXTURES)	
+	menu_button.get_popup().add_item("Directory Setup...", MENU_DIRECTORY_SETUP)
+	menu_button.get_popup().add_item("Pack Textures...", MENU_PACK_TEXTURES)
 	menu_button.get_popup().add_separator("", MENU_SEPARATOR)
 	menu_button.get_popup().add_item("Bake ArrayMesh...", MENU_BAKE_ARRAY_MESH)
 	menu_button.get_popup().add_item("Bake Occluder3D...", MENU_BAKE_OCCLUDER)
 	menu_button.get_popup().add_separator("", MENU_SEPARATOR2)
 	menu_button.get_popup().add_item("Set up Navigation...", MENU_SET_UP_NAVIGATION)
 	menu_button.get_popup().add_item("Bake NavMesh...", MENU_BAKE_NAV_MESH)
-	
+
 	menu_button.get_popup().id_pressed.connect(_on_menu_pressed)
 	menu_button.about_to_popup.connect(_on_menu_about_to_popup)
 	add_child(menu_button)
@@ -53,7 +50,7 @@ func _on_menu_pressed(p_id: int) -> void:
 		MENU_DIRECTORY_SETUP:
 			directory_setup.directory_setup_popup()
 		MENU_PACK_TEXTURES:
-			packer.pack_textures_popup()			
+			packer.pack_textures_popup()
 		MENU_BAKE_ARRAY_MESH:
 			baker.bake_mesh_popup()
 		MENU_BAKE_OCCLUDER:

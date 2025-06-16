@@ -3,10 +3,9 @@
 @tool
 extends Terrain3D
 
-
-@export var clear_all: bool = false : set = reset_settings
-@export var clear_terrain: bool = false : set = reset_terrain
-@export var update_height_range: bool = false : set = update_heights
+@export var clear_all: bool = false: set = reset_settings
+@export var clear_terrain: bool = false: set = reset_terrain
+@export var update_height_range: bool = false: set = update_heights
 
 
 func reset_settings(p_value) -> void:
@@ -27,7 +26,7 @@ func reset_settings(p_value) -> void:
 
 func reset_terrain(p_value) -> void:
 	data_directory = ""
-	for region:Terrain3DRegion in data.get_regions_active():
+	for region: Terrain3DRegion in data.get_regions_active():
 		data.remove_region(region, false)
 	data.update_maps(Terrain3DRegion.TYPE_MAX, true, false)
 
@@ -39,17 +38,19 @@ func update_heights(p_value) -> void:
 
 @export_group("Import File")
 @export_global_file var height_file_name: String = ""
+
 @export_global_file var control_file_name: String = ""
+
 @export_global_file var color_file_name: String = ""
-@export var import_position: Vector2i = Vector2i(0, 0) : set = set_import_position
+@export var import_position: Vector2i = Vector2i(0, 0): set = set_import_position
 @export var import_scale: float = 1.0
 @export var height_offset: float = 0.0
 @export var r16_range: Vector2 = Vector2(0, 1)
-@export var r16_size: Vector2i = Vector2i(1024, 1024) : set = set_r16_size
-@export var run_import: bool = false : set = start_import
+@export var r16_size: Vector2i = Vector2i(1024, 1024): set = set_r16_size
+@export var run_import: bool = false: set = start_import
 
 @export_dir var destination_directory: String = ""
-@export var save_to_disk: bool = false : set = save_data
+@export var save_to_disk: bool = false: set = save_data
 
 
 func set_import_position(p_value: Vector2i) -> void:
@@ -99,9 +100,10 @@ func save_data(p_value: bool) -> void:
 enum { TYPE_HEIGHT, TYPE_CONTROL, TYPE_COLOR }
 @export_enum("Height:0", "Control:1", "Color:2") var map_type: int = TYPE_HEIGHT
 @export var file_name_out: String = ""
-@export var run_export: bool = false : set = start_export
+@export var run_export: bool = false: set = start_export
+
 
 func start_export(p_value: bool) -> void:
 	var err: int = data.export_image(file_name_out, map_type)
 	print("Terrain3DImporter: Export error status: ", err, " ", error_string(err))
-	
+

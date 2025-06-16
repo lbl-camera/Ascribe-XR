@@ -2,9 +2,9 @@
 # Baker for Terrain3D
 extends Node
 
-const BakeLodDialog: PackedScene = preload("res://addons/terrain_3d/menu/bake_lod_dialog.tscn")
-const BAKE_MESH_DESCRIPTION: String = "This will create a child MeshInstance3D. LOD4+ is recommended. LOD0 is slow and dense with vertices every 1 unit. It is not an optimal mesh."
-const BAKE_OCCLUDER_DESCRIPTION: String = "This will create a child OccluderInstance3D. LOD4+ is recommended and will take 5+ seconds per region to generate. LOD0 is unnecessarily dense and slow."
+const BakeLodDialog: PackedScene            = preload("res://addons/terrain_3d/menu/bake_lod_dialog.tscn")
+const BAKE_MESH_DESCRIPTION: String         = "This will create a child MeshInstance3D. LOD4+ is recommended. LOD0 is slow and dense with vertices every 1 unit. It is not an optimal mesh."
+const BAKE_OCCLUDER_DESCRIPTION: String     = "This will create a child OccluderInstance3D. LOD4+ is recommended and will take 5+ seconds per region to generate. LOD0 is unnecessarily dense and slow."
 const SET_UP_NAVIGATION_DESCRIPTION: String = "This operation will:
 
 - Create a NavigationRegion3D node,
@@ -30,7 +30,7 @@ func _enter_tree() -> void:
 	bake_lod_dialog.hide()
 	bake_lod_dialog.confirmed.connect(func(): bake_method.call())
 	bake_lod_dialog.set_unparent_when_invisible(true)
-	
+
 	confirm_dialog = ConfirmationDialog.new()
 	confirm_dialog.hide()
 	confirm_dialog.confirmed.connect(func(): bake_method.call())
@@ -60,30 +60,30 @@ func _bake_mesh() -> void:
 
 	var undo: EditorUndoRedoManager = plugin.get_undo_redo()
 	undo.create_action("Terrain3D Bake ArrayMesh")
-	
+
 	var mesh_instance := plugin.terrain.get_node_or_null(^"MeshInstance3D") as MeshInstance3D
 	if !mesh_instance:
 		mesh_instance = MeshInstance3D.new()
 		mesh_instance.name = &"MeshInstance3D"
 		mesh_instance.set_skeleton_path(NodePath())
 		mesh_instance.mesh = mesh
-		
+
 		undo.add_do_method(plugin.terrain, &"add_child", mesh_instance, true)
 		undo.add_undo_method(plugin.terrain, &"remove_child", mesh_instance)
 		undo.add_do_property(mesh_instance, &"owner", EditorInterface.get_edited_scene_root())
 		undo.add_do_reference(mesh_instance)
-	
+
 	else:
 		undo.add_do_property(mesh_instance, &"mesh", mesh)
 		undo.add_undo_property(mesh_instance, &"mesh", mesh_instance.mesh)
-		
+
 		if mesh_instance.mesh.resource_path:
 			var path := mesh_instance.mesh.resource_path
 			undo.add_do_method(mesh, &"take_over_path", path)
 			undo.add_undo_method(mesh_instance.mesh, &"take_over_path", path)
 			undo.add_do_method(ResourceSaver, &"save", mesh)
 			undo.add_undo_method(ResourceSaver, &"save", mesh_instance.mesh)
-	
+
 	undo.commit_action()
 
 
@@ -107,8 +107,8 @@ func _bake_occluder() -> void:
 	var undo: EditorUndoRedoManager = plugin.get_undo_redo()
 	undo.create_action("Terrain3D Bake Occluder3D")
 
-	var occluder := ArrayOccluder3D.new()
-	var arrays: Array = mesh.surface_get_arrays(0)
+	var occluder      := ArrayOccluder3D.new()
+	var arrays: Array =  mesh.surface_get_arrays(0)
 	assert(arrays.size() > Mesh.ARRAY_INDEX)
 	assert(arrays[Mesh.ARRAY_INDEX] != null)
 	occluder.set_arrays(arrays[Mesh.ARRAY_VERTEX], arrays[Mesh.ARRAY_INDEX])
@@ -123,18 +123,18 @@ func _bake_occluder() -> void:
 		undo.add_undo_method(plugin.terrain, &"remove_child", occluder_instance)
 		undo.add_do_property(occluder_instance, &"owner", EditorInterface.get_edited_scene_root())
 		undo.add_do_reference(occluder_instance)
-	
+
 	else:
 		undo.add_do_property(occluder_instance, &"occluder", occluder)
 		undo.add_undo_property(occluder_instance, &"occluder", occluder_instance.occluder)
-		
+
 		if occluder_instance.occluder.resource_path:
 			var path := occluder_instance.occluder.resource_path
 			undo.add_do_method(occluder, &"take_over_path", path)
 			undo.add_undo_method(occluder_instance.occluder, &"take_over_path", path)
 			undo.add_do_method(ResourceSaver, &"save", occluder)
 			undo.add_undo_method(ResourceSaver, &"save", occluder_instance.occluder)
-	
+
 	undo.commit_action()
 
 
@@ -142,26 +142,26 @@ func find_nav_region_terrains(p_nav_region: NavigationRegion3D) -> Array[Terrain
 	var result: Array[Terrain3D] = []
 	if not p_nav_region.navigation_mesh:
 		return result
-	
+
 	var source_mode: NavigationMesh.SourceGeometryMode
 	source_mode = p_nav_region.navigation_mesh.geometry_source_geometry_mode
 	if source_mode == NavigationMesh.SOURCE_GEOMETRY_ROOT_NODE_CHILDREN:
 		result.append_array(p_nav_region.find_children("", "Terrain3D", true, true))
 		return result
-	
+
 	var group_nodes: Array = p_nav_region.get_tree().get_nodes_in_group(p_nav_region.navigation_mesh.geometry_source_group_name)
 	for node in group_nodes:
 		if node is Terrain3D:
 			result.push_back(node)
 		if source_mode == NavigationMesh.SOURCE_GEOMETRY_GROUPS_WITH_CHILDREN:
 			result.append_array(node.find_children("", "Terrain3D", true, true))
-	
+
 	return result
 
 
 func find_terrain_nav_regions(p_terrain: Terrain3D) -> Array[NavigationRegion3D]:
 	var result: Array[NavigationRegion3D] = []
-	var root: Node = EditorInterface.get_edited_scene_root()
+	var root: Node                        = EditorInterface.get_edited_scene_root()
 	if not root:
 		return result
 	for nav_region in root.find_children("", "NavigationRegion3D", true, true):
@@ -175,7 +175,7 @@ func bake_nav_mesh() -> void:
 		# A NavigationRegion3D is selected. We only need to bake that one navmesh.
 		_bake_nav_region_nav_mesh(plugin.nav_region)
 		print("Terrain3DNavigation: Finished baking 1 NavigationMesh.")
-	
+
 	elif plugin.terrain:
 		if plugin.terrain.data.get_region_count() == 0:
 			push_error("Terrain3D has no active regions to bake")
@@ -194,48 +194,48 @@ func bake_nav_mesh() -> void:
 func _bake_nav_region_nav_mesh(p_nav_region: NavigationRegion3D) -> void:
 	var nav_mesh: NavigationMesh = p_nav_region.navigation_mesh
 	assert(nav_mesh != null)
-	
+
 	var source_geometry_data := NavigationMeshSourceGeometryData3D.new()
 	NavigationServer3D.parse_source_geometry_data(nav_mesh, source_geometry_data, p_nav_region)
-	
+
 	for terrain in find_nav_region_terrains(p_nav_region):
-		var aabb: AABB = nav_mesh.filter_baking_aabb
+		var aabb: AABB                = nav_mesh.filter_baking_aabb
 		aabb.position += nav_mesh.filter_baking_aabb_offset
 		aabb = p_nav_region.global_transform * aabb
 		var faces: PackedVector3Array = terrain.generate_nav_mesh_source_geometry(aabb)
 		if not faces.is_empty():
 			source_geometry_data.add_faces(faces, Transform3D.IDENTITY)
-	
+
 	NavigationServer3D.bake_from_source_geometry_data(nav_mesh, source_geometry_data)
-	
+
 	_postprocess_nav_mesh(nav_mesh)
-	
+
 	# Assign null first to force the debug display to actually update:
 	p_nav_region.set_navigation_mesh(null)
 	p_nav_region.set_navigation_mesh(nav_mesh)
-	
+
 	# Trigger save to disk if it is saved as an external file
 	if not nav_mesh.get_path().is_empty():
 		ResourceSaver.save(nav_mesh, nav_mesh.get_path(), ResourceSaver.FLAG_COMPRESS)
-	
+
 	# Let other editor plugins and tool scripts know the nav mesh was just baked:
 	p_nav_region.bake_finished.emit()
 
 
 func _postprocess_nav_mesh(p_nav_mesh: NavigationMesh) -> void:
 	# Post-process the nav mesh to work around Godot issue #85548
-	
+
 	# Round all the vertices in the nav_mesh to the nearest cell_size/cell_height so that it doesn't
 	# contain any edges shorter than cell_size/cell_height (one cause of #85548).
 	var vertices: PackedVector3Array = _postprocess_nav_mesh_round_vertices(p_nav_mesh)
-	
+
 	# Rounding vertices can collapse some edges to 0 length. We remove these edges, and any polygons
 	# that have been reduced to 0 area.
 	var polygons: Array[PackedInt32Array] = _postprocess_nav_mesh_remove_empty_polygons(p_nav_mesh, vertices)
-	
+
 	# Another cause of #85548 is baking producing overlapping polygons. We remove these.
 	_postprocess_nav_mesh_remove_overlapping_polygons(p_nav_mesh, vertices, polygons)
-	
+
 	p_nav_mesh.clear_polygons()
 	p_nav_mesh.set_vertices(vertices)
 	for polygon in polygons:
@@ -246,13 +246,13 @@ func _postprocess_nav_mesh_round_vertices(p_nav_mesh: NavigationMesh) -> PackedV
 	assert(p_nav_mesh != null)
 	assert(p_nav_mesh.cell_size > 0.0)
 	assert(p_nav_mesh.cell_height > 0.0)
-	
+
 	var cell_size: Vector3 = Vector3(p_nav_mesh.cell_size, p_nav_mesh.cell_height, p_nav_mesh.cell_size)
-	
+
 	# Round a little harder to avoid rounding errors with non-power-of-two cell_size/cell_height
 	# causing the navigation map to put two non-matching edges in the same cell:
 	var round_factor := cell_size * 1.001
-	
+
 	var vertices: PackedVector3Array = p_nav_mesh.get_vertices()
 	for i in range(vertices.size()):
 		vertices[i] = (vertices[i] / round_factor).floor() * round_factor
@@ -261,11 +261,11 @@ func _postprocess_nav_mesh_round_vertices(p_nav_mesh: NavigationMesh) -> PackedV
 
 func _postprocess_nav_mesh_remove_empty_polygons(p_nav_mesh: NavigationMesh, p_vertices: PackedVector3Array) -> Array[PackedInt32Array]:
 	var polygons: Array[PackedInt32Array] = []
-	
+
 	for i in range(p_nav_mesh.get_polygon_count()):
 		var old_polygon: PackedInt32Array = p_nav_mesh.get_polygon(i)
 		var new_polygon: PackedInt32Array = []
-		
+
 		# Remove duplicate vertices (introduced by rounding) from the polygon:
 		var polygon_vertices: PackedVector3Array = []
 		for index in old_polygon:
@@ -274,12 +274,12 @@ func _postprocess_nav_mesh_remove_empty_polygons(p_nav_mesh: NavigationMesh, p_v
 				continue
 			polygon_vertices.push_back(vertex)
 			new_polygon.push_back(index)
-		
+
 		# If we removed some vertices, we might be able to remove the polygon too:
 		if new_polygon.size() <= 2:
 			continue
 		polygons.push_back(new_polygon)
-		
+
 	return polygons
 
 
@@ -288,25 +288,25 @@ func _postprocess_nav_mesh_remove_overlapping_polygons(p_nav_mesh: NavigationMes
 	# https://github.com/godotengine/godot/issues/85548#issuecomment-1839341071
 	# Until the bug is fixed in the engine, this function attempts to detect and remove overlapping
 	# polygons.
-	
+
 	# This function has to make a choice of which polygon to remove when an overlap is detected,
 	# because in this case the nav mesh is ambiguous. To do this it uses a heuristic:
 	# (1) an 'overlap' is defined as an edge that is shared by 3 or more polygons.
 	# (2) a 'bad polygon' is defined as a polygon that contains 2 or more 'overlaps'.
 	# The function removes the 'bad polygons', which in practice seems to be enough to remove all
 	# overlaps without creating holes in the nav mesh.
-	
+
 	var cell_size: Vector3 = Vector3(p_nav_mesh.cell_size, p_nav_mesh.cell_height, p_nav_mesh.cell_size)
-	
+
 	# `edges` is going to map edges (vertex pairs) to arrays of polygons that contain that edge.
 	var edges: Dictionary = {}
-	
+
 	for polygon_index in range(p_polygons.size()):
 		var polygon: PackedInt32Array = p_polygons[polygon_index]
 		for j in range(polygon.size()):
-			var vertex: Vector3 = p_vertices[polygon[j]]
+			var vertex: Vector3      = p_vertices[polygon[j]]
 			var next_vertex: Vector3 = p_vertices[polygon[(j + 1) % polygon.size()]]
-			
+
 			# edge_key is a key we can use in the edges dictionary that uniquely identifies the
 			# edge. We use cell coordinates here (Vector3i) because with a non-power-of-two
 			# cell_size, rounding errors can cause Vector3 vertices to not be equal.
@@ -314,23 +314,23 @@ func _postprocess_nav_mesh_remove_overlapping_polygons(p_nav_mesh: NavigationMes
 			# because polygons that share an edge can have their vertices in a different order.
 			var edge_key: Array = [Vector3i(vertex / cell_size), Vector3i(next_vertex / cell_size)]
 			edge_key.sort()
-			
+
 			if !edges.has(edge_key):
 				edges[edge_key] = []
 			edges[edge_key].push_back(polygon_index)
-	
+
 	var overlap_count: Dictionary = {}
 	for connections in edges.values():
 		if connections.size() <= 2:
 			continue
 		for polygon_index in connections:
 			overlap_count[polygon_index] = overlap_count.get(polygon_index, 0) + 1
-	
+
 	var bad_polygons: Array = []
 	for polygon_index in overlap_count.keys():
 		if overlap_count[polygon_index] >= 2:
 			bad_polygons.push_back(polygon_index)
-	
+
 	bad_polygons.sort()
 	for i in range(bad_polygons.size() - 1, -1, -1):
 		p_polygons.remove_at(bad_polygons[i])
@@ -352,13 +352,13 @@ func _set_up_navigation() -> void:
 		push_error("Terrain3D has no active regions")
 		return
 	var terrain: Terrain3D = plugin.terrain
-	
+
 	var nav_region := NavigationRegion3D.new()
 	nav_region.name = &"NavigationRegion3D"
 	nav_region.navigation_mesh = NavigationMesh.new()
-	
+
 	var undo_redo: EditorUndoRedoManager = plugin.get_undo_redo()
-	
+
 	undo_redo.create_action("Terrain3D Set up Navigation")
 	undo_redo.add_do_method(self, &"_do_set_up_navigation", nav_region, terrain)
 	undo_redo.add_undo_method(self, &"_undo_set_up_navigation", nav_region, terrain)
@@ -367,32 +367,32 @@ func _set_up_navigation() -> void:
 
 	EditorInterface.inspect_object(nav_region)
 	assert(plugin.nav_region == nav_region)
-	
+
 	bake_nav_mesh()
 
 
 func _do_set_up_navigation(p_nav_region: NavigationRegion3D, p_terrain: Terrain3D) -> void:
-	var parent: Node = p_terrain.get_parent()
-	var index: int = p_terrain.get_index()
+	var parent: Node  = p_terrain.get_parent()
+	var index: int    = p_terrain.get_index()
 	var t_owner: Node = p_terrain.owner
-	
+
 	parent.add_child(p_nav_region, true)
 	p_terrain.reparent(p_nav_region)
 	parent.move_child(p_nav_region, index)
-	
+
 	p_nav_region.owner = t_owner
 	p_terrain.owner = t_owner
 
 
 func _undo_set_up_navigation(p_nav_region: NavigationRegion3D, p_terrain: Terrain3D) -> void:
 	assert(p_terrain.get_parent() == p_nav_region)
-	
-	var parent: Node = p_nav_region.get_parent()
-	var index: int = p_nav_region.get_index()
+
+	var parent: Node  = p_nav_region.get_parent()
+	var index: int    = p_nav_region.get_index()
 	var t_owner: Node = p_nav_region.get_owner()
-	
+
 	p_terrain.reparent(parent)
 	parent.remove_child(p_nav_region)
 	parent.move_child(p_terrain, index)
-	
+
 	p_terrain.owner = t_owner
