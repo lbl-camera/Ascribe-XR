@@ -1,4 +1,4 @@
-[gd_scene load_steps=7 format=3 uid="uid://bqy6dv7ehalg0"]
+[gd_scene load_steps=10 format=3 uid="uid://bqy6dv7ehalg0"]
 
 [ext_resource type="Script" uid="uid://bb2lef7rn0ovi" path="res://addons/volume_layered_shader/scenes/controls/volume_layered_shader.gd" id="1_4yqcb"]
 [ext_resource type="Script" uid="uid://k8ofmiidh3ht" path="res://testscenes/simple_vr_binocular.gd" id="1_l1ilt"]
@@ -11,6 +11,44 @@ size = Vector3(0.01, 0.01, 0.01)
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_6nhic"]
 shading_mode = 0
 albedo_color = Color(1, 1, 0.0196078, 1)
+
+[sub_resource type="Animation" id="Animation_gsj57"]
+resource_name = "head"
+length = 5.0
+loop_mode = 1
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("XROrigin3D/StudyObject/VolumeLayeredShader:scale")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 2.56667, 4.96667),
+"transitions": PackedFloat32Array(1, 1, 1),
+"update": 0,
+"values": [Vector3(-0.25, -0.5, -0.25), Vector3(-0.025, -0.5, -0.25), Vector3(-0.25, -0.5, -0.25)]
+}
+
+[sub_resource type="Animation" id="Animation_6nhic"]
+length = 0.001
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("XROrigin3D/StudyObject/VolumeLayeredShader:scale")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector3(-0.25, -0.5, -0.25)]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_8rgki"]
+_data = {
+&"RESET": SubResource("Animation_6nhic"),
+&"head": SubResource("Animation_gsj57")
+}
 
 [node name="SimpleVRbinocular" type="Node3D"]
 script = ExtResource("1_l1ilt")
@@ -47,5 +85,11 @@ mesh = SubResource("BoxMesh_gsj57")
 surface_material_override/0 = SubResource("StandardMaterial3D_6nhic")
 
 [node name="StartXR" parent="." instance=ExtResource("4_gsj57")]
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="."]
+libraries = {
+&"": SubResource("AnimationLibrary_8rgki")
+}
+autoplay = "head"
 
 [connection signal="input_vector2_changed" from="XROrigin3D/XRController3D" to="." method="_on_xr_controller_3d_input_vector_2_changed"]
