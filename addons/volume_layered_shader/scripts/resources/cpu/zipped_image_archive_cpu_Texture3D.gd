@@ -25,6 +25,9 @@
 extends ImageTexture3D
 class_name ZippedImageArchiveCpuTexture3D
 
+const shared_loader = preload("res://addons/volume_layered_shader/scripts/resources/shared_loader.gd")
+
+
 @export_file("*.zip") var zip_file: String:
 	get:
 		return zip_file
@@ -88,12 +91,16 @@ func load_image_from_zip(path: String):
 	var img_format: int
 	var img_list: Array[Image]
 
-	for filename in reader.get_files():
-		if filename.ends_with(".png"):
-			var buf: PackedByteArray = reader.read_file(filename)
+	var loader = shared_loader.new()
+	var files: PackedStringArray = reader.get_files()
+	files.sort()
 
+	for filename in files:
+		var suffix: String = filename.get_extension()
+		if loader.supported_image_file_formats.has(suffix):
+			var buf: PackedByteArray = reader.read_file(filename)
 			var image: Image = Image.new()
-			image.load_png_from_buffer(buf)
+			loader.load_into(image, buf, suffix)
 			var cur_width: int  = image.get_width()
 			var cur_height: int = image.get_height()
 			var cur_format: int = image.get_format()
