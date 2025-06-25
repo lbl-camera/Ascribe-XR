@@ -43,19 +43,6 @@ const shared_loader = preload("res://addons/volume_layered_shader/scripts/resour
 		dirty = true
 		zipfile_changed.emit()
 
-var supported_image_file_formats: Array[String] = [
-												  "bmp",
-												  "dds",
-												  "exr",
-												  "hdr",
-												  "jpg",
-												  "jpeg",
-												  "png",
-												  "tga",
-												  "svg",
-												  "webp"
-												  ]
-
 var img_list: Array[Image]
 var img_size: Vector3i
 var dirty: bool = true
@@ -92,15 +79,16 @@ func read_images_from_zip(path: String):
 	var img_format: int = Image.FORMAT_RF
 	img_list.clear()
 
+	var loader = shared_loader.new()
 	var files: PackedStringArray = reader.get_files()
 	files.sort()
 
 	for filename in files:
 		var suffix: String = filename.get_extension()
-		if supported_image_file_formats.has(suffix):
+		if loader.supported_image_file_formats.has(suffix):
 			var buf: PackedByteArray = reader.read_file(filename)
 			var image: Image         = Image.new()
-			shared_loader.new().load_into(image, buf, suffix)
+			loader.load_into(image, buf, suffix)
 			var cur_width: int  = image.get_width()
 			var cur_height: int = image.get_height()
 			var cur_format: int = image.get_format()

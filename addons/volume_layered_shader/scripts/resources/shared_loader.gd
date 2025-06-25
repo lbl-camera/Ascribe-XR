@@ -1,5 +1,18 @@
 extends Node
 
+var supported_image_file_formats: Array[String] = [
+												  "bmp",
+												  "dds",
+												  "exr",
+												  "hdr",
+												  "jpg",
+												  "jpeg",
+												  "png",
+												  "tga",
+												  "svg",
+												  "webp"
+												  ]
+
 func load_into(image: Image, buf: PackedByteArray, suffix: String):
 	match suffix:
 		'png':
