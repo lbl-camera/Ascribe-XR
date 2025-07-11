@@ -5,7 +5,12 @@ extends Specimen
 	set(value):
 		if value:
 			var volume_texture: ImageTexture3D = make_texture(value)
-			$MultiplayerPickableObject/VolumeLayeredShader.texture = volume_texture
+			update_texture.rpc(volume_texture)
+
+
+@rpc("any_peer", "call_local", "reliable")
+func update_texture(volume_texture:ImageTexture3D) -> void:
+	$MultiplayerPickableObject/VolumeLayeredShader.texture = volume_texture
 
 
 func texture_from_bin(data_file: String) -> ImageTexture3D:
