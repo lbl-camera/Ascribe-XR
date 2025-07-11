@@ -221,7 +221,6 @@ root_path = NodePath("../Specimens")
 replication_config = SubResource("SceneReplicationConfig_tjbaa")
 
 [node name="SpecimenSpawner" type="MultiplayerSpawner" parent="."]
-_spawnable_scenes = PackedStringArray("uid://cm41tbtpd2i76")
 spawn_path = NodePath("../Specimens")
 
 [node name="Fade" parent="." instance=ExtResource("10_4pnrr")]

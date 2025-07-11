@@ -71,6 +71,7 @@ func change_3d_scene(new_scene: PackedScene, delete: bool = true, keep_running: 
 	#    self.add_child(specimen)
 
 	set_spawner_authority.rpc()
+	specimen_spawner.add_spawnable_scene(specimen.get_path())
 
 	match specimen.scale_mode:
 		Specimen.ScaleMode.TABLE:
