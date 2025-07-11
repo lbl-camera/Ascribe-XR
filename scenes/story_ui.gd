@@ -9,7 +9,7 @@ var story: PackedStringArray:
 
 var page: int = 0:
 	set(value):
-		if value > len(story) or value < 0 or not len(story):
+		if value >= len(story) or value < 0 or not len(story):
 			return
 
 		page = value
