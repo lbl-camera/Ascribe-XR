@@ -11,3 +11,7 @@
 
 # keystore
 *.keystore
+
+# plug
+.plugged/
+addons/
