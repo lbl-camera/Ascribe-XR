@@ -30,13 +30,17 @@ func _process(delta: float) -> void:
 	process_scene_load()
 
 
+@rpc("any_peer", "call_remote", "reliable")
 func load_3d_scene_path(new_scene: String) -> void:
 	ResourceLoader.load_threaded_request(new_scene)
 	loading_scene = new_scene
+	if not multiplayer.get_remote_sender_id():
+		load_3d_scene_path.rpc(new_scene)
 
 
 func load_3d_scene(new_scene: PackedScene) -> void:
 	change_3d_scene(new_scene)
+	send_3d_scene(new_scene)
 
 
 func process_scene_load():
@@ -51,6 +55,12 @@ func process_scene_load():
 			var scene = ResourceLoader.load_threaded_get(loading_scene)
 			change_3d_scene(scene)
 			loading_scene = ""
+			
+
+func send_3d_scene(new_scene: PackedScene, delete: bool = true, keep_running: bool = false) -> void:
+	print(new_scene)
+	if new_scene.get_path():
+		load_3d_scene_path.rpc(new_scene.get_path())
 
 
 func change_3d_scene(new_scene: PackedScene, delete: bool = true, keep_running: bool = false) -> void:
@@ -69,9 +79,6 @@ func change_3d_scene(new_scene: PackedScene, delete: bool = true, keep_running: 
 	$/root/Main/GPUParticles3D.emitting = true
 	var specimen: Specimen = new_scene.instantiate()
 	#    self.add_child(specimen)
-
-	set_spawner_authority.rpc()
-	specimen_spawner.add_spawnable_scene(specimen.get_path())
 
 	match specimen.scale_mode:
 		Specimen.ScaleMode.TABLE:
@@ -96,14 +103,19 @@ func change_3d_scene(new_scene: PackedScene, delete: bool = true, keep_running: 
 	get_tree().create_timer(.5).timeout.connect(spawn_callback.bind(specimen))
 	current_3d_scene = specimen
 
-	toggle_mainmenu()
+	hide_mainmenu()
 
+func hide_mainmenu() -> void:
+	$/root/Main.remove_child(mainmenu)
+	
+func show_mainmenu() -> void:
+	$/root/Main.add_child(mainmenu)
 
 func toggle_mainmenu() -> void:
 	if mainmenu.get_parent():
-		$/root/Main.remove_child(mainmenu)
+		hide_mainmenu()
 	else:
-		$/root/Main.add_child(mainmenu)
+		show_mainmenu()
 
 
 func _unhandled_input(event: InputEvent) -> void:
