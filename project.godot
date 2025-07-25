@@ -32,12 +32,11 @@ STLImportPlugin="*res://addons/stl_importer/import_plugin.gd"
 [editor]
 
 movie_writer/movie_file="C:/Users/rp/Documents/vr-start/demo.avi"
-version_control/plugin_name="GitPlugin"
 version_control/autoload_on_startup=true
 
 [editor_plugins]
 
-enabled=PackedStringArray("res://addons/gd-plug-ui/plugin.cfg", "res://addons/godot-xr-tools/plugin.cfg", "res://addons/script-ide/plugin.cfg", "res://addons/volume_layered_shader/plugin.cfg")
+enabled=PackedStringArray("res://addons/gd-plug-ui/plugin.cfg", "res://addons/godot-xr-tools/plugin.cfg", "res://addons/volume_layered_shader/plugin.cfg")
 
 [input]
 

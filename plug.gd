@@ -17,7 +17,7 @@ func _plugging():
 	#plug("godotengine/webrtc-native")
 
 	# dev tools
-	plug("Maran23/script-ide")
+	#plug("Maran23/script-ide")
 
 	# large binary addons unpacked and put into a spare repo for the moment
 	var stashedaddons = ["addons/twovoip", "addons/webrtc"]
