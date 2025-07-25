@@ -1,6 +1,7 @@
 extends Node3D
 
 @onready var NetworkGateway = $ViewportNetworkGateway/Viewport/NetworkGateway
+#@onready var mqtt = NetworkGateway.find_child('MQTT', true, false)
 
 @export var webrtcroomname = "ascribe"
 #export var webrtcbroker = "mosquitto.doesliverpool.xyz"
@@ -9,7 +10,9 @@ extends Node3D
 #@export var webrtcbroker = "wss://mosquitto.doesliverpool.xyz:8081"
 #export var webrtcbroker = "ws://mosquitto.doesliverpool.xyz:8080"
 #export var webrtcbroker = "ssl://mosquitto.doesliverpool.xyz:8884"
-@export var webrtcbroker = "mosquitto.doesliverpool.xyz"
+#@export var webrtcbroker = "mosquitto.doesliverpool.xyz"
+@export var webrtcbroker = "cam-web.lbl.gov"
+#@export var webrtcbroker = "localhost"
 # "ws://broker.mqttdashboard.com:8webrtcbroker000"
 @export var PCstartupprotocol = "webrtc"
 @export var QUESTstartupprotocol = "webrtc"
@@ -30,7 +33,7 @@ extends Node3D
 
 
 func _ready():
-	print("AudioServer.get_input_device_list ", AudioServer.get_input_device_list())
+	#mqtt.set_user_pass('ascribe', 'Ascribe1')
 	if OS.has_feature("QUEST"):
 		if QUESTstartupprotocol == "webrtc":
 			NetworkGateway.initialstatemqttwebrtc(NetworkGateway.NETWORK_OPTIONS_MQTT_WEBRTC.AS_NECESSARY, webrtcroomname, webrtcbroker)
