@@ -7,6 +7,8 @@ class_name MultiplayerPickableObject
 @export var replicated_linear_velocity: Vector3
 @export var replicated_angular_velocity: Vector3
 
+var temporarily_unfrozen: bool = false
+
 
 func _integrate_forces(_state: PhysicsDirectBodyState3D) -> void:
 	# Synchronizing the physics values directly causes problems since you can't
@@ -37,21 +39,32 @@ func _physics_process(delta: float) -> void:
 		replicated_linear_velocity = linear_velocity
 		replicated_angular_velocity = angular_velocity
 
-
 @rpc("any_peer", "call_local", "reliable")
-func take_authority(pickable, by):
-	set_multiplayer_authority(multiplayer.get_remote_sender_id())
-	print_debug("authority of ", self, " given to ", multiplayer.get_remote_sender_id(), " on ", multiplayer.get_unique_id())
-	if multiplayer.get_unique_id() != 1 and is_multiplayer_authority():
-		print('client took ownership successfully')
+func take_authority(pickable):
+	if multiplayer.get_remote_sender_id() != 1:
+		set_multiplayer_authority(multiplayer.get_remote_sender_id())
+		print("authority of ", self, " given to ", multiplayer.get_remote_sender_id(), " on ", multiplayer.get_unique_id())
+	if freeze:
+		temporarily_unfrozen = true
+		freeze = false
 
 
 @rpc("any_peer", "call_local", "reliable")
 func surrender_authority(pickable, by):
-	set_multiplayer_authority(1)
-	print_debug("authority of ", self, " surrendered")
+	if temporarily_unfrozen:
+		temporarily_unfrozen = false
+		freeze = true
+	if multiplayer.get_remote_sender_id() != 1:
+		set_multiplayer_authority(1)
+		print("authority of ", self, " surrendered")
 
 
 func _ready():
 	super()
-	grabbed.connect(take_authority.rpc)
+	picked_up.connect(take_authority.rpc)
+	released.connect(surrender_authority.rpc)
+	for prop in ["replicated_position", "replicated_rotation", "replicated_linear_velocity", "replicated_angular_velocity"]:
+		$MultiplayerSynchronizer.replication_config.add_property(".:" + prop)
+		$MultiplayerSynchronizer.replication_config.property_set_replication_mode(".:" + prop, SceneReplicationConfig.ReplicationMode.REPLICATION_MODE_ON_CHANGE)
+		$MultiplayerSynchronizer.replication_config.property_set_spawn(".:" + prop, true)
+		
