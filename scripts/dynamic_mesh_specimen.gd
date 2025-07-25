@@ -30,6 +30,9 @@ func send_processing_request(function_name, args=null, kwargs=null):
 	mqtt_client.publish("godot/processing_requests", JSON.stringify(request_data))
 
 func _on_mqtt_message_received(topic, message):
+	if multiplayer.get_unique_id() != 1:
+		return
+	
 	var result_data = JSON.parse_string(message)
 	
 	# Handle the received mesh data
