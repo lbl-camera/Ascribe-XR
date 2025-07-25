@@ -96,7 +96,8 @@ void fragment() {
 		ray_pos += rd * STEP_SIZE;
 
 		vec3 tex_sample_pt = ((ray_pos * zoom) / 2.0) + vec3(0.5);
-		if (any(lessThan(tex_sample_pt, vec3(0.0))) || any(greaterThan(tex_sample_pt, vec3(1.0))))
+		if (any(lessThan(tex_sample_pt, vec3(0.0))) || 
+		    any(greaterThan(tex_sample_pt, vec3(1.0))))
 			break;
 
 		// Convert ray_pos from object space to world space for exclusion
