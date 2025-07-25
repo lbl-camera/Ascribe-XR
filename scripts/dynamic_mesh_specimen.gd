@@ -65,4 +65,4 @@ func _on_mqtt_message_received(topic, message):
 	if specimen_scene:
 		specimen_scene.queue_free()
 	specimen_scene = mesh_instance
-	set_pickable(make_pickable(mesh_instance))
+	set_pickable.rpc(make_pickable(mesh_instance))

@@ -70,7 +70,7 @@ func process_mesh_load() -> void:
 		if specimen_scene:
 			specimen_scene.queue_free()
 		var pickable = make_pickable(mesh_scene.instantiate())
-		set_pickable(pickable)
+		set_pickable.rpc(pickable)
 		loading_file = ""
 
 
@@ -86,7 +86,7 @@ func _on_file_dialog_file_selected(path: String) -> void:
 		var mesh_instance = MeshInstance3D.new()
 		mesh_instance.mesh = mesh
 		var pickable = make_pickable(mesh_instance)
-		set_pickable(pickable)
+		set_pickable.rpc(pickable)
 
 
 @rpc("any_peer", "call_local", "reliable")
