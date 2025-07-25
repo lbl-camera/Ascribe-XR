@@ -87,13 +87,14 @@ func _on_file_dialog_file_selected(path: String) -> void:
 		mesh_instance.mesh = mesh
 		var pickable = make_pickable(mesh_instance)
 		set_pickable(pickable)
-		
+
 
 @rpc("any_peer", "call_local", "reliable")
 func set_pickable(pickable: XRToolsPickable) -> void:
 	add_child(pickable)
 	ui_instance.get_node("%SettingsLayer").show()
 	ui_instance.get_node("%MaterialMenu").show()
+	ui_instance.get_node("%FileDialog").hide()
 
 
 func make_pickable(node: Node3D) -> Node3D:
