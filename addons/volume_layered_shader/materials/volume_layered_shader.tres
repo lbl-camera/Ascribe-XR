@@ -1,21 +1,12 @@
-[gd_resource type="ShaderMaterial" load_steps=4 format=4 uid="uid://b474tuur3w8tn"]
+[gd_resource type="ShaderMaterial" load_steps=2 format=4 uid="uid://b474tuur3w8tn"]
 
 [ext_resource type="Shader" uid="uid://o2nyo0pdjh67" path="res://shaders/raymarching.gdshader" id="1_2r7k8"]
-
-[sub_resource type="Gradient" id="Gradient_2r7k8"]
-offsets = PackedFloat32Array(0, 0.0410256, 1)
-colors = PackedColorArray(0.541176, 0.160784, 0.85098, 0, 0.541176, 0.160784, 0.85098, 0, 1, 1, 1, 1)
-
-[sub_resource type="GradientTexture1D" id="GradientTexture1D_yr4w7"]
-gradient = SubResource("Gradient_2r7k8")
 
 [resource]
 resource_local_to_scene = true
 render_priority = 0
 shader = ExtResource("1_2r7k8")
-shader_parameter/gradient = SubResource("GradientTexture1D_yr4w7")
 shader_parameter/zoom = 2.0
-shader_parameter/layers = 100
 shader_parameter/opacity = 1.0
 shader_parameter/gamma = 1.0
 shader_parameter/color_scalar = 1.0

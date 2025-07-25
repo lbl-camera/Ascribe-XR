@@ -1,6 +1,7 @@
 extends Specimen
 
 var stl_importer = preload("res://tools/stl_importer.gd")
+var multiplayer_pickable = preload("res://scenes/multiplayer_pickable_object.tscn")
 @export_file("*.stl", "*.fbx") var loading_file: String
 
 var specimen_scene: Node3D
@@ -68,10 +69,10 @@ func process_mesh_load() -> void:
 		var mesh_scene: PackedScene = ResourceLoader.load_threaded_get(loading_file)
 		if specimen_scene:
 			specimen_scene.queue_free()
-		make_pickable(mesh_scene.instantiate())
+		var pickable = make_pickable(mesh_scene.instantiate())
+		set_pickable(pickable)
 		loading_file = ""
-		ui_instance.get_node("%LoadingLayer").hide()
-		ui_instance.get_node("%SettingsLayer").show()
+
 
 
 func _on_file_dialog_file_selected(path: String) -> void:
@@ -84,28 +85,36 @@ func _on_file_dialog_file_selected(path: String) -> void:
 		var mesh          = stl_importer.new().import(path)
 		var mesh_instance = MeshInstance3D.new()
 		mesh_instance.mesh = mesh
-		make_pickable(mesh_instance)
-		ui_instance.get_node("%SettingsLayer").show()
-		ui_instance.get_node("%MaterialMenu").show()
+		var pickable = make_pickable(mesh_instance)
+		set_pickable(pickable)
+
+
+@rpc("any_peer", "call_local", "reliable")
+func set_pickable(pickable: XRToolsPickable) -> void:
+	add_child(pickable)
+	ui_instance.get_node("%SettingsLayer").show()
+	ui_instance.get_node("%MaterialMenu").show()
+	ui_instance.get_node("%FileDialog").hide()
 
 
 func make_pickable(node: Node3D) -> Node3D:
 	var collision: CollisionShape3D         = CollisionShape3D.new()
-	var pickable: MultiplayerPickableObject = MultiplayerPickableObject.new()
+	var pickable = multiplayer_pickable.instantiate()
 	pickable.add_child(node)
 	pickable.add_child(collision)
 	pickable.ranged_grab_method = XRToolsPickable.RangedMethod.LERP
 	pickable.second_hand_grab = XRToolsPickable.SecondHandGrab.SWAP
 	pickable.ranged_grab_speed = 10
 	pickable.freeze = true
+	pickable.sleeping = true
+	pickable.lock_rotation = true
 	pickable.set_collision_layer_value(1, false)
 	pickable.set_collision_layer_value(3, true)
 	for i in [1, 2, 3]:
 		pickable.set_collision_mask_value(i, true)
 
-	add_child(pickable)
-	specimen_scene = node
-	specimen_collision = collision
+	#specimen_scene = node
+	#specimen_collision = collision
 
 	var bounds = get_node_aabb(node)
 	var base   = bounds.get_center()-Vector3(0, bounds.position.y/2, 0)

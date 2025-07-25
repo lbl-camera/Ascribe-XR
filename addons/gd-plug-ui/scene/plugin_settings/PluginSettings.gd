@@ -206,9 +206,9 @@ func gd_plug_execute(name):
 	gd_plug._plug_end()
 	disable_ui(false)
 	_is_executing = false
-	    clear_environment()
+	clear_environment()
 
-update_plugin_list(get_plugged_plugins(), get_installed_plugins())
+	update_plugin_list(get_plugged_plugins(), get_installed_plugins())
 
 
 
