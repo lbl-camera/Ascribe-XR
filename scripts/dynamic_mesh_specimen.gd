@@ -34,9 +34,6 @@ func _on_mqtt_message_received(topic, message):
 		return
 	
 	var result_data = JSON.parse_string(message)
-	
-	# Handle the received mesh data
-	var mesh = ArrayMesh.new()
 
 	var verts = []
 	for p in result_data["vertices"]:
@@ -50,19 +47,6 @@ func _on_mqtt_message_received(topic, message):
 			#push_error("Bad index: " + str(i))
 		#max_idx = max(max_idx, i)
 	#print("Max index:", max_idx, "Vertex count:", verts.size())
-
-	var arrays = []
-	arrays.resize(Mesh.ARRAY_MAX)
-	arrays[Mesh.ARRAY_VERTEX] = PackedVector3Array(verts)
-	arrays[Mesh.ARRAY_INDEX] = PackedInt32Array(idxs)
-
-	mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arrays)
-
-	var mesh_instance = MeshInstance3D.new()
-	mesh_instance.mesh = mesh
-	mesh_instance.transform = Transform3D.IDENTITY
-
-	if specimen_scene:
-		specimen_scene.queue_free()
-	specimen_scene = mesh_instance
-	set_pickable.rpc(make_pickable(mesh_instance))
+	
+	set_mesh.rpc(verts, idxs)
+	
