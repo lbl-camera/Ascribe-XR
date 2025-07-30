@@ -88,10 +88,6 @@ func vr_left_button_pressed(button: String):
 
 func _input(event):
 	if event is InputEventKey and not event.echo:
-		if event.keycode == KEY_Q and event.pressed:
-			print("AudioServer.get_input_device_list ", AudioServer.get_input_device_list())
-			print("AudioServer.get_input_device ", AudioServer.get_input_device())
-
 		if event.keycode == KEY_M and event.pressed:
 			vr_right_button_pressed("by_button")
 		if event.keycode == KEY_F and event.pressed:
