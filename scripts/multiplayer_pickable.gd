@@ -30,11 +30,11 @@ func _integrate_forces(_state: PhysicsDirectBodyState3D) -> void:
 		rotation = replicated_rotation
 		linear_velocity = replicated_linear_velocity
 		angular_velocity = replicated_angular_velocity
-		
 
 
 
-func _physics_process(delta: float) -> void:
+
+func _physics_process(_delta: float) -> void:
 	if is_picked_up() and is_multiplayer_authority():
 		replicated_position = position
 		replicated_rotation = rotation
@@ -42,7 +42,7 @@ func _physics_process(delta: float) -> void:
 		replicated_angular_velocity = angular_velocity
 
 @rpc("any_peer", "call_local", "reliable")
-func take_authority(pickable):		
+func take_authority(_pickable):
 	if multiplayer.get_remote_sender_id() != 1:
 		set_multiplayer_authority(multiplayer.get_remote_sender_id())
 		print("authority of ", self, " given to ", multiplayer.get_remote_sender_id(), " on ", multiplayer.get_unique_id())
@@ -52,10 +52,10 @@ func take_authority(pickable):
 		freeze = false
 
 @rpc("any_peer", "call_local", "reliable")
-func surrender_authority(pickable, by):
+func surrender_authority(_pickable, _by):
 	if unfreeze_for_grab:
 		freeze = true
-		
+
 	if multiplayer.get_remote_sender_id() != 1:
 		set_multiplayer_authority(1)
 		print("authority of ", self, " surrendered")
@@ -67,8 +67,3 @@ func _ready():
 		unfreeze_for_grab = true
 	picked_up.connect(take_authority.rpc)
 	released.connect(surrender_authority.rpc)
-	for prop in ["replicated_position", "replicated_rotation", "replicated_linear_velocity", "replicated_angular_velocity"]:
-		$MultiplayerSynchronizer.replication_config.add_property(".:" + prop)
-		$MultiplayerSynchronizer.replication_config.property_set_replication_mode(".:" + prop, SceneReplicationConfig.ReplicationMode.REPLICATION_MODE_ON_CHANGE)
-		$MultiplayerSynchronizer.replication_config.property_set_spawn(".:" + prop, true)
-		
