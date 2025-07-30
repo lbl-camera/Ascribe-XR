@@ -2,3 +2,4 @@
 * text=auto eol=lf
 /specimens/ceramicfilaments.tres filter=lfs diff=lfs merge=lfs -text
 /scenes/sci-fi_lab.glb filter=lfs diff=lfs merge=lfs -text
+/specimens/sanfrancisco_topography.tscn filter=lfs diff=lfs merge=lfs -text
