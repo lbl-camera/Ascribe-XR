@@ -1,4 +1,4 @@
-[gd_scene load_steps=15 format=3 uid="uid://b8vb8h0jlqwl7"]
+[gd_scene load_steps=16 format=3 uid="uid://b8vb8h0jlqwl7"]
 
 [ext_resource type="PackedScene" uid="uid://bq86r4yll8po" path="res://addons/godot-xr-tools/hands/scenes/lowpoly/left_fullglove_low.tscn" id="1_6xita"]
 [ext_resource type="Script" uid="uid://bpes0gqpr3oa0" path="res://scripts/debug_label.gd" id="1_31r2h"]
@@ -12,6 +12,7 @@
 [ext_resource type="PackedScene" uid="uid://diyu06cw06syv" path="res://addons/godot-xr-tools/player/player_body.tscn" id="6_keit0"]
 [ext_resource type="PackedScene" uid="uid://cqhw276realc" path="res://addons/godot-xr-tools/functions/function_pointer.tscn" id="7_qssuy"]
 [ext_resource type="Material" uid="uid://rwfrc1fdcjsj" path="res://addons/godot-xr-tools/hands/materials/caucasian_hands_realistic.tres" id="8_8snm7"]
+[ext_resource type="Script" uid="uid://cgg8voki2t1ax" path="res://addons/godot-xr-tools/functions/movement_flight.gd" id="8_oprun"]
 [ext_resource type="PackedScene" uid="uid://dgdb1texynduw" path="res://addons/godot-xr-tools/objects/virtual_keyboard.tscn" id="13_bwjto"]
 [ext_resource type="PackedScene" uid="uid://wtpox7m5vu2b" path="res://addons/godot-xr-tools/effects/fade.tscn" id="14_606se"]
 
@@ -48,6 +49,15 @@ ranged_distance = 10.0
 ranged_angle = 45.0
 impulse_factor = 2.0
 
+[node name="XRToolsMovementFlight" type="Node" parent="LeftHandController" groups=["movement_providers"]]
+script = ExtResource("8_oprun")
+flight_button = "ax_button"
+pitch = 0
+bearing = 0
+speed_scale = 15.0
+speed_traction = 6.0
+metadata/_custom_type_script = "uid://cgg8voki2t1ax"
+
 [node name="RightHandController" type="XRController3D" parent="."]
 tracker = &"right_hand"
 
@@ -77,6 +87,7 @@ collision_mask = 5242884
 [node name="VirtualKeyboard" parent="." instance=ExtResource("13_bwjto")]
 transform = Transform3D(1, 0, 0, 0, 0.75354, 0.657402, 0, -0.657402, 0.75354, 0, -0.49593, -0.728043)
 visible = false
+collision_layer = 5242881
 
 [node name="Fade" parent="." instance=ExtResource("14_606se")]
 
