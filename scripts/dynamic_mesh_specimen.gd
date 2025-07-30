@@ -1,27 +1,27 @@
 extends "res://scripts/mesh_specimen.gd"
 
 var mqtt_client = null
-	
-	
+
+
 func _enter_tree() -> void:
 	super()
 	mqtt_client = get_tree().get_root().find_child("MQTT", true, false)
 	mqtt_client.subscribe("python/processing_responses")
 	mqtt_client.connect("received_message", _on_mqtt_message_received)
-	
+
 	test_request()
-	
-	
+
+
 func test_request():
 	send_processing_request('sphere')
 
 func send_processing_request(function_name, args=null, kwargs=null):
 	if args == null:
 		args = []
-	
+
 	if kwargs == null:
 		kwargs = {}
-	
+
 	var request_data = {
 		'function_name': function_name,
 		'args': args,
@@ -29,24 +29,27 @@ func send_processing_request(function_name, args=null, kwargs=null):
 	}
 	mqtt_client.publish("godot/processing_requests", JSON.stringify(request_data))
 
+var mesh_received = false
+
 func _on_mqtt_message_received(topic, message):
+	if mesh_received == true:
+		return
+
 	if multiplayer.get_unique_id() != 1:
 		return
-	
+
 	var result_data = JSON.parse_string(message)
 
-	var verts = []
-	for p in result_data["vertices"]:
-		verts.append(Vector3(p[0], p[1], p[2]))
-
+	var verts = result_data["vertices"]
 	var idxs = result_data["indices"]
-	
+
 	#var max_idx = 0
 	#for i in idxs:
 		#if i >= verts.size():
 			#push_error("Bad index: " + str(i))
 		#max_idx = max(max_idx, i)
 	#print("Max index:", max_idx, "Vertex count:", verts.size())
-	
-	set_mesh.rpc(verts, idxs)
-	
+
+	set_and_send_mesh(verts, idxs)
+	#send_mesh(verts, idxs)
+	mesh_received = true

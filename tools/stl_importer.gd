@@ -1,20 +1,38 @@
 extends Node
 
+func data_from_arraymesh(array_mesh: ArrayMesh):
+	var mesh_data = {
+		"vertices": [],
+		"indices": []
+	}
+
+	var surface_count = array_mesh.get_surface_count()
+	for surface_index in range(surface_count):
+		var arrays = array_mesh.surface_get_arrays(surface_index)
+		if arrays.empty():
+			continue
+		
+		var vertices = arrays[Mesh.ARRAY_VERTEX]
+		var indices = arrays[Mesh.ARRAY_INDEX]
+
+		# Append or process per surface if needed
+		mesh_data["vertices"] += vertices
+		mesh_data["indices"] += indices
+
+	return mesh_data
+
 func import(source_file):
 	# STL file format: https://web.archive.org/web/20210428125112/http://www.fabbers.com/tech/STL_Format
 	var file = FileAccess.open(source_file, FileAccess.READ)
 
-	var surface_tool = SurfaceTool.new()
-	surface_tool.begin(Mesh.PRIMITIVE_TRIANGLES)
+	var mesh_data = null
 
 	if is_ascii_stl(file):
-		process_ascii_stl(file, surface_tool)
+		mesh_data = process_ascii_stl(file)
 	else:
-		process_binary_stl(file, surface_tool)
+		mesh_data = process_binary_stl(file)
 
-	var final_mesh = surface_tool.commit()
-
-	return final_mesh
+	return mesh_data
 
 
 func is_ascii_stl(file):
@@ -30,105 +48,101 @@ func is_ascii_stl(file):
 	return is_ascii
 
 
-func process_binary_stl(file, surface_tool):
-	# first 80 bytes is an ASCII header, this is not important and can be skipped
+func process_binary_stl(file):
+	var vertices = []
+	var indices = []
+
+	# Skip 80-byte header
 	file.seek(80)
 
-	# next 4 bytes is the number of facets the file contains
-	var number_of_facets = file.get_32()
+	# Read number of triangles
+	var triangle_count = file.get_32()
 
-	for i in range(number_of_facets):
-		# first there will be 3 floats for the normals
-		var normal_x = file.get_float()
-		var normal_y = file.get_float()
-		var normal_z = file.get_float()
-		surface_tool.set_normal(Vector3(normal_x, normal_y, normal_z))
+	for i in range(triangle_count):
+		# Skip normal
+		for _1 in range(3):
+			file.get_float()
 
-		# then there wil be 3 vertices
-		# STL lists its vertices in counterclockwise order
-		# while Godot uses clockwise order for front faces in primitive triangle mode
-		# so we will temporarily store them and when we leave a facet add the vertices to surface_tool
-		var vertices = []
-		for j in range(3):
-			var x = file.get_float()
-			var y = file.get_float()
-			var z = file.get_float()
-			vertices.insert(0, Vector3(x, y, z))
+		# Read the 3 vertices in STL order
+		var v1 = [file.get_float(), file.get_float(), file.get_float()]
+		var v2 = [file.get_float(), file.get_float(), file.get_float()]
+		var v3 = [file.get_float(), file.get_float(), file.get_float()]
 
-		for vec in vertices:
-			surface_tool.add_vertex(vec)
+		# Flip order: STL CCW → Godot CW
+		vertices.append_array(v3)
+		indices.append(vertices.size() - 1)
 
-		# lastly there are 2 bytes that contain the attribute byte count
-		# this should be 0 but we will skipp the given amount to be sure we
-		# process the rest of the file correctly
-		var attribute_byte_count = file.get_16()
-		file.seek(file.get_position() + attribute_byte_count)
+		vertices.append_array(v2)
+		indices.append(vertices.size() - 1)
+
+		vertices.append_array(v1)
+		indices.append(vertices.size() - 1)
+
+		# Skip attribute byte count
+		file.get_16()
+
+	return {
+		"vertices": vertices,
+		"indices": indices
+	}
 
 
-func process_ascii_stl(file, surface_tool):
-	# STL lists its vertices in counterclockwise order
-	# while Godot uses clockwise order for front faces in primitive triangle mode
-	# so we will temporarily store them and when we leave a facet add the vertices to surface_tool
+func process_ascii_stl(file):
 	var vertices = []
-
-	# first line should be in the format "solid name"
-	# we are going to ignore the name
-	file.get_line()
+	var indices = []
+	var vertex_map = {}  # For deduplication
+	var next_index = 0
+	var temp_face = []
 
 	var parsing_state = PARSE_STATE.SOLID
 
-	while !file.eof_reached():
+	# Skip first line: "solid name"
+	file.get_line()
+
+	while not file.eof_reached():
 		if parsing_state == PARSE_STATE.SOLID:
 			var line = file.get_line().strip_edges(true, true)
 
-			# last line should be "endsolid name"
-			# just continue because the loop should end because EOF reached
 			if line.begins_with("endsolid"):
 				continue
 			elif line != "":
-				var parts = line.split(" ")
-
-				# first 2 items of the parts array should be "facet" and "normal"
-				# the next 3 items should be the normals
-				var normal_x = float(parts[2])
-				var normal_y = float(parts[3])
-				var normal_z = float(parts[4])
-				surface_tool.add_normal(Vector3(normal_x, normal_y, normal_z))
-
-				parsing_state = PARSE_STATE.FACET
+				var parts = line.split(" ", false)
+				if parts.size() >= 5 and parts[0] == "facet" and parts[1] == "normal":
+					# You could store normals here if needed
+					parsing_state = PARSE_STATE.FACET
 
 		elif parsing_state == PARSE_STATE.FACET:
 			var line = file.get_line().strip_edges(true, true)
-
-			if line == "endfacet":
-				parsing_state = PARSE_STATE.SOLID
-			elif line != "":
-				# line should be "outer loop"
-				# we can ignore this line and continue on to parsing the vertices
+			if line == "outer loop":
+				temp_face.clear()
 				parsing_state = PARSE_STATE.OUTER_LOOP
+			elif line == "endfacet":
+				parsing_state = PARSE_STATE.SOLID
 
 		elif parsing_state == PARSE_STATE.OUTER_LOOP:
 			var line = file.get_line().strip_edges(true, true)
 
 			if line == "endloop":
-				for vec in vertices:
-					surface_tool.add_vertex(vec)
-
-				vertices.clear()
+				# STL is CCW; Godot wants CW, so reverse
+				for v in temp_face.inverted():
+					if not vertex_map.has(v):
+						vertex_map[v] = next_index
+						vertices.append(v)
+						next_index += 1
+					indices.append(vertex_map[v])
 				parsing_state = PARSE_STATE.FACET
-			elif line != "":
-				var parts = line.split(" ")
+			elif line.begins_with("vertex"):
+				var parts = line.split(" ", false)
+				if parts.size() >= 4:
+					var x = float(parts[1])
+					var y = float(parts[2])
+					var z = float(parts[3])
+					temp_face.append(Vector3(x, y, z))
 
-				# first item of the parts array should be "vertex"
-				# the next 3 items should be the vertex coordinates
-				var x = float(parts[1])
-				var y = float(parts[2])
-				var z = float(parts[3])
-
-				# add the vertex at the front of the array
-				# this way we don't have to loop over the array in reverse
-				# to add the vertices to the mesh
-				vertices.insert(0, Vector3(x, y, z))
+	return {
+		"vertices": vertices,
+		"indices": indices
+	}
 
 
 enum PARSE_STATE {SOLID, FACET, OUTER_LOOP}

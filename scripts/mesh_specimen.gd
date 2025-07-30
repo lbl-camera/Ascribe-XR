@@ -15,9 +15,8 @@ func _ready():
 		_on_file_dialog_file_selected(loading_file)
 		ui_instance.get_node("%FileDialog").hide()
 
-
-#if OS.is_debug_build():
-#_on_file_dialog_file_selected(r"C:\Users\rp\Documents\vr-start\skullandmore.stl")
+	#if OS.is_debug_build() and multiplayer.get_unique_id()==1:
+		#_on_file_dialog_file_selected(r"C:\Users\rp\Documents\vr-start\skullandmore.stl")
 
 ## Return the [AABB] of the node.
 func get_node_aabb(node: Node, exclude_top_level_transform: bool = true) -> AABB:
@@ -33,6 +32,8 @@ func get_node_aabb(node: Node, exclude_top_level_transform: bool = true) -> AABB
 
 	# Recurse through all children
 	for child in node.get_children():
+		if "transform" not in child:
+			continue
 		var child_bounds: AABB = get_node_aabb(child, false)
 		if bounds.size == Vector3.ZERO:
 			bounds = child_bounds
@@ -69,8 +70,7 @@ func process_mesh_load() -> void:
 		var mesh_scene: PackedScene = ResourceLoader.load_threaded_get(loading_file)
 		if specimen_scene:
 			specimen_scene.queue_free()
-		var pickable = make_pickable(mesh_scene.instantiate())
-		set_pickable.rpc(pickable)
+		set_pickable.rpc(mesh_scene.instantiate())
 		loading_file = ""
 
 
@@ -82,15 +82,89 @@ func _on_file_dialog_file_selected(path: String) -> void:
 		ResourceLoader.load_threaded_request(path)
 		loading_file = path
 	elif extension == 'stl':
-		var mesh          = stl_importer.new().import(path)
-		var mesh_instance = MeshInstance3D.new()
-		mesh_instance.mesh = mesh
-		var pickable = make_pickable(mesh_instance)
-		set_pickable.rpc(pickable)
+		var importer = stl_importer.new()
+		var mesh_data     = importer.import(path)
+		set_and_send_mesh(mesh_data['vertices'])
+		
+		#set_mesh.rpc([1,2,3, 2,3,4,5,6,7])
+
+func build_mesh(vertices: Array, indices=null) -> ArrayMesh:
+	var st = SurfaceTool.new()
+	st.begin(Mesh.PRIMITIVE_TRIANGLES)
+
+	for i in range(len(vertices)/3):
+		st.add_vertex(Vector3(vertices[i*3],vertices[i*3+1],vertices[i*3+2]))
+			
+	if indices != null:
+		for index in indices:
+			st.add_index(index)
+
+	st.generate_normals()
+	return st.commit()
+	
+const CHUNK_SIZE = 2000
+
+func send_mesh(verts: Array, indices = null):
+	var total_vert_chunks = int(ceil(float(verts.size()) / CHUNK_SIZE))
+	for i in range(total_vert_chunks):
+		var chunk = verts.slice(i * CHUNK_SIZE, (i+1)*CHUNK_SIZE if (i+1)*CHUNK_SIZE<=len(verts) else 0x7FFFFFFF)
+		var is_last = (indices == null) and (i == total_vert_chunks - 1)
+		receive_mesh_vertices.rpc(chunk, is_last)
+		print("sent chunk ",i+1," of ", total_vert_chunks)
+		await get_tree().process_frame  # Let the engine breathe
+
+	if indices != null and indices.size() > 0:
+		var total_index_chunks = int(ceil(float(indices.size()) / CHUNK_SIZE))
+		for i in range(total_index_chunks):
+			var chunk = indices.slice(i * CHUNK_SIZE, (i+1)*CHUNK_SIZE if (i+1)*CHUNK_SIZE<=len(indices) else 0x7FFFFFFF)
+			var is_last = (i == total_index_chunks - 1)
+			receive_mesh_indices.rpc(chunk, is_last)
+			print("sent chunk ",i+1," of ", total_index_chunks)
+			await get_tree().process_frame  # Let the engine breathe
+		
+var received_verts = []
+var received_indices = []
+		
+@rpc("any_peer", "call_remote", "reliable")
+func receive_mesh_vertices(chunk: Array, is_last: bool) -> void:
+	received_verts.append_array(chunk)
+	
+	if is_last:
+		# Finished receiving all vertex chunks
+		set_mesh(received_verts)
+		received_verts = []
 
 
-@rpc("any_peer", "call_local", "reliable")
-func set_pickable(pickable: XRToolsPickable) -> void:
+@rpc("any_peer", "call_remote", "reliable")
+func receive_mesh_indices(chunk: Array, is_last: bool) -> void:
+	received_indices.append_array(chunk)
+	
+	if is_last:
+		# Finished receiving all index chunks
+		set_mesh(received_verts, received_indices)
+		received_verts = []
+		received_indices = []
+
+func set_mesh(verts: Array, indices=null):
+	print('mesh set on ', multiplayer.get_unique_id())
+	# Handle the received mesh data
+	var mesh = build_mesh(verts, indices)
+
+	var mesh_instance = MeshInstance3D.new()
+	mesh_instance.mesh = mesh
+	mesh_instance.transform = Transform3D.IDENTITY
+
+	if specimen_scene:
+		specimen_scene.queue_free()
+	specimen_scene = mesh_instance
+	set_pickable(mesh_instance)
+	
+func set_and_send_mesh(verts: Array, indices=null):
+	set_mesh(verts, indices)
+	send_mesh(verts, indices)
+
+func set_pickable(node:Node3D) -> void:
+	var pickable = make_pickable(node)
 	add_child(pickable)
 	ui_instance.get_node("%SettingsLayer").show()
 	ui_instance.get_node("%MaterialMenu").show()
@@ -141,7 +215,16 @@ func _on_materiallist_item_selected(index: int):
 
 
 func set_shader(material_name: String = "glass"):
-	var shader                   = load("res://shaders/" + material_name.to_lower() + ".gdshader")
-	var material: ShaderMaterial = ShaderMaterial.new()
-	material.shader = shader
-	specimen_scene.set_surface_override_material(0, material)
+	var shader_path = "res://shaders/" + material_name.to_lower() + ".gdshader"
+	var shader_material_path = "res://shaders/" + material_name.to_lower() + ".tres"
+	var material: ShaderMaterial = null
+	if FileAccess.file_exists(shader_material_path):
+		material = load(shader_material_path)
+	else:
+		material  = ShaderMaterial.new()
+		var shader: Shader           = load("res://shaders/" + material_name.to_lower() + ".gdshader")
+		material.shader = shader
+	if material:
+		specimen_scene.set_surface_override_material(0, material)
+	else:
+		print('Could not find material: ', material_name)
