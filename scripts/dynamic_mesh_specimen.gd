@@ -31,7 +31,7 @@ func send_processing_request(function_name, args=null, kwargs=null):
 
 var mesh_received = false
 
-func _on_mqtt_message_received(topic, message):
+func _on_mqtt_message_received(_topic, message):
 	if mesh_received == true:
 		return
 
