@@ -84,13 +84,14 @@ func change_3d_scene(new_scene: PackedScene, delete: bool = true, keep_running: 
 		Specimen.ScaleMode.TABLE:
 			# position over table
 			specimens_root.global_position = world_3d.get_node("spawnmarker1").global_position
+			set_room_scene(room_name)
 
 		Specimen.ScaleMode.WORLD:
 			# position at origin
 			specimens_root.global_position = Vector3(0, 0, 0)
 			# hide environment
-			world_3d.hide()
-			$/root/Main/Floor.hide()
+			set_room_scene('world_scale')
+			
 
 	if specimen.ui:
 		specimen_ui_viewport.scene = specimen.ui
@@ -131,3 +132,28 @@ func spawn_callback(node: Node3D) -> void:
 func set_spawner_authority():
 	specimen_spawner.set_multiplayer_authority(multiplayer.get_remote_sender_id())
 	specimen_synchronizer.set_multiplayer_authority(multiplayer.get_remote_sender_id())
+	
+	
+@export var room_name = 'lab'
+
+func set_room_scene(name):
+	match name:
+		'lab':
+			$/root/Main/Sketchfab_Scene.show()
+			$/root/Main/XROrigin3D/OpenXRFbPassthroughGeometry.hide()
+			$/root/Main/Black.hide()
+			room_name = name
+		'black':
+			$/root/Main/Sketchfab_Scene.hide()
+			$/root/Main/XROrigin3D/OpenXRFbPassthroughGeometry.hide()
+			$/root/Main/Black.show()
+			room_name = name
+		'passthrough':
+			$/root/Main/Sketchfab_Scene.hide()
+			$/root/Main/XROrigin3D/OpenXRFbPassthroughGeometry.show()
+			$/root/Main/Black.hide()
+			room_name = name
+		'world_scale':
+			$/root/Main/Sketchfab_Scene.hide()
+			$/root/Main/XROrigin3D/OpenXRFbPassthroughGeometry.hide()
+			$/root/Main/Black.hide()
