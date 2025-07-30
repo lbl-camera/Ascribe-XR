@@ -1,9 +1,10 @@
-[gd_scene load_steps=5 format=3 uid="uid://b35efg3sp0ihu"]
+[gd_scene load_steps=6 format=3 uid="uid://b35efg3sp0ihu"]
 
 [ext_resource type="PackedScene" uid="uid://bajc3fgqqv584" path="res://scenes/specimen.tscn" id="1_xchh8"]
 [ext_resource type="Script" uid="uid://cplmyah03kuq1" path="res://scripts/mesh_specimen.gd" id="2_6ounj"]
 [ext_resource type="PackedScene" uid="uid://iesva21db3ri" path="res://scenes/mesh_menu.tscn" id="3_6ounj"]
 [ext_resource type="Texture2D" uid="uid://ejiy44qw4edl" path="res://assets/textures/thumbnails/3d-file.png" id="3_d63jp"]
+[ext_resource type="PackedScene" uid="uid://d0exl0n5q6gvy" path="res://scenes/multiplayer_pickable_object.tscn" id="5_adm0n"]
 
 [node name="Specimen" instance=ExtResource("1_xchh8")]
 script = ExtResource("2_6ounj")
@@ -11,3 +12,5 @@ loading_file = ""
 display_name = "Load Mesh File"
 thumbnail = ExtResource("3_d63jp")
 ui = ExtResource("3_6ounj")
+
+[node name="MultiplayerPickableObject" parent="." index="0" instance=ExtResource("5_adm0n")]
