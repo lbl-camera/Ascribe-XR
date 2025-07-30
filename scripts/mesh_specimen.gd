@@ -1,7 +1,6 @@
 extends Specimen
 
 var stl_importer = preload("res://tools/stl_importer.gd")
-var multiplayer_pickable = preload("res://scenes/multiplayer_pickable_object.tscn")
 @export_file("*.stl", "*.fbx") var loading_file: String
 
 var specimen_scene: Node3D
@@ -10,10 +9,19 @@ var specimen_base_scale: float = 1
 static var TABLE_SIZE: float   = 1
 
 
-func _ready():
+func _enter_tree():
+	super._enter_tree()
+	
 	if loading_file:
-		_on_file_dialog_file_selected(loading_file)
+		var mesh_data = load_path(loading_file)
+		if mesh_data != null:
+			set_mesh(mesh_data['vertices'])
 		ui_instance.get_node("%FileDialog").hide()
+
+
+	ui_instance.get_node("%FileDialog").file_selected.connect(_on_file_dialog_file_selected)
+	ui_instance.get_node("%Scale").value_changed.connect(_on_scale_value_changed)
+	ui_instance.get_node("%MaterialList").item_selected.connect(_on_materiallist_item_selected)
 
 	#if OS.is_debug_build() and multiplayer.get_unique_id()==1:
 		#_on_file_dialog_file_selected(r"C:\Users\rp\Documents\vr-start\skullandmore.stl")
@@ -46,13 +54,6 @@ func get_node_aabb(node: Node, exclude_top_level_transform: bool = true) -> AABB
 	return bounds
 
 
-func _enter_tree() -> void:
-	super._enter_tree()
-	ui_instance.get_node("%FileDialog").file_selected.connect(_on_file_dialog_file_selected)
-	ui_instance.get_node("%Scale").value_changed.connect(_on_scale_value_changed)
-	ui_instance.get_node("%MaterialList").item_selected.connect(_on_materiallist_item_selected)
-
-
 func _process(delta: float) -> void:
 	process_mesh_load()
 
@@ -76,6 +77,12 @@ func process_mesh_load() -> void:
 
 
 func _on_file_dialog_file_selected(path: String) -> void:
+	var mesh_data = load_path(path)
+	if mesh_data != null:
+		set_and_send_mesh(mesh_data['vertices'])
+
+	
+func load_path(path):
 	var extension: String = path.get_extension()
 	if extension in ['fbx']:
 		ui_instance.get_node("LoadingLayer").show()
@@ -84,8 +91,7 @@ func _on_file_dialog_file_selected(path: String) -> void:
 	elif extension == 'stl':
 		var importer = stl_importer.new()
 		var mesh_data     = importer.import(path)
-		set_and_send_mesh(mesh_data['vertices'])
-		
+		return mesh_data
 		#set_mesh.rpc([1,2,3, 2,3,4,5,6,7])
 
 func build_mesh(vertices: Array, indices=null) -> ArrayMesh:
@@ -164,28 +170,17 @@ func set_and_send_mesh(verts: Array, indices=null):
 	send_mesh(verts, indices)
 
 func set_pickable(node:Node3D) -> void:
-	var pickable = make_pickable(node)
-	add_child(pickable)
+	make_pickable(node)
 	ui_instance.get_node("%SettingsLayer").show()
 	ui_instance.get_node("%MaterialMenu").show()
 	ui_instance.get_node("%FileDialog").hide()
 
 
-func make_pickable(node: Node3D) -> Node3D:
+func make_pickable(node: Node3D):
 	var collision: CollisionShape3D         = CollisionShape3D.new()
-	var pickable = multiplayer_pickable.instantiate()
+	var pickable = $MultiplayerPickableObject
 	pickable.add_child(node)
 	pickable.add_child(collision)
-	pickable.ranged_grab_method = XRToolsPickable.RangedMethod.LERP
-	pickable.second_hand_grab = XRToolsPickable.SecondHandGrab.SWAP
-	pickable.ranged_grab_speed = 10
-	pickable.freeze = true
-	pickable.sleeping = true
-	pickable.lock_rotation = true
-	pickable.set_collision_layer_value(1, false)
-	pickable.set_collision_layer_value(3, true)
-	for i in [1, 2, 3]:
-		pickable.set_collision_mask_value(i, true)
 
 	#specimen_scene = node
 	#specimen_collision = collision
@@ -198,8 +193,6 @@ func make_pickable(node: Node3D) -> Node3D:
 	node.position -= base/bounds.get_longest_axis_size()
 	collision.position -= base/bounds.get_longest_axis_size()
 	collision.scale *= specimen_base_scale
-
-	return pickable
 
 
 func _on_scale_value_changed(value: float) -> void:
