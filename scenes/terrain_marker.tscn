@@ -54,7 +54,7 @@ script = ExtResource("1_w5tjr")
 transform = Transform3D(-2.32024e-08, 0.530808, 0, -0.530808, -2.32024e-08, 0, 0, 0, 0.530808, -0.0577124, 1.05388, -0.0828238)
 
 [node name="Arrow" parent="3D RightArrow" index="0"]
-transform = Transform3D(100, 0, 0, 0, -4.37114e-06, 100, 0, -100, -4.37114e-06, 0.11483, 0.108584, 0.150565)
+transform = Transform3D(100, 0, 0, 0, -0.000361999, 100, 0, -100, -0.000361999, 0.11483, 0.108584, 0.150565)
 surface_material_override/0 = SubResource("StandardMaterial3D_w5tjr")
 
 [node name="AnimationPlayer" type="AnimationPlayer" parent="."]
