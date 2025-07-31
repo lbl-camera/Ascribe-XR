@@ -58,24 +58,44 @@ func prep_for_new_3d_scene():
 	world_3d.show()
 	$/root/Main/Floor.hide()
 	specimen_ui_viewport.scene = null
+	if current_3d_scene:
+		current_3d_scene.queue_free()
+		current_3d_scene = null
 
-func change_3d_scene(new_scene: PackedScene, delete: bool = true, keep_running: bool = false) -> void:
+func change_3d_scene(new_scene: PackedScene) -> void:
+	set_spawner_authority.rpc()
 	prep_for_new_3d_scene.rpc()
-	# These changes should be automatically synced by spawner and synchronizer
-	if current_3d_scene != null:
-		if delete:
-			current_3d_scene.queue_free() # removes node entirely
-		elif keep_running:
-			current_3d_scene.visible = false # keeps in memory and running
-		else:
-			specimens_root.remove_child(current_3d_scene) # keeps in memory, does not run
+	
 	$/root/Main/GPUParticles3D.emitting = true
 	var specimen: Specimen = new_scene.instantiate()
-	get_tree().create_timer(.5).timeout.connect(spawn_callback.bind(specimen))
+	specimen.hide()
+
+	current_3d_scene = specimen
+	get_tree().create_timer(.5).timeout.connect(post_change_3d_scene.rpc)
 	
 @rpc("any_peer", "call_local", "reliable")
+func set_spawner_authority():
+	specimen_spawner.set_multiplayer_authority(multiplayer.get_remote_sender_id())
+	specimen_synchronizer.set_multiplayer_authority(multiplayer.get_remote_sender_id())
+
+@rpc("any_peer", "call_local", "reliable")
 func post_change_3d_scene():
-	var specimen = specimens_root.get_child(0)
+	var specimen = null
+	if specimen_spawner.get_multiplayer_authority() == multiplayer.get_unique_id():
+		specimens_root.add_child(current_3d_scene)
+		specimen = current_3d_scene
+	else:
+		var i = 0
+		while specimens_root.get_child_count() == 0 and i<1000:
+			i+=1
+			print(i)
+			await get_tree().process_frame  # Let the engine breathe
+		if i==100:
+			push_error('Unable to change specimen; ',multiplayer.get_remote_sender_id(),'->',multiplayer.get_unique_id())
+			return
+		else:
+			specimen = specimens_root.get_child(0)
+	
 	match specimen.scale_mode:
 		Specimen.ScaleMode.TABLE:
 			# position over table
@@ -89,6 +109,7 @@ func post_change_3d_scene():
 			set_room_scene('world_scale')
 
 	current_3d_scene = specimen
+	specimen.show()
 
 	hide_mainmenu()
 
@@ -110,11 +131,6 @@ func toggle_mainmenu() -> void:
 func _unhandled_input(event: InputEvent) -> void:
 	if event.is_action("ui_menu") and event.is_pressed():
 		toggle_mainmenu()
-
-
-func spawn_callback(node: Node3D) -> void:
-	specimens_root.add_child(node)
-	post_change_3d_scene.rpc()
 	
 	
 @export var room_name = 'lab'
