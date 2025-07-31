@@ -12,7 +12,7 @@ noise = SubResource("FastNoiseLite_phhhr")
 [resource]
 render_priority = 0
 shader = ExtResource("1_243dc")
-shader_parameter/time_speed = 0.01
+shader_parameter/time_speed = 0.005
 shader_parameter/surface_speed = 1.0
 shader_parameter/spin = 0.0
 shader_parameter/brightness = 0.6
