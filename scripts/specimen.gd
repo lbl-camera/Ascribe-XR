@@ -22,7 +22,8 @@ func _enter_tree() -> void:
 		specimen_viewport.scene = ui
 		ui_instance = specimen_viewport.get_scene_instance()
 	
-	if story_text:
-		story_ui_viewport.get_node("Viewport/StoryUI").story = story_text
-	else:
-		story_ui_viewport.get_node("Viewport/StoryUI").story = PackedStringArray()
+	if story_ui_viewport:
+		if story_text:
+			story_ui_viewport.get_node("Viewport/StoryUI").story = story_text
+		else:
+			story_ui_viewport.get_node("Viewport/StoryUI").story = PackedStringArray()
