@@ -1,4 +1,4 @@
-[gd_scene load_steps=35 format=3 uid="uid://do7g4piyhqxid"]
+[gd_scene load_steps=36 format=3 uid="uid://do7g4piyhqxid"]
 
 [ext_resource type="Script" uid="uid://bl1kbl82hwxv5" path="res://scripts/ascribemain.gd" id="1_wh57r"]
 [ext_resource type="PackedScene" uid="uid://b8vb8h0jlqwl7" path="res://scenes/player.tscn" id="2_cym13"]
@@ -9,6 +9,7 @@
 [ext_resource type="PackedScene" uid="uid://dbp3m7l7qf3o7" path="res://scenes/story_ui.tscn" id="7_8mub2"]
 [ext_resource type="PackedScene" uid="uid://clujaf3u776a3" path="res://addons/godot-xr-tools/objects/viewport_2d_in_3d.tscn" id="7_54uq5"]
 [ext_resource type="PackedScene" uid="uid://cfmoahalri06d" path="res://addons/player-networking/NetworkGateway.tscn" id="8_l4ajn"]
+[ext_resource type="Texture2D" uid="uid://b4dgsigyqvvhy" path="res://assets/textures/particles/kenny/star_08.png" id="8_u14qs"]
 [ext_resource type="PackedScene" uid="uid://bgw2tanm4il3j" path="res://avatars/tunnelvrplayeravatar/VRPlayerAvatar.tscn" id="9_xk2ox"]
 [ext_resource type="PackedScene" uid="uid://wtpox7m5vu2b" path="res://addons/godot-xr-tools/effects/fade.tscn" id="10_4pnrr"]
 [ext_resource type="Texture2D" uid="uid://n8in475h2ylx" path="res://assets/textures/sprites/controls.png" id="11_wh57r"]
@@ -55,6 +56,8 @@ curve = SubResource("Curve_dbsq1")
 emission_shape_scale = Vector3(4, 4, 4)
 emission_shape = 1
 emission_sphere_radius = 0.05
+angular_velocity_min = -112.95
+angular_velocity_max = 113.67
 radial_velocity_min = 0.199978
 radial_velocity_max = 0.199978
 gravity = Vector3(0, 0.1, 0)
@@ -71,6 +74,7 @@ transparency = 1
 blend_mode = 1
 shading_mode = 0
 vertex_color_use_as_albedo = true
+albedo_texture = ExtResource("8_u14qs")
 billboard_mode = 3
 billboard_keep_scale = true
 particles_anim_h_frames = 1
@@ -85,14 +89,14 @@ size = Vector2(0.1, 0.1)
 resource_local_to_scene = true
 size = Vector2(3, 1.68)
 
-[sub_resource type="ViewportTexture" id="ViewportTexture_cym13"]
+[sub_resource type="ViewportTexture" id="ViewportTexture_u14qs"]
 viewport_path = NodePath("Viewport")
 
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_u14qs"]
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_g577c"]
 transparency = 1
 cull_mode = 2
 shading_mode = 0
-albedo_texture = SubResource("ViewportTexture_cym13")
+albedo_texture = SubResource("ViewportTexture_u14qs")
 texture_filter = 1
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_7amqy"]
@@ -103,13 +107,13 @@ size = Vector3(3, 1.68, 0.02)
 resource_local_to_scene = true
 size = Vector2(3, 2)
 
-[sub_resource type="ViewportTexture" id="ViewportTexture_g577c"]
+[sub_resource type="ViewportTexture" id="ViewportTexture_7amqy"]
 viewport_path = NodePath("Viewport")
 
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_7amqy"]
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_lu54x"]
 transparency = 1
 cull_mode = 2
-albedo_texture = SubResource("ViewportTexture_g577c")
+albedo_texture = SubResource("ViewportTexture_7amqy")
 texture_filter = 1
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_tjbaa"]
@@ -189,7 +193,7 @@ size = Vector2i(1152, 648)
 
 [node name="Screen" parent="StoryUIViewport" index="1"]
 mesh = SubResource("QuadMesh_wh57r")
-surface_material_override/0 = SubResource("StandardMaterial3D_u14qs")
+surface_material_override/0 = SubResource("StandardMaterial3D_g577c")
 
 [node name="StaticBody3D" parent="StoryUIViewport" index="2"]
 screen_size = Vector2(3, 1.68)
@@ -205,7 +209,7 @@ viewport_size = Vector2(1152, 648)
 unshaded = true
 
 [node name="ViewportNetworkGateway" parent="." instance=ExtResource("7_54uq5")]
-transform = Transform3D(-1, 0, 8.74228e-08, 0, 1, 0, -8.74228e-08, 0, -1, -0.0960379, 1.63634, 3.1931)
+transform = Transform3D(-0.9, 0, 1.35896e-07, 0, 0.9, 0, -1.35896e-07, 0, -0.9, -0.0960379, 1.08073, 3.1931)
 visible = false
 viewport_size = Vector2(690, 400)
 
@@ -218,7 +222,7 @@ localplayerscene = ""
 
 [node name="Screen" parent="ViewportNetworkGateway" index="1"]
 mesh = SubResource("QuadMesh_t38f3")
-surface_material_override/0 = SubResource("StandardMaterial3D_7amqy")
+surface_material_override/0 = SubResource("StandardMaterial3D_lu54x")
 
 [node name="StaticBody3D" parent="ViewportNetworkGateway" index="2"]
 viewport_size = Vector2(690, 400)
