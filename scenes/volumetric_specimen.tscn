@@ -14,9 +14,6 @@ data_file = ""
 
 [node name="MultiplayerPickableObject" parent="." index="0" instance=ExtResource("3_idt6j")]
 gravity_scale = 0.0
-sleeping = true
-lock_rotation = true
-freeze = true
 second_hand_grab = 2
 
 [node name="VolumeLayeredShader" type="Node3D" parent="MultiplayerPickableObject" index="1"]
