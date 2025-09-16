@@ -1,5 +1,5 @@
 extends "res://addons/godot-xr-tools/objects/pickable.gd"
-class_name MultiplayerPickableObject
+class_name MultiplayerPickable
 
 # these are configured as "Watch" in the MultiplayerSynchronizer
 @export var replicated_position: Vector3

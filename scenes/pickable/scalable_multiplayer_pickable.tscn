@@ -1,7 +1,7 @@
-[gd_scene load_steps=4 format=3 uid="uid://d0exl0n5q6gvy"]
+[gd_scene load_steps=4 format=3 uid="uid://doq5u7h5wo2vf"]
 
 [ext_resource type="PackedScene" uid="uid://c8l60rnugru40" path="res://addons/godot-xr-tools/objects/pickable.tscn" id="1_jqoqb"]
-[ext_resource type="Script" uid="uid://bfl1vx683175r" path="res://scripts/multiplayer_pickable.gd" id="2_3cpjn"]
+[ext_resource type="Script" uid="uid://b6vuc0km8hjo1" path="res://scripts/pickable/scalable_multiplayer_pickable.gd" id="2_fa851"]
 
 [sub_resource type="SceneReplicationConfig" id="SceneReplicationConfig_ag8uh"]
 properties/0/path = NodePath(".:replicated_position")
@@ -17,18 +17,21 @@ properties/3/path = NodePath(".:replicated_angular_velocity")
 properties/3/spawn = true
 properties/3/replication_mode = 2
 
-[node name="MultiplayerPickableObject" instance=ExtResource("1_jqoqb")]
+[node name="ScalableMultiplayerPickableObject" instance=ExtResource("1_jqoqb")]
 sleeping = true
 lock_rotation = true
 freeze = true
-script = ExtResource("2_3cpjn")
+script = ExtResource("2_fa851")
+min_scale = 0.1
+max_scale = 10.0
+scale_smoothing = 0.1
+center_while_scaling = true
+scale_mass_with_volume = true
+scalable_second_hand_grab = 3
 replicated_position = Vector3(0, 0, 0)
 replicated_rotation = Vector3(0, 0, 0)
 replicated_linear_velocity = Vector3(0, 0, 0)
 replicated_angular_velocity = Vector3(0, 0, 0)
-ranged_grab_method = 2
-second_hand_grab = 1
-ranged_grab_speed = 10.0
 
 [node name="MultiplayerSynchronizer" type="MultiplayerSynchronizer" parent="." index="0"]
 replication_config = SubResource("SceneReplicationConfig_ag8uh")
