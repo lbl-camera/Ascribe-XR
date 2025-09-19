@@ -45,6 +45,8 @@ shape = SubResource("BoxShape3D_dobnj")
 
 [node name="MultiplayerPickable" parent="." index="1" instance=ExtResource("7_glbsk")]
 transform = Transform3D(-4.37114e-08, 1, 0, -1, -4.37114e-08, 0, 0, 0, 1, -0.320414, 0, 0)
+visible = false
+collision_layer = 0
 gravity_scale = 0.0
 
 [node name="aura" type="MeshInstance3D" parent="MultiplayerPickable" index="1"]
