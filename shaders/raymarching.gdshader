@@ -2,8 +2,8 @@ shader_type spatial;
 render_mode unshaded, cull_front;
 
 const int MAX_EXCLUSION_PLANES = 4;
-const int MAX_STEPS = 128;
-const float STEP_SIZE = 0.005;
+uniform int max_steps = 256;
+uniform float step_size = 0.005;
 
 uniform sampler3D texture_volume : source_color, filter_linear_mipmap, repeat_disable;
 uniform sampler2D gradient : filter_linear_mipmap, repeat_disable;
@@ -45,13 +45,13 @@ vec4 raymarch(vec3 ray_origin, vec3 ray_dir) {
 	vec4 accumulated_color = vec4(0.0);
 	float total_opacity = 0.0;
 
-	for (int i = 0; i < MAX_STEPS; ++i) {
-		ray_origin += ray_dir * STEP_SIZE;
+	for (int i = 0; i < max_steps; ++i) {
+		ray_origin += ray_dir * step_size;
 
 		vec3 tex_sample_pt = ((ray_origin * zoom) / 2.0) + vec3(0.5);
 		if (any(lessThan(tex_sample_pt, vec3(0.0))) || any(greaterThan(tex_sample_pt, vec3(1.0))))
 			break;
-			
+
 		if (is_outside_exclusion_planes(ray_origin)) {
 			continue;
 		}
@@ -92,11 +92,11 @@ void fragment() {
 	float total_opacity = 0.0;
 	vec3 ray_pos = ro;
 
-	for (int i = 0; i < MAX_STEPS; ++i) {
-		ray_pos += rd * STEP_SIZE;
+	for (int i = 0; i < max_steps; ++i) {
+		ray_pos += rd * step_size;
 
 		vec3 tex_sample_pt = ((ray_pos * zoom) / 2.0) + vec3(0.5);
-		if (any(lessThan(tex_sample_pt, vec3(0.0))) || 
+		if (any(lessThan(tex_sample_pt, vec3(0.0))) ||
 		    any(greaterThan(tex_sample_pt, vec3(1.0))))
 			break;
 
