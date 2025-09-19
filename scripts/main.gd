@@ -65,14 +65,14 @@ func prep_for_new_3d_scene():
 func change_3d_scene(new_scene: PackedScene) -> void:
 	set_spawner_authority.rpc()
 	prep_for_new_3d_scene.rpc()
-	
+
 	$/root/Main/GPUParticles3D.emitting = true
 	var specimen: Specimen = new_scene.instantiate()
 	specimen.hide()
 
 	current_3d_scene = specimen
 	get_tree().create_timer(.5).timeout.connect(post_change_3d_scene.rpc)
-	
+
 @rpc("any_peer", "call_local", "reliable")
 func set_spawner_authority():
 	specimen_spawner.set_multiplayer_authority(multiplayer.get_remote_sender_id())
@@ -95,7 +95,7 @@ func post_change_3d_scene():
 			return
 		else:
 			specimen = specimens_root.get_child(0)
-	
+
 	match specimen.scale_mode:
 		Specimen.ScaleMode.TABLE:
 			# position over table
@@ -116,23 +116,24 @@ func post_change_3d_scene():
 func hide_mainmenu() -> void:
 	if $/root/Main.is_ancestor_of(mainmenu):
 		$/root/Main.remove_child(mainmenu)
-	
+
 func show_mainmenu() -> void:
 	if not $/root/Main.is_ancestor_of(mainmenu):
 		$/root/Main.add_child(mainmenu)
 
 func toggle_mainmenu() -> void:
-	if mainmenu.get_parent():
-		hide_mainmenu()
-	else:
-		show_mainmenu()
+	if mainmenu:
+		if mainmenu.get_parent():
+			hide_mainmenu()
+		else:
+			show_mainmenu()
 
 
 func _unhandled_input(event: InputEvent) -> void:
 	if event.is_action("ui_menu") and event.is_pressed():
 		toggle_mainmenu()
-	
-	
+
+
 @export var room_name = 'lab'
 
 func set_room_scene(name):

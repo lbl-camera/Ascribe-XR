@@ -18,7 +18,7 @@ func _enter_tree() -> void:
 	var specimen_viewport = $/root/Main/SpecimenUIViewport
 	var story_ui_viewport = $/root/Main/StoryUIViewport
 	
-	if ui:
+	if ui and specimen_viewport:
 		specimen_viewport.scene = ui
 		ui_instance = specimen_viewport.get_scene_instance()
 	
