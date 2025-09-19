@@ -22,6 +22,10 @@ addons/twovoip
 addons/webrtc
 addons/xr-autohandtracker
 addons/xr-simulator
+addons/player-networking
+addons/godotopensxrvendors
+
+#  aider
 .aider*
 
 # Rider
