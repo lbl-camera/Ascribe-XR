@@ -46,8 +46,6 @@ shadow_enabled = true
 
 [node name="ScalableMultiplayerPickableObject" parent="." instance=ExtResource("4_fe485")]
 unique_name_in_owner = true
-center_while_scaling = false
-scale_mass_with_volume = true
 
 [node name="MeshInstance3D" type="MeshInstance3D" parent="ScalableMultiplayerPickableObject"]
 mesh = SubResource("BoxMesh_k0x1c")
