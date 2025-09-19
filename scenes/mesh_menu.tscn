@@ -1,4 +1,4 @@
-[gd_scene load_steps=9 format=3 uid="uid://iesva21db3ri"]
+[gd_scene load_steps=10 format=3 uid="uid://iesva21db3ri"]
 
 [ext_resource type="Texture2D" uid="uid://cv7ck0xkk6jb5" path="res://assets/textures/thumbnails/glass.png" id="1_j5gb6"]
 [ext_resource type="Texture2D" uid="uid://bdkn8xfqv0wa3" path="res://assets/textures/thumbnails/crystal.png" id="2_xcpp4"]
@@ -8,6 +8,7 @@
 [ext_resource type="Texture2D" uid="uid://dworvc0jvdt6l" path="res://assets/textures/thumbnails/holographic.png" id="6_6b6mt"]
 [ext_resource type="Texture2D" uid="uid://ytctk0pk3qqa" path="res://assets/textures/thumbnails/edges.png" id="7_jet37"]
 [ext_resource type="Texture2D" uid="uid://dix6m8icimqxe" path="res://assets/textures/thumbnails/jello.png" id="8_fkx36"]
+[ext_resource type="PackedScene" uid="uid://c8k84ysosm2jr" path="res://scenes/filedialog.tscn" id="9_jet37"]
 
 [node name="Panel" type="Panel"]
 anchors_preset = 15
@@ -82,38 +83,6 @@ item_6/icon = ExtResource("7_jet37")
 item_7/text = "Jello"
 item_7/icon = ExtResource("8_fkx36")
 
-[node name="GridContainer" type="GridContainer" parent="SettingsLayer/MarginContainer/VBoxContainer"]
-layout_mode = 2
-columns = 2
-
-[node name="Label" type="Label" parent="SettingsLayer/MarginContainer/VBoxContainer/GridContainer"]
-layout_mode = 2
-text = "Model Scale"
-
-[node name="Scale" type="HSlider" parent="SettingsLayer/MarginContainer/VBoxContainer/GridContainer"]
-unique_name_in_owner = true
-layout_mode = 2
-size_flags_horizontal = 3
-size_flags_vertical = 1
-min_value = 0.001
-step = 0.001
-value = 1.0
-exp_edit = true
-
-[node name="FileDialog" type="FileDialog" parent="."]
-unique_name_in_owner = true
-auto_translate_mode = 1
-title = "Open a File"
-initial_position = 1
-size = Vector2i(1100, 550)
-visible = true
-exclusive = false
-ok_button_text = "Open"
-dialog_close_on_escape = false
-file_mode = 0
-access = 2
-filters = PackedStringArray("*.fbx", "*.stl")
-
 [node name="LoadingLayer" type="CanvasLayer" parent="."]
 unique_name_in_owner = true
 visible = false
@@ -137,3 +106,10 @@ layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 4
 max_value = 1.0
+
+[node name="FileDialogLayer" type="CanvasLayer" parent="."]
+unique_name_in_owner = true
+
+[node name="FileDialog" parent="FileDialogLayer" instance=ExtResource("9_jet37")]
+unique_name_in_owner = true
+file_filters = Array[String](["*.fbx", "*.stl"])
