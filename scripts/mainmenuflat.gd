@@ -24,10 +24,16 @@ var loading_scenes: Array[String] = []
 
 
 func process_scene_load():
+	var most_progress_scene: String
+	var most_progress: float = 0
+	
 	for loading_scene in loading_scenes:
 		var progress: Array[int] = []
 		var status: int          = ResourceLoader.load_threaded_get_status(loading_scene, progress)
-		print_debug(loading_scene, progress)
+		
+		if len(progress) and most_progress < progress[0]:
+			most_progress = progress[0]
+			most_progress_scene = loading_scene
 
 		if status in [ResourceLoader.THREAD_LOAD_FAILED, ResourceLoader.THREAD_LOAD_INVALID_RESOURCE]:
 			loading_scenes.erase(loading_scene)
@@ -36,6 +42,14 @@ func process_scene_load():
 			create_button(scene)
 			loading_scenes.erase(loading_scene)
 			print_debug('loading finished:', scene.resource_name)
+
+	if len(loading_scenes):
+		$MarginContainer/VBoxContainer/LoadingProgressBar.value = most_progress * 100
+		$MarginContainer/VBoxContainer/LoadingLabel.text = "Loading " + most_progress_scene + "..."
+	else:
+		$MarginContainer/VBoxContainer/LoadingLabel.hide()
+		$MarginContainer/VBoxContainer/LoadingProgressBar.hide()
+
 
 
 func scan_and_create_buttons():
@@ -49,7 +63,6 @@ func scan_and_create_buttons():
 	var file_names = ResourceLoader.list_directory(scenes_directory)
 	for file_name in file_names:
 		if file_name.ends_with(".tscn"):
-			print_debug("found specimen scene:", file_name)
 			ResourceLoader.load_threaded_request(scenes_directory.path_join(file_name))
 			loading_scenes.append(scenes_directory.path_join(file_name))
 	#create_button(scenes_directory + "/" + file_name)
