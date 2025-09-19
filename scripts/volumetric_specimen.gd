@@ -106,14 +106,14 @@ func make_texture(data_file: String) -> Resource:
 	#var volume_texture: ImageTexture3D = make_texture(data_file)
 	#$XRToolsPickable2/VolumeLayeredShader.texture = volume_texture
 
-func _on_multiplayer_pickable_picked_up(pickable: Variant) -> void:
+func _on_multiplayer_pickable_picked_up(_pickable: Variant) -> void:
 	$MultiplayerPickable/aura.visible=true
 
 
-func _on_multiplayer_pickable_dropped(pickable: Variant) -> void:
+func _on_multiplayer_pickable_dropped(_pickable: Variant) -> void:
 	$MultiplayerPickable/aura.visible=false
 
 
-func _on_multiplayer_pickable_highlight_updated(pickable: Variant, enable: Variant) -> void:
+func _on_multiplayer_pickable_highlight_updated(_pickable: Variant, enable: Variant) -> void:
 	if not $MultiplayerPickable.is_picked_up():
-		$MultiplayerPickable/aura.visible=true
+		$MultiplayerPickable/aura.visible=enable
