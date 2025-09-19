@@ -23,7 +23,7 @@ addons/webrtc
 addons/xr-autohandtracker
 addons/xr-simulator
 addons/player-networking
-addons/godotopensxrvendors
+addons/godotopenxrvendors
 
 #  aider
 .aider*
