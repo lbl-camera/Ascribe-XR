@@ -1,6 +1,52 @@
 @tool
 extends Specimen
 
+var volume_layered: VolumeLayers
+var mat: ShaderMaterial
+
+func _ready():
+	volume_layered = get_node("%VolumeLayeredShader")
+	var mesh_inst = volume_layered.get_child(0, true)
+	mat = mesh_inst.get_surface_override_material(0)
+	
+	if ui_instance:
+		for name in ['gamma', 'opacity', 'color_scalar', 'max_steps', 'step_size', 'zoom']:
+			var slider = ui_instance.get_node("%"+name+"Slider")
+			slider.value_changed.connect(update_shader.bind(name))
+			slider.value = volume_layered[name]
+		ui_instance.get_node("%GradientItemList").colormap_selected.connect(update_shader_colormap)
+		
+		ui_instance.get_node("%FileDialog").file_selected.connect(_on_file_dialog_file_selected)
+		
+		if volume_layered.texture:
+			ui_instance.get_node("%FileDialogLayer").hide()
+			ui_instance.get_node("%SettingsLayer").show()
+			enable_pickables()
+	
+	#_on_file_dialog_file_selected(r"C:\Users\rp\Documents\vr-start\specimen_data\cthead-8bit.zip")
+			
+func enable_pickables():
+	$ScalableMultiplayerPickableObject.show()
+	$MultiplayerPickableObject.show()
+	$ScalableMultiplayerPickableObject.set_collision_layer_value(3, true)
+	$MultiplayerPickableObject.set_collision_layer_value(3, true)
+	$ScalableMultiplayerPickableObject.original_collision_layer = $ScalableMultiplayerPickableObject.collision_layer
+	$MultiplayerPickableObject.original_collision_layer = $MultiplayerPickableObject.collision_layer
+	
+func _on_file_dialog_file_selected(path: String):
+	ui_instance.get_node("%FileDialogLayer").hide()
+	ui_instance.get_node("%LoadingLayer").show()
+	data_file = path
+
+func update_shader(value:Variant, var_name:String):
+	volume_layered[var_name] = value
+	print('set var:', var_name, value)
+	
+func update_shader_colormap(name, colormap):
+	volume_layered['gradient'] = colormap
+	print('set gradient to ', name)
+
+
 @export_file("*.zip", "*.bin") var data_file: String:
 	set(value):
 		if value:
@@ -10,7 +56,10 @@ extends Specimen
 
 @rpc("any_peer", "call_local", "reliable")
 func update_texture(volume_texture:ImageTexture3D) -> void:
-	$MultiplayerPickableObject/VolumeLayeredShader.texture = volume_texture
+	$ScalableMultiplayerPickableObject/VolumeLayeredShader.texture = volume_texture
+	ui_instance.get_node("%LoadingLayer").hide()
+	ui_instance.get_node("%SettingsLayer").show()
+	enable_pickables()
 
 
 func texture_from_bin(data_file: String) -> ImageTexture3D:
@@ -56,3 +105,16 @@ func make_texture(data_file: String) -> Resource:
 	#if data_file:
 	#var volume_texture: ImageTexture3D = make_texture(data_file)
 	#$XRToolsPickable2/VolumeLayeredShader.texture = volume_texture
+
+
+func _on_multiplayer_pickable_object_picked_up(pickable: Variant) -> void:
+	$MultiplayerPickableObject/aura.visible=true
+
+
+func _on_multiplayer_pickable_object_dropped(pickable: Variant) -> void:
+	$MultiplayerPickableObject/aura.visible=false
+
+
+func _on_multiplayer_pickable_object_highlight_updated(pickable: Variant, enable: Variant) -> void:
+	if not $MultiplayerPickableObject.is_picked_up():
+		$MultiplayerPickableObject/aura.visible=true
