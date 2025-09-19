@@ -25,6 +25,8 @@
 extends Node3D
 class_name VolumeLayers
 
+var mat: Material = preload("res://addons/volume_layered_shader/materials/volume_layered_shader.tres").duplicate()
+
 @export_file("*.bin") var bin_file: String:
 	get:
 		return bin_file
@@ -62,26 +64,19 @@ class_name VolumeLayers
 		if texture:
 			texture.changed.disconnect(on_texture_changed)
 
+		mat.set_shader_parameter("texture_volume", value)
 		texture = value
 
 		if texture:
 			texture.changed.connect(on_texture_changed)
 
-@export var num_layers: int = 10:
-	get:
-		return num_layers
-	set(value):
-		if value == num_layers:
-			return
-		num_layers = value
-		rebuild_layers = true
-
-@export_range(0, 4) var gamma: float = 1:
+@export_range(0, 10) var gamma: float = 1:
 	get:
 		return gamma
 	set(value):
-		if value == gamma:
+		if value == mat.get_shader_parameter("gamma"):
 			return
+		mat.set_shader_parameter("gamma", value)
 		gamma = value
 		rebuild_layers = true
 
@@ -89,26 +84,59 @@ class_name VolumeLayers
 	get:
 		return opacity
 	set(value):
-		if value == opacity:
+		if value == mat.get_shader_parameter("opacity"):
 			return
+		mat.set_shader_parameter("opacity", value)
 		opacity = value
 		rebuild_layers = true
 
-@export_range(0, 4) var color_scalar: float = 1:
+@export_range(0, 10) var color_scalar: float = 1:
 	get:
 		return color_scalar
 	set(value):
-		if value == color_scalar:
+		if value == mat.get_shader_parameter("color_scalar"):
 			return
+		mat.set_shader_parameter("color_scalar", value)
 		color_scalar = value
 		rebuild_layers = true
+		
+@export_range(0, 512) var max_steps: float = 256:
+	get:
+		return max_steps
+	set(value):
+		if value == mat.get_shader_parameter("max_steps"):
+			return
+		mat.set_shader_parameter("max_steps", value)
+		max_steps = value
+		rebuild_layers = true
+		
+@export_range(0, .1) var step_size: float = .005:
+	get:
+		return step_size
+	set(value):
+		if value == mat.get_shader_parameter("step_size"):
+			return
+		mat.set_shader_parameter("step_size", value)
+		step_size = value
+		rebuild_layers = true
+		
+@export_range(0, 10) var zoom: float = 2:
+	get:
+		return zoom
+	set(value):
+		if value == mat.get_shader_parameter("zoom"):
+			return
+		mat.set_shader_parameter("zoom", value)
+		zoom = value
+		rebuild_layers = true
 
-@export var gradient: GradientTexture1D = preload("res://addons/volume_layered_shader/textures/purple_gradient_texture.tres"):
+@export var gradient: GradientTexture1D:
 	get:
 		return gradient
 	set(value):
-		if value == gradient:
+		if value == mat.get_shader_parameter("gradient"):
 			return
+		mat.set_shader_parameter("gradient", value)
 		gradient = value
 
 @export var exclusion_planes: Array[NodePath]:
@@ -138,7 +166,6 @@ func _ready():
 	mesh.flip_faces = false
 	mesh_inst.mesh = mesh
 
-	var mat: Material = preload("res://addons/volume_layered_shader/materials/volume_layered_shader.tres").duplicate()
 	mesh_inst.set_surface_override_material(0, mat)
 	pass # Replace with function body.
 
@@ -160,14 +187,6 @@ func _process(delta):
 	basis = basis * Basis.from_euler(Vector3(deg_to_rad(-90), 0, 0))
 	basis = basis * Basis.from_scale(Vector3(x, y, z) / min(x, y, z))
 	mesh_inst.transform = Transform3D(basis)
-
-	var mat: ShaderMaterial = mesh_inst.get_surface_override_material(0)
-	mat.set_shader_parameter("texture_volume", texture)
-	mat.set_shader_parameter("layers", num_layers)
-	mat.set_shader_parameter("opacity", opacity)
-	mat.set_shader_parameter("color_scalar", color_scalar)
-	mat.set_shader_parameter("gamma", gamma)
-	mat.set_shader_parameter("gradient", gradient)
 
 	var plane_count: int = 0
 	var plane_list: PackedFloat32Array
