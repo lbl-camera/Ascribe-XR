@@ -27,11 +27,11 @@ func _ready():
 			
 func enable_pickables():
 	$ScalableMultiplayerPickableObject.show()
-	$MultiplayerPickableObject.show()
+	$MultiplayerPickable.show()
 	$ScalableMultiplayerPickableObject.set_collision_layer_value(3, true)
-	$MultiplayerPickableObject.set_collision_layer_value(3, true)
+	$MultiplayerPickable.set_collision_layer_value(3, true)
 	$ScalableMultiplayerPickableObject.original_collision_layer = $ScalableMultiplayerPickableObject.collision_layer
-	$MultiplayerPickableObject.original_collision_layer = $MultiplayerPickableObject.collision_layer
+	$MultiplayerPickable.original_collision_layer = $MultiplayerPickable.collision_layer
 	
 func _on_file_dialog_file_selected(path: String):
 	ui_instance.get_node("%FileDialogLayer").hide()
@@ -106,15 +106,14 @@ func make_texture(data_file: String) -> Resource:
 	#var volume_texture: ImageTexture3D = make_texture(data_file)
 	#$XRToolsPickable2/VolumeLayeredShader.texture = volume_texture
 
-
-func _on_multiplayer_pickable_object_picked_up(pickable: Variant) -> void:
-	$MultiplayerPickableObject/aura.visible=true
-
-
-func _on_multiplayer_pickable_object_dropped(pickable: Variant) -> void:
-	$MultiplayerPickableObject/aura.visible=false
+func _on_multiplayer_pickable_picked_up(pickable: Variant) -> void:
+	$MultiplayerPickable/aura.visible=true
 
 
-func _on_multiplayer_pickable_object_highlight_updated(pickable: Variant, enable: Variant) -> void:
-	if not $MultiplayerPickableObject.is_picked_up():
-		$MultiplayerPickableObject/aura.visible=true
+func _on_multiplayer_pickable_dropped(pickable: Variant) -> void:
+	$MultiplayerPickable/aura.visible=false
+
+
+func _on_multiplayer_pickable_highlight_updated(pickable: Variant, enable: Variant) -> void:
+	if not $MultiplayerPickable.is_picked_up():
+		$MultiplayerPickable/aura.visible=true

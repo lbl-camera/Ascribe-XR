@@ -61,4 +61,8 @@ mesh = SubResource("TorusMesh_p8olh")
 skeleton = NodePath("../aura")
 
 [node name="Marker3D" type="Marker3D" parent="MultiplayerPickable" index="4"]
-transform = Transform3D(-4.87144e-08, 3.59178e-11, -0.25, -2.72848e-12, -0.5, 1.65637e-11, 0.25, -2.36469e-11, -4.86871e-08, 0, 0, 0)
+transform = Transform3D(1.09278e-08, -0.5, -1.09278e-08, 0, 2.18557e-08, -0.25, -0.25, -2.18557e-08, -4.77671e-16, 0, 0, 0)
+
+[connection signal="dropped" from="MultiplayerPickable" to="." method="_on_multiplayer_pickable_dropped"]
+[connection signal="highlight_updated" from="MultiplayerPickable" to="." method="_on_multiplayer_pickable_highlight_updated"]
+[connection signal="picked_up" from="MultiplayerPickable" to="." method="_on_multiplayer_pickable_picked_up"]
