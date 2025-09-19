@@ -82,6 +82,7 @@ player_calibrate_height = false
 [node name="FunctionPointer" parent="." instance=ExtResource("7_qssuy")]
 show_laser = 2
 laser_length = 1
+show_target = true
 collision_mask = 5242884
 
 [node name="VirtualKeyboard" parent="." instance=ExtResource("13_bwjto")]
