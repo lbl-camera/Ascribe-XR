@@ -14,7 +14,7 @@ func _enter_tree() -> void:
 	var specimen_list:ItemList = ui_instance.get_node('%SpecimenList')
 	specimen_list.item_selected.connect(specimen_selected)
 
-	ui_instance.get_node("%FileDialog").hide()
+	ui_instance.get_node("%FileDialogLayer").hide()
 
 	send_specimens_request()
 	

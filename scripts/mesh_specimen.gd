@@ -16,11 +16,10 @@ func _enter_tree():
 		var mesh_data = load_path(loading_file)
 		if mesh_data != null:
 			set_mesh(mesh_data['vertices'])
-		ui_instance.get_node("%FileDialog").hide()
+		ui_instance.get_node("%FileDialogLayer").hide()
 
 
 	ui_instance.get_node("%FileDialog").file_selected.connect(_on_file_dialog_file_selected)
-	ui_instance.get_node("%Scale").value_changed.connect(_on_scale_value_changed)
 	ui_instance.get_node("%MaterialList").item_selected.connect(_on_materiallist_item_selected)
 
 	#if OS.is_debug_build() and multiplayer.get_unique_id()==1:
@@ -173,12 +172,12 @@ func set_pickable(node:Node3D) -> void:
 	make_pickable(node)
 	ui_instance.get_node("%SettingsLayer").show()
 	ui_instance.get_node("%MaterialMenu").show()
-	ui_instance.get_node("%FileDialog").hide()
+	ui_instance.get_node("%FileDialogLayer").hide()
 
 
 func make_pickable(node: Node3D):
 	var collision: CollisionShape3D         = CollisionShape3D.new()
-	var pickable = $MultiplayerPickableObject
+	var pickable = $ScalableMultiplayerPickableObject
 	pickable.add_child(node)
 	pickable.add_child(collision)
 
@@ -193,12 +192,6 @@ func make_pickable(node: Node3D):
 	node.position -= base/bounds.get_longest_axis_size()
 	collision.position -= base/bounds.get_longest_axis_size()
 	collision.scale *= specimen_base_scale
-
-
-func _on_scale_value_changed(value: float) -> void:
-	if specimen_scene:
-		specimen_scene.scale = specimen_base_scale * value * Vector3.ONE
-		specimen_collision.scale = specimen_base_scale * value * Vector3.ONE
 
 
 func _on_materiallist_item_selected(index: int):
