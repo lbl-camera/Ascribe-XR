@@ -1,6 +1,6 @@
 @tool
 class_name ScalableMultiplayerPickable
-extends MultiplayerPickableObject
+extends MultiplayerPickable
 
 ## XR Tools Scalable Pickable Object
 ##
