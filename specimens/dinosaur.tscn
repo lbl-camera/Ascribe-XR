@@ -1,0 +1,10 @@
+[gd_scene load_steps=3 format=3 uid="uid://djplj22paplnw"]
+
+[ext_resource type="PackedScene" uid="uid://8y82a7jnx07l" path="res://specimens/mesh_specimen.tscn" id="1_wku0h"]
+[ext_resource type="Texture2D" uid="uid://cb5awffd7mlw6" path="res://assets/textures/thumbnails/triceratops.png" id="2_4ovu1"]
+
+[node name="Specimen" instance=ExtResource("1_wku0h")]
+loading_file = "uid://msv5vor5hkxp"
+display_name = "Triceratops Skull"
+thumbnail = ExtResource("2_4ovu1")
+story_text = Array[String](["Triceratops skull available in public domain through the Naturalis Leiden Museum."])

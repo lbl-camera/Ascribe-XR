@@ -1,0 +1,11 @@
+[gd_scene load_steps=3 format=3 uid="uid://t1a88rx0ame4"]
+
+[ext_resource type="PackedScene" uid="uid://8y82a7jnx07l" path="res://specimens/mesh_specimen.tscn" id="1_ksklo"]
+[ext_resource type="Texture2D" uid="uid://dexl4ji0qxxln" path="res://assets/textures/thumbnails/fibers.png" id="2_ksklo"]
+
+[node name="Specimen" instance=ExtResource("1_ksklo")]
+loading_file = "res://specimen_data/fibers4mesh.stl"
+flip_normals = true
+display_name = "CMC Fibers"
+thumbnail = ExtResource("2_ksklo")
+story_text = Array[String](["Segmented fibers that appear out of the Ceramic Matrix Composite sample, also shown in the main menu."])

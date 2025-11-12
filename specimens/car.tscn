@@ -1,0 +1,10 @@
+[gd_scene load_steps=3 format=3 uid="uid://dktrpadbsrs7c"]
+
+[ext_resource type="PackedScene" uid="uid://b35efg3sp0ihu" path="res://specimens/mesh_specimen.tscn" id="1_nw4gk"]
+[ext_resource type="Texture2D" uid="uid://bydeyofx5yni4" path="res://assets/textures/thumbnails/car.png" id="2_nw4gk"]
+
+[node name="Specimen" instance=ExtResource("1_nw4gk")]
+loading_file = "res://specimen_data/f1_car.stl"
+display_name = "F1 Car"
+thumbnail = ExtResource("2_nw4gk")
+story_text = Array[String](["Simplified designed of a F1 car available in public domain, with triangulation suitable to 3D printer."])
