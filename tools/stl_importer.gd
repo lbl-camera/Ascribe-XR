@@ -21,7 +21,7 @@ func data_from_arraymesh(array_mesh: ArrayMesh):
 
 	return mesh_data
 
-func import(source_file):
+func import(source_file, flip_normals=false):
 	# STL file format: https://web.archive.org/web/20210428125112/http://www.fabbers.com/tech/STL_Format
 	var file = FileAccess.open(source_file, FileAccess.READ)
 
@@ -31,6 +31,32 @@ func import(source_file):
 		mesh_data = process_ascii_stl(file)
 	else:
 		mesh_data = process_binary_stl(file)
+		
+	# Flip normals if requested
+	if flip_normals:
+		# Flip normal directions
+		var normals: PackedVector3Array = mesh_data.normals
+		for i in range(normals.size()):
+			normals[i] = -normals[i]
+		mesh_data['normals'] = normals
+		print("Normals flipped")
+		
+		# Reverse winding order (swap every pair of vertices in each triangle)
+		var indices: PackedInt32Array = mesh_data.indices
+		for i in range(0, indices.size(), 3):
+			# Swap second and third vertex of each triangle
+			var tmp = indices[i + 1]
+			indices[i + 1] = indices[i + 2]
+			indices[i + 2] = tmp
+		mesh_data.indices = indices
+		
+		print("Normals and winding flipped")
+	
+	print("Loaded: %d vertices, %d indices, %d normals" % [
+		mesh_data.vertices.size(),
+		mesh_data.indices.size(),
+		mesh_data.normals.size()
+	])
 
 	return mesh_data
 
@@ -48,100 +74,122 @@ func is_ascii_stl(file):
 	return is_ascii
 
 
-func process_binary_stl(file):
-	var vertices = []
-	var indices = []
-
-	# Skip 80-byte header
+func process_binary_stl(file: FileAccess) -> Dictionary:
+	var vertices: PackedVector3Array = PackedVector3Array()
+	var indices: PackedInt32Array = PackedInt32Array()
+	var normals: PackedVector3Array = PackedVector3Array()
+	
+	file.big_endian = false  # STL is little-endian
 	file.seek(80)
-
-	# Read number of triangles
 	var triangle_count = file.get_32()
-
-	for i in range(triangle_count):
-		# Skip normal
-		for _1 in range(3):
-			file.get_float()
-
-		# Read the 3 vertices in STL order
-		var v1 = [file.get_float(), file.get_float(), file.get_float()]
-		var v2 = [file.get_float(), file.get_float(), file.get_float()]
-		var v3 = [file.get_float(), file.get_float(), file.get_float()]
-
-		# Flip order: STL CCW → Godot CW
-		vertices.append_array(v3)
-		indices.append(vertices.size() - 1)
-
-		vertices.append_array(v2)
-		indices.append(vertices.size() - 1)
-
-		vertices.append_array(v1)
-		indices.append(vertices.size() - 1)
-
-		# Skip attribute byte count
-		file.get_16()
-
+	
+	print("Binary STL: %d triangles" % triangle_count)
+	
+	for t in range(triangle_count):
+		# Read facet normal
+		var nx = file.get_float()
+		var ny = file.get_float()
+		var nz = file.get_float()
+		var facet_normal = Vector3(nx, ny, nz)
+		
+		# Read triangle vertices
+		var v1 = Vector3(file.get_float(), file.get_float(), file.get_float())
+		var v2 = Vector3(file.get_float(), file.get_float(), file.get_float())
+		var v3 = Vector3(file.get_float(), file.get_float(), file.get_float())
+		
+		# STL uses CCW winding, Godot uses CW winding
+		# Reverse the vertex order: v1, v3, v2 instead of v1, v2, v3
+		var base_idx = vertices.size()
+		vertices.append(v1)
+		vertices.append(v3)  # Swapped
+		vertices.append(v2)  # Swapped
+		
+		indices.append(base_idx)
+		indices.append(base_idx + 1)
+		indices.append(base_idx + 2)
+		
+		normals.append(facet_normal)
+		normals.append(facet_normal)
+		normals.append(facet_normal)
+		
+		file.get_16()  # Skip attribute byte count
+	
 	return {
 		"vertices": vertices,
-		"indices": indices
+		"indices": indices,
+		"normals": normals
 	}
 
 
-func process_ascii_stl(file):
-	var vertices = []
-	var indices = []
-	var vertex_map = {}  # For deduplication
-	var next_index = 0
-	var temp_face = []
-
+func process_ascii_stl(file: FileAccess) -> Dictionary:
+	var vertices: PackedVector3Array = PackedVector3Array()
+	var indices: PackedInt32Array = PackedInt32Array()
+	var normals: PackedVector3Array = PackedVector3Array()
+	
 	var parsing_state = PARSE_STATE.SOLID
-
-	# Skip first line: "solid name"
-	file.get_line()
-
+	file.get_line() # skip "solid ..." line
+	
+	var normal = Vector3.ZERO
+	var temp_face = []
+	var triangle_count = 0
+	
 	while not file.eof_reached():
+		var line = file.get_line().strip_edges(true, true)
+		if line == "":
+			continue
+		
 		if parsing_state == PARSE_STATE.SOLID:
-			var line = file.get_line().strip_edges(true, true)
-
-			if line.begins_with("endsolid"):
-				continue
-			elif line != "":
-				var parts = line.split(" ", false)
-				if parts.size() >= 5 and parts[0] == "facet" and parts[1] == "normal":
-					# You could store normals here if needed
-					parsing_state = PARSE_STATE.FACET
-
+			var parts = line.split(" ", true)
+			if parts.size() >= 5 and parts[0] == "facet" and parts[1] == "normal":
+				normal = Vector3(float(parts[2]), float(parts[3]), float(parts[4]))
+				parsing_state = PARSE_STATE.FACET
+			elif line.begins_with("endsolid"):
+				break
+				
 		elif parsing_state == PARSE_STATE.FACET:
-			var line = file.get_line().strip_edges(true, true)
 			if line == "outer loop":
 				temp_face.clear()
 				parsing_state = PARSE_STATE.OUTER_LOOP
 			elif line == "endfacet":
 				parsing_state = PARSE_STATE.SOLID
-
+				
 		elif parsing_state == PARSE_STATE.OUTER_LOOP:
-			var line = file.get_line().strip_edges(true, true)
-
-			if line == "endloop":
-				# STL is CCW; Godot wants CW, so reverse
-				for v in temp_face.inverted():
-					if not vertex_map.has(v):
-						vertex_map[v] = next_index
-						vertices.append(v)
-						next_index += 1
-					indices.append(vertex_map[v])
+			if line.begins_with("vertex"):
+				var p = line.split(" ", true)
+				if p.size() >= 4:
+					temp_face.append(Vector3(float(p[1]), float(p[2]), float(p[3])))
+				else:
+					push_warning("Malformed vertex line: " + line)
+			elif line == "endloop":
+				if temp_face.size() == 3:
+					triangle_count += 1
+					
+					# STL uses CCW winding, Godot uses CW winding
+					# Reverse the vertex order
+					var base_idx = vertices.size()
+					vertices.append(temp_face[0])
+					vertices.append(temp_face[2])  # Swapped
+					vertices.append(temp_face[1])  # Swapped
+					
+					normals.append(normal)
+					normals.append(normal)
+					normals.append(normal)
+					
+					# Append indices
+					indices.append(base_idx)
+					indices.append(base_idx + 1)
+					indices.append(base_idx + 2)
+				else:
+					push_warning("Malformed facet: " + str(temp_face.size()) + " vertices")
+				
 				parsing_state = PARSE_STATE.FACET
-			elif line.begins_with("vertex"):
-				var parts = line.split(" ", false)
-				if parts.size() >= 4:
-					var x = float(parts[1])
-					var y = float(parts[2])
-					var z = float(parts[3])
-					temp_face.append(Vector3(x, y, z))
-
+	
+	print("ASCII STL: %d triangles" % triangle_count)
+	
 	return {
 		"vertices": vertices,
-		"indices": indices
+		"indices": indices,
+		"normals": normals
 	}
 
 
