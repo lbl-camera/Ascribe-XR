@@ -30,3 +30,7 @@ addons/godotopenxrvendors
 
 # Rider
 .idea/
+
+# build
+bin/
+build/
