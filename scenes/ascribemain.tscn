@@ -1,4 +1,4 @@
-[gd_scene load_steps=36 format=3 uid="uid://do7g4piyhqxid"]
+[gd_scene load_steps=37 format=3 uid="uid://do7g4piyhqxid"]
 
 [ext_resource type="Script" uid="uid://bl1kbl82hwxv5" path="res://scripts/ascribemain.gd" id="1_wh57r"]
 [ext_resource type="PackedScene" uid="uid://b8vb8h0jlqwl7" path="res://scenes/player.tscn" id="2_cym13"]
@@ -13,6 +13,7 @@
 [ext_resource type="PackedScene" uid="uid://bgw2tanm4il3j" path="res://avatars/tunnelvrplayeravatar/VRPlayerAvatar.tscn" id="9_xk2ox"]
 [ext_resource type="PackedScene" uid="uid://wtpox7m5vu2b" path="res://addons/godot-xr-tools/effects/fade.tscn" id="10_4pnrr"]
 [ext_resource type="Texture2D" uid="uid://n8in475h2ylx" path="res://assets/textures/sprites/controls.png" id="11_wh57r"]
+[ext_resource type="PackedScene" uid="uid://c776l2i8jpcq1" path="res://scenes/tools/bell.tscn" id="14_g577c"]
 
 [sub_resource type="BoxMesh" id="BoxMesh_wh57r"]
 flip_faces = true
@@ -89,14 +90,14 @@ size = Vector2(0.1, 0.1)
 resource_local_to_scene = true
 size = Vector2(3, 1.68)
 
-[sub_resource type="ViewportTexture" id="ViewportTexture_u14qs"]
+[sub_resource type="ViewportTexture" id="ViewportTexture_g577c"]
 viewport_path = NodePath("Viewport")
 
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_g577c"]
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_7amqy"]
 transparency = 1
 cull_mode = 2
 shading_mode = 0
-albedo_texture = SubResource("ViewportTexture_u14qs")
+albedo_texture = SubResource("ViewportTexture_g577c")
 texture_filter = 1
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_7amqy"]
@@ -107,13 +108,13 @@ size = Vector3(3, 1.68, 0.02)
 resource_local_to_scene = true
 size = Vector2(3, 2)
 
-[sub_resource type="ViewportTexture" id="ViewportTexture_7amqy"]
+[sub_resource type="ViewportTexture" id="ViewportTexture_lu54x"]
 viewport_path = NodePath("Viewport")
 
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_lu54x"]
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_54uq5"]
 transparency = 1
 cull_mode = 2
-albedo_texture = SubResource("ViewportTexture_7amqy")
+albedo_texture = SubResource("ViewportTexture_lu54x")
 texture_filter = 1
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_tjbaa"]
@@ -193,7 +194,7 @@ size = Vector2i(1152, 648)
 
 [node name="Screen" parent="StoryUIViewport" index="1"]
 mesh = SubResource("QuadMesh_wh57r")
-surface_material_override/0 = SubResource("StandardMaterial3D_g577c")
+surface_material_override/0 = SubResource("StandardMaterial3D_7amqy")
 
 [node name="StaticBody3D" parent="StoryUIViewport" index="2"]
 screen_size = Vector2(3, 1.68)
@@ -222,7 +223,7 @@ localplayerscene = ""
 
 [node name="Screen" parent="ViewportNetworkGateway" index="1"]
 mesh = SubResource("QuadMesh_t38f3")
-surface_material_override/0 = SubResource("StandardMaterial3D_lu54x")
+surface_material_override/0 = SubResource("StandardMaterial3D_54uq5")
 
 [node name="StaticBody3D" parent="ViewportNetworkGateway" index="2"]
 viewport_size = Vector2(690, 400)
@@ -241,10 +242,13 @@ root_path = NodePath("../Specimens")
 replication_config = SubResource("SceneReplicationConfig_tjbaa")
 
 [node name="SpecimenSpawner" type="MultiplayerSpawner" parent="."]
-_spawnable_scenes = PackedStringArray("uid://dgcu41k0h1ox8", "uid://crsrxhqfrmgan", "uid://5wnvinkuw4ju", "uid://cwgsy2hdr4bdc", "uid://cm41tbtpd2i76", "uid://b35efg3sp0ihu", "uid://bwkle0tfb1dx4", "uid://chmjd077ul8nk")
+_spawnable_scenes = PackedStringArray("res://specimens/dynamic_mesh_specimen.tscn", "res://specimens/head.tscn", "res://specimens/concrete.tscn", "uid://cwgsy2hdr4bdc", "res://specimens/heart.tscn", "res://specimens/mesh_specimen.tscn", "res://specimens/sanfrancisco_topography.tscn", "uid://chmjd077ul8nk")
 spawn_path = NodePath("../Specimens")
 
 [node name="Fade" parent="." instance=ExtResource("10_4pnrr")]
+
+[node name="Node3D" parent="." instance=ExtResource("14_g577c")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8.2788, 0.76799, -1.62273)
 
 [editable path="StoryUIViewport"]
 [editable path="ViewportNetworkGateway"]
