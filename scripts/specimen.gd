@@ -8,6 +8,7 @@ enum ScaleMode {TABLE, WORLD}
 @export var thumbnail: Texture2D
 @export var scale_mode: ScaleMode = ScaleMode.TABLE
 @export var ui: PackedScene
+@export var enabled: bool = true
 
 @export_multiline var story_text: Array[String]
 
