@@ -61,6 +61,7 @@ clip_contents = false
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
+allow_search = false
 item_count = 8
 max_columns = 5
 same_column_width = true
@@ -112,4 +113,4 @@ unique_name_in_owner = true
 
 [node name="FileDialog" parent="FileDialogLayer" instance=ExtResource("9_jet37")]
 unique_name_in_owner = true
-file_filters = Array[String](["*.fbx", "*.stl"])
+file_filters = Array[String](["*.fbx", "*.stl", "*.obj"])
