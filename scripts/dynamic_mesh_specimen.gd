@@ -52,9 +52,6 @@ func _on_mqtt_message_received(_topic, message):
 
 			var result_data = JSON.parse_string(message)
 
-			var verts = result_data["vertices"]
-			var idxs = result_data["indices"]
-
 			#var max_idx = 0
 			#for i in idxs:
 				#if i >= verts.size():
@@ -62,7 +59,7 @@ func _on_mqtt_message_received(_topic, message):
 				#max_idx = max(max_idx, i)
 			#print("Max index:", max_idx, "Vertex count:", verts.size())
 
-			set_and_send_mesh(verts, idxs)
+			set_and_send_mesh(result_data)
 			#send_mesh(verts, idxs)
 			mesh_received = true
 		"python/specimen_responses":
