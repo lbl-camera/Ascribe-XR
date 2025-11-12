@@ -11,7 +11,7 @@ extends Node3D
 #export var webrtcbroker = "ws://mosquitto.doesliverpool.xyz:8080"
 #export var webrtcbroker = "ssl://mosquitto.doesliverpool.xyz:8884"
 #@export var webrtcbroker = "mosquitto.doesliverpool.xyz"
-@export var webrtcbroker = "cam-web.lbl.gov"
+@export var webrtcbroker = "vision.lbl.gov"
 #@export var webrtcbroker = "localhost"
 # "ws://broker.mqttdashboard.com:8webrtcbroker000"
 @export var PCstartupprotocol = "webrtc"
