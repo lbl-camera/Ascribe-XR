@@ -10,7 +10,3 @@ thumbnail = ExtResource("2_m4xt3")
 [node name="ScalableMultiplayerPickableObject" parent="." index="0"]
 visible = false
 collision_layer = 0
-
-[node name="MultiplayerPickableObject" parent="." index="1"]
-visible = false
-collision_layer = 0

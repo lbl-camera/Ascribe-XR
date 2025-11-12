@@ -1,4 +1,4 @@
-[gd_scene load_steps=6 format=3 uid="uid://b35efg3sp0ihu"]
+[gd_scene load_steps=6 format=3 uid="uid://8y82a7jnx07l"]
 
 [ext_resource type="PackedScene" uid="uid://bajc3fgqqv584" path="res://scenes/specimen.tscn" id="1_xchh8"]
 [ext_resource type="Script" uid="uid://cplmyah03kuq1" path="res://scripts/mesh_specimen.gd" id="2_6ounj"]
@@ -9,6 +9,7 @@
 [node name="Specimen" instance=ExtResource("1_xchh8")]
 script = ExtResource("2_6ounj")
 loading_file = ""
+flip_normals = false
 display_name = "Load Mesh File"
 thumbnail = ExtResource("3_d63jp")
 ui = ExtResource("5_jquso")
