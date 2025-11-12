@@ -151,7 +151,7 @@ static func get_available_colormaps() -> Array:
 	return names
 
 # Sample a continuous colormap at a given position (0.0 to 1.0)
-static func sample_colormap(name: String, t: float) -> Color:
+static func sample_colormap(name: String, t: float, a: float) -> Color:
 	var cmap = get_colormap(name)
 	if cmap.is_empty():
 		return Color.WHITE
@@ -161,13 +161,17 @@ static func sample_colormap(name: String, t: float) -> Color:
 	if cmap.type == "discrete":
 		var colors = cmap.data as Array
 		var idx = int(t * (colors.size() - 1))
-		return colors[idx]
+		var color = colors[idx]
+		color[3] = a
+		print('discrete' + str(color))
+		return color
 	elif cmap.type == "continuous":
 		var data = cmap.data as Dictionary
 		var r = _interpolate_channel(data.red, t)
 		var g = _interpolate_channel(data.green, t) 
 		var b = _interpolate_channel(data.blue, t)
-		return Color(r, g, b, 1.0)
+		print('continuous' + str(Color(r, g, b, a)))
+		return Color(r, g, b, a)
 	
 	return Color.WHITE
 
@@ -196,7 +200,7 @@ static func create_gradient_texture(name: String, width: int = 256, height: int 
 	
 	for x in range(width):
 		var t = float(x) / float(width - 1)
-		var color = sample_colormap(name, t)
+		var color = sample_colormap(name, t, (x/255)**(1/4))
 		
 		for y in range(height):
 			image.set_pixel(x, y, color)
@@ -210,20 +214,13 @@ static func get_palette(name: String, n_colors: int = 10) -> Array:
 	var colors = []
 	for i in range(n_colors):
 		var t = float(i) / float(n_colors - 1) if n_colors > 1 else 0.0
-		colors.append(sample_colormap(name, t))
+		colors.append(sample_colormap(name, t, 1))
 	return colors
 
 # Create a GradientTexture1D from a colormap
 static func create_gradient_texture_1d(name: String, resolution: int = 256) -> GradientTexture1D:
 	var gradient = Gradient.new()
 	var gradient_texture = GradientTexture1D.new()
-	
-	# Sample the colormap at regular intervals to create gradient points
-	var points = []
-	for i in range(resolution):
-		var t = float(i) / float(resolution - 1)
-		var color = sample_colormap(name, t)
-		points.append([t, color])
 	
 	# Set gradient points (Godot Gradient supports up to 32 points by default)
 	# If we need more resolution, we'll sample fewer points strategically
@@ -233,12 +230,12 @@ static func create_gradient_texture_1d(name: String, resolution: int = 256) -> G
 	#gradient.clear()
 	for i in range(0, resolution, step):
 		var t = float(i) / float(resolution - 1)
-		var color = sample_colormap(name, t)
+		var color = sample_colormap(name, t, pow(t, .25))
 		gradient.add_point(t, color)
 	
 	# Ensure we always have the end point
 	if gradient.get_offset(gradient.get_point_count() - 1) < 1.0:
-		gradient.add_point(1.0, sample_colormap(name, 1.0))
+		gradient.add_point(1.0, sample_colormap(name, 1.0, 1))
 	
 	gradient_texture.gradient = gradient
 	gradient_texture.width = resolution
