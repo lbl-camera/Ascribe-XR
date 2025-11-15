@@ -8,7 +8,7 @@ var scroll_start_pos: float = 0
 var pending_click_index: int = -1
 var click_timer: float 
 var click_delay: float = .1
-var drag_threshold: int = 10
+var drag_threshold: int = 20
 
 func _ready() -> void:
 	gui_input.connect(_on_gui_input)
