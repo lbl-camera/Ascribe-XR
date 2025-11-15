@@ -1,25 +1,3 @@
-[gd_scene load_steps=5 format=3 uid="uid://cwgsy2hdr4bdc"]
-
-[ext_resource type="PackedScene" uid="uid://5wygpbthgiou" path="res://scenes/volumetric_specimen.tscn" id="1_72twv"]
-[ext_resource type="Script" uid="uid://bwbomjt7em3dt" path="res://addons/volume_layered_shader/scripts/resources/cpu/zipped_image_archive_cpu_Texture3D.gd" id="2_fmu7s"]
-[ext_resource type="Texture2D" uid="uid://bmc6y14ggbbvd" path="res://assets/textures/thumbnails/ceramic.png" id="2_hq0hf"]
-
-[sub_resource type="ImageTexture3D" id="ImageTexture3D_72twv"]
-script = ExtResource("2_fmu7s")
-zip_file = "res://specimen_data/filtered-20250114T214106Z-001.zip"
-metadata/_custom_type_script = "uid://bwbomjt7em3dt"
-
-[node name="Specimen" instance=ExtResource("1_72twv")]
-display_name = "Ceramic Composite"
-thumbnail = ExtResource("2_hq0hf")
-story_text = Array[String](["Ceramic Matrix Composites (CMCs) are next-generation materials designed for extreme temperatures and deformations in aerospace and industrial turbine applications. CMCs outperform nickel super-alloys by operating up to 500°F hotter and weighing one-third less, leading to lighter, more efficient engines and reduced emissions. MicroCT volumes are crucial for non-destructively characterizing their 3D microstructure.", "Previous work used microCT to investigate CMC microstructure evolution during manufacturing processes like polymer-to-ceramic conversion and fiber impregnation, vital for reinforcement. Samples typically comprise 1012 tows of Hi-Nicalon silicon carbide (SiC) fibers, each with about 500 fibers averaging 6.4 ± 0.9 μm in radius. These fiber beds are approximately 1.5mm wide, containing 5,000-6,200 fibers.", "Although there have been previous semi-supervised fiber detection methods, their computational details are often unavailable. However, Larson et al.'s public data repository has been essential for algorithm development and reproducibility. These microCT images, each about 60 GB and over 14 billion voxels, were acquired at the Advanced Light Source (ALS) at Lawrence Berkeley National Laboratory and are available via the Materials Data Facility. This paper utilizes one of these public volumes and a synthetic dataset, which includes common ringing artifacts inherent in computed-tomography images."])
-
-[node name="VolumeLayeredShader" parent="MultiplayerPickableObject" index="1"]
-transform = Transform3D(-1, 0, 1.50996e-07, 0, 1, 0, -1.50996e-07, 0, -1, 0, 0, 0)
-texture = SubResource("ImageTexture3D_72twv")
-gamma = 0.337
-opacity = 0.071
-exclusion_planes = Array[NodePath]([NodePath("Marker3D")])
-
-[node name="Marker3D" parent="MultiplayerPickableObject/VolumeLayeredShader" index="0"]
-transform = Transform3D(-4.37114e-08, 0, -1, 0, 1, 0, 1, 0, -4.37114e-08, -0.0915364, -0.00256753, -0.0146948)
+version https://git-lfs.github.com/spec/v1
+oid sha256:0110ed597f71d5a09d1b14d9e706e6ce62692f33801e3da2a0cf61632a00b3a5
+size 391446142

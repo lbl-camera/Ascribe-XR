@@ -1,0 +1,12 @@
+[gd_scene load_steps=3 format=3 uid="uid://nsaby1sui3c"]
+
+[ext_resource type="PackedScene" uid="uid://5wygpbthgiou" path="res://scenes/volumetric_specimen.tscn" id="1_hag02"]
+[ext_resource type="Texture2D" uid="uid://bx3sryvmfghcv" path="res://assets/textures/thumbnails/volume.png" id="2_m4xt3"]
+
+[node name="Specimen" instance=ExtResource("1_hag02")]
+display_name = "Load Volume"
+thumbnail = ExtResource("2_m4xt3")
+
+[node name="ScalableMultiplayerPickableObject" parent="." index="0"]
+visible = false
+collision_layer = 0

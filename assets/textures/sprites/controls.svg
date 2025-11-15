@@ -29,7 +29,7 @@
      showgrid="false"
      inkscape:zoom="1.829812"
      inkscape:cx="744.33876"
-     inkscape:cy="263.96154"
+     inkscape:cy="220.24121"
      inkscape:window-width="3840"
      inkscape:window-height="2126"
      inkscape:window-x="-11"
@@ -82,6 +82,18 @@
        width="260.13602"
        height="44.266842"
        id="rect369-6-5" />
+    <rect
+       x="537.21368"
+       y="507.70242"
+       width="260.13602"
+       height="44.266842"
+       id="rect369-6-5-0" />
+    <rect
+       x="537.21368"
+       y="507.70242"
+       width="307.13539"
+       height="119.13792"
+       id="rect369-6-5-0-9" />
   </defs>
   <g
      inkscape:label="Layer 1"
@@ -113,9 +125,9 @@
        style="font-size:32px;white-space:pre;shape-inside:url(#rect369);display:inline;fill:#000000"><tspan
          x="537.21289"
          y="536.81913"
-         id="tspan2918"><tspan
+         id="tspan5174"><tspan
            style="font-family:monospace;-inkscape-font-specification:monospace"
-           id="tspan2916">Grab Specimen</tspan></tspan></text>
+           id="tspan5172">Grab Specimen</tspan></tspan></text>
     <text
        xml:space="preserve"
        transform="matrix(0.26458333,0,0,0.26458333,29.576397,-9.5510235)"
@@ -123,15 +135,31 @@
        style="font-size:32px;white-space:pre;shape-inside:url(#rect369-6);display:inline;fill:#000000"><tspan
          x="537.21289"
          y="536.81913"
-         id="tspan2920">UI Select</tspan></text>
+         id="tspan5176">UI Select</tspan></text>
     <text
        xml:space="preserve"
-       transform="matrix(0.26458333,0,0,0.26458333,-129.23322,-57.53134)"
+       transform="matrix(0.26458333,0,0,0.26458333,-113.18308,-36.998721)"
        id="text367-5-5"
        style="font-size:32px;white-space:pre;shape-inside:url(#rect369-6-5);display:inline;fill:#000000"><tspan
          x="537.21289"
          y="536.81913"
-         id="tspan2922">Specimen Menu</tspan></text>
+         id="tspan5178">Toggle Flight</tspan></text>
+    <text
+       xml:space="preserve"
+       transform="matrix(0.26458333,0,0,0.26458333,25.121948,-91.378708)"
+       id="text367-5-5-3"
+       style="font-size:32px;white-space:pre;shape-inside:url(#rect369-6-5-0);display:inline;fill:#000000"><tspan
+         x="537.21289"
+         y="536.81913"
+         id="tspan5180">Specimens</tspan></text>
+    <text
+       xml:space="preserve"
+       transform="matrix(0.26458333,0,0,0.26458333,29.749018,-25.298376)"
+       id="text367-5-5-3-8"
+       style="font-size:32px;white-space:pre;shape-inside:url(#rect369-6-5-0-9);display:inline;fill:#000000"><tspan
+         x="537.21289"
+         y="536.81913"
+         id="tspan5182">Network</tspan></text>
     <text
        xml:space="preserve"
        transform="matrix(0.26458333,0,0,0.26458333,0.48091181,27.165242)"
@@ -139,7 +167,7 @@
        style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:32px;font-family:monospace;-inkscape-font-specification:monospace;white-space:pre;shape-inside:url(#rect496);display:inline;fill:#000000"><tspan
          x="42.080078"
          y="125.04297"
-         id="tspan2924">Move (Strafe)</tspan></text>
+         id="tspan5184">Move (Strafe)</tspan></text>
     <text
        xml:space="preserve"
        style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:8.46667px;font-family:monospace;-inkscape-font-specification:monospace;fill:#000000;stroke-width:0.264583"
@@ -173,8 +201,14 @@
        sodipodi:nodetypes="cc" />
     <path
        style="fill:#000000;stroke:#009cd8;stroke-width:1.065;stroke-dasharray:none;stroke-opacity:1"
-       d="m 79.955392,82.204776 21.266908,8.58856"
-       id="path1239" />
+       d="m 81.835139,103.17118 32.834581,-2.54532"
+       id="path1239"
+       sodipodi:nodetypes="cc" />
+    <path
+       style="fill:#000000;stroke:#009cd8;stroke-width:1.065;stroke-dasharray:none;stroke-opacity:1"
+       d="M 168.20037,53.79977 138.71411,94.633218"
+       id="path1239-0"
+       sodipodi:nodetypes="cc" />
     <path
        style="fill:#000000;stroke:#009cd8;stroke-width:1.065;stroke-dasharray:none;stroke-opacity:1"
        d="M 78.932946,59.097465 111.03779,84.86314"
@@ -183,5 +217,10 @@
        style="fill:#000000;stroke:#009cd8;stroke-width:1.065;stroke-dasharray:none;stroke-opacity:1"
        d="M 297.64473,58.983699 265.53989,84.749374"
        id="path1241-3" />
+    <path
+       style="fill:#000000;stroke:#009cd8;stroke-width:1.065;stroke-dasharray:none;stroke-opacity:1"
+       d="M 234.07171,102.47119 208.0399,112.76511"
+       id="path1241-3-3"
+       sodipodi:nodetypes="cc" />
   </g>
 </svg>

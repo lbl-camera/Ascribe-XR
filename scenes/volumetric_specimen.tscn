@@ -1,31 +1,70 @@
-[gd_scene load_steps=6 format=3 uid="uid://5wygpbthgiou"]
+[gd_scene load_steps=13 format=3 uid="uid://5wygpbthgiou"]
 
 [ext_resource type="PackedScene" uid="uid://bajc3fgqqv584" path="res://scenes/specimen.tscn" id="1_86lm3"]
 [ext_resource type="Script" uid="uid://po8ew5vgyu4d" path="res://scripts/volumetric_specimen.gd" id="2_idt6j"]
-[ext_resource type="PackedScene" uid="uid://d0exl0n5q6gvy" path="res://scenes/multiplayer_pickable_object.tscn" id="3_idt6j"]
+[ext_resource type="PackedScene" uid="uid://doq5u7h5wo2vf" path="res://scenes/pickable/scalable_multiplayer_pickable.tscn" id="3_0wpxv"]
+[ext_resource type="PackedScene" uid="uid://cv58flunkbv02" path="res://scenes/volume_menu.tscn" id="3_kw6d8"]
 [ext_resource type="Script" uid="uid://bb2lef7rn0ovi" path="res://addons/volume_layered_shader/scenes/controls/volume_layered_shader.gd" id="4_2yfeg"]
+[ext_resource type="Texture2D" uid="uid://bb8bdgbv3lc4m" path="res://addons/volume_layered_shader/textures/purple_gradient_texture.tres" id="6_glbsk"]
+[ext_resource type="PackedScene" uid="uid://d0exl0n5q6gvy" path="res://scenes/pickable/multiplayer_pickable.tscn" id="7_glbsk"]
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_dobnj"]
 size = Vector3(0.7, 0.7, 0.7)
 
+[sub_resource type="CylinderMesh" id="CylinderMesh_kw6d8"]
+bottom_radius = 1.0
+height = 0.01
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_glbsk"]
+transparency = 1
+cull_mode = 2
+albedo_color = Color(0, 1, 0.966667, 0.329412)
+
+[sub_resource type="ConvexPolygonShape3D" id="ConvexPolygonShape3D_cebxv"]
+points = PackedVector3Array(0.190327, 0.0108668, 1.01587, -0.190327, -0.0208668, -1.01587, -0.317411, -0.0208668, -0.984052, -0.190327, 0.0108668, -1.01587, 1.01587, -0.0208668, -0.190327, -0.888789, -0.0208668, 0.539558, -1.01587, 0.0108668, -0.190327, 0.888789, 0.0108668, -0.539558, 0.634821, -0.0208668, 0.825347, 0.952232, 0.0108668, 0.412674, -0.825347, 0.0108668, 0.634821, -0.317411, -0.0208668, 0.984052, -0.888789, -0.0208668, -0.539558, 0.539558, -0.0208668, -0.888789, -0.634821, 0.0108668, -0.825347, 0.317411, 0.0108668, -0.984052, -1.01587, -0.0208668, 0.190327, -0.539558, 0.0108668, 0.888789, 0.952232, -0.0208668, 0.412674, 0.634821, 0.0108668, 0.825347, 0.190327, -0.0208668, 1.01587, 1.01587, 0.0108668, 0.190327, -0.984052, 0.0108668, 0.317411, 0.825347, -0.0208668, -0.634821, 0.634821, 0.0108668, -0.825347, -0.634821, -0.0208668, 0.825347, 0.190327, -0.0208668, -1.01587, -0.190327, 0.0108668, 1.01587, -0.888789, 0.0108668, -0.539558, -0.634821, -0.0208668, -0.825347, -1.01587, -0.0208668, -0.190327, 1.01587, 0.0108668, -0.190327)
+
+[sub_resource type="TorusMesh" id="TorusMesh_p8olh"]
+inner_radius = 0.946
+
 [node name="Specimen" instance=ExtResource("1_86lm3")]
 script = ExtResource("2_idt6j")
 data_file = ""
+ui = ExtResource("3_kw6d8")
 
-[node name="MultiplayerPickableObject" parent="." index="0" instance=ExtResource("3_idt6j")]
-gravity_scale = 0.0
-sleeping = true
-lock_rotation = true
-freeze = true
-second_hand_grab = 2
+[node name="ScalableMultiplayerPickableObject" parent="." index="0" instance=ExtResource("3_0wpxv")]
 
-[node name="VolumeLayeredShader" type="Node3D" parent="MultiplayerPickableObject" index="1"]
+[node name="VolumeLayeredShader" type="Node3D" parent="ScalableMultiplayerPickableObject" index="1"]
+unique_name_in_owner = true
 transform = Transform3D(0.25, 0, -3.7749e-08, 0, -0.5, 0, 3.7749e-08, 0, 0.25, 0, 0, 0)
 script = ExtResource("4_2yfeg")
-num_layers = 800
+gradient = ExtResource("6_glbsk")
+exclusion_planes = Array[NodePath]([NodePath("../../MultiplayerPickable/Marker3D")])
 
-[node name="Marker3D" type="Marker3D" parent="MultiplayerPickableObject/VolumeLayeredShader" index="0"]
-transform = Transform3D(-4.37114e-08, 0, -1, 0, 1, 0, 1, 0, -4.37114e-08, -0.224568, -0.00256753, -0.0146948)
-
-[node name="CollisionShape3D2" type="CollisionShape3D" parent="MultiplayerPickableObject" index="2"]
+[node name="CollisionShape3D2" type="CollisionShape3D" parent="ScalableMultiplayerPickableObject" index="2"]
 shape = SubResource("BoxShape3D_dobnj")
+
+[node name="MultiplayerPickable" parent="." index="1" instance=ExtResource("7_glbsk")]
+transform = Transform3D(-4.37114e-08, 1, 0, -1, -4.37114e-08, 0, 0, 0, 1, -0.320414, 0, 0)
+visible = false
+collision_layer = 0
+gravity_scale = 0.0
+
+[node name="aura" type="MeshInstance3D" parent="MultiplayerPickable" index="1"]
+visible = false
+mesh = SubResource("CylinderMesh_kw6d8")
+skeleton = NodePath("")
+surface_material_override/0 = SubResource("StandardMaterial3D_glbsk")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="MultiplayerPickable" index="2"]
+shape = SubResource("ConvexPolygonShape3D_cebxv")
+
+[node name="donut" type="MeshInstance3D" parent="MultiplayerPickable" index="3"]
+mesh = SubResource("TorusMesh_p8olh")
+skeleton = NodePath("../aura")
+
+[node name="Marker3D" type="Marker3D" parent="MultiplayerPickable" index="4"]
+transform = Transform3D(1.09278e-08, -0.5, -1.09278e-08, 0, 2.18557e-08, -0.25, -0.25, -2.18557e-08, -4.77671e-16, 0, 0, 0)
+
+[connection signal="dropped" from="MultiplayerPickable" to="." method="_on_multiplayer_pickable_dropped"]
+[connection signal="highlight_updated" from="MultiplayerPickable" to="." method="_on_multiplayer_pickable_highlight_updated"]
+[connection signal="picked_up" from="MultiplayerPickable" to="." method="_on_multiplayer_pickable_picked_up"]

@@ -30,17 +30,13 @@ func _process(delta: float) -> void:
 	process_scene_load()
 
 
-@rpc("any_peer", "call_remote", "reliable")
 func load_3d_scene_path(new_scene: String) -> void:
 	ResourceLoader.load_threaded_request(new_scene)
 	loading_scene = new_scene
-	if not multiplayer.get_remote_sender_id():
-		load_3d_scene_path.rpc(new_scene)
 
 
 func load_3d_scene(new_scene: PackedScene) -> void:
 	change_3d_scene(new_scene)
-	send_3d_scene(new_scene)
 
 
 func process_scene_load():
@@ -55,67 +51,82 @@ func process_scene_load():
 			var scene = ResourceLoader.load_threaded_get(loading_scene)
 			change_3d_scene(scene)
 			loading_scene = ""
-			
 
-func send_3d_scene(new_scene: PackedScene, delete: bool = true, keep_running: bool = false) -> void:
-	print(new_scene)
-	if new_scene.get_path():
-		load_3d_scene_path.rpc(new_scene.get_path())
-
-
-func change_3d_scene(new_scene: PackedScene, delete: bool = true, keep_running: bool = false) -> void:
+@rpc("any_peer", "call_local", "reliable")
+func prep_for_new_3d_scene():
 	# reset world
 	world_3d.show()
 	$/root/Main/Floor.hide()
 	specimen_ui_viewport.scene = null
+	if current_3d_scene:
+		current_3d_scene.queue_free()
+		current_3d_scene = null
 
-	if current_3d_scene != null:
-		if delete:
-			current_3d_scene.queue_free() # removes node entirely
-		elif keep_running:
-			current_3d_scene.visible = false # keeps in memory and running
-		else:
-			specimens_root.remove_child(current_3d_scene) # keeps in memory, does not run
+func change_3d_scene(new_scene: PackedScene) -> void:
+	set_spawner_authority.rpc()
+	prep_for_new_3d_scene.rpc()
+
 	$/root/Main/GPUParticles3D.emitting = true
 	var specimen: Specimen = new_scene.instantiate()
-	#    self.add_child(specimen)
+	specimen.hide()
+
+	current_3d_scene = specimen
+	get_tree().create_timer(.5).timeout.connect(post_change_3d_scene.rpc)
+
+@rpc("any_peer", "call_local", "reliable")
+func set_spawner_authority():
+	specimen_spawner.set_multiplayer_authority(multiplayer.get_remote_sender_id())
+	specimen_synchronizer.set_multiplayer_authority(multiplayer.get_remote_sender_id())
+
+@rpc("any_peer", "call_local", "reliable")
+func post_change_3d_scene():
+	var specimen = null
+	if specimen_spawner.get_multiplayer_authority() == multiplayer.get_unique_id():
+		specimens_root.add_child(current_3d_scene)
+		specimen = current_3d_scene
+	else:
+		var i = 0
+		while specimens_root.get_child_count() == 0 and i<1000:
+			i+=1
+			print(i)
+			await get_tree().process_frame  # Let the engine breathe
+		if i==100:
+			push_error('Unable to change specimen; ',multiplayer.get_remote_sender_id(),'->',multiplayer.get_unique_id())
+			return
+		else:
+			specimen = specimens_root.get_child(0)
 
 	match specimen.scale_mode:
 		Specimen.ScaleMode.TABLE:
 			# position over table
 			specimens_root.global_position = world_3d.get_node("spawnmarker1").global_position
+			set_room_scene(room_name)
 
 		Specimen.ScaleMode.WORLD:
 			# position at origin
 			specimens_root.global_position = Vector3(0, 0, 0)
 			# hide environment
-			world_3d.hide()
-			$/root/Main/Floor.hide()
+			set_room_scene('world_scale')
 
-	if specimen.ui:
-		specimen_ui_viewport.scene = specimen.ui
-
-	if specimen.story_text:
-		story_ui_viewport.get_node("Viewport/StoryUI").story = specimen.story_text
-	else:
-		story_ui_viewport.get_node("Viewport/StoryUI").story = PackedStringArray()
-
-	get_tree().create_timer(.5).timeout.connect(spawn_callback.bind(specimen))
 	current_3d_scene = specimen
+	specimen.show()
 
 	hide_mainmenu()
 
 func hide_mainmenu() -> void:
-	$/root/Main.remove_child(mainmenu)
-	
+	if $/root/Main.is_ancestor_of(mainmenu):
+		$/root/Main.remove_child(mainmenu)
+
 func show_mainmenu() -> void:
-	$/root/Main.add_child(mainmenu)
+	if not $/root/Main.is_ancestor_of(mainmenu):
+		$/root/Main.add_child(mainmenu)
 
 func toggle_mainmenu() -> void:
-	if mainmenu.get_parent():
-		hide_mainmenu()
-	else:
-		show_mainmenu()
+	if mainmenu:
+		if mainmenu.get_parent():
+			hide_mainmenu()
+		else:
+			show_mainmenu()
 
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -123,11 +134,26 @@ func _unhandled_input(event: InputEvent) -> void:
 		toggle_mainmenu()
 
 
-func spawn_callback(node: Node3D) -> void:
-	specimens_root.add_child(node)
+@export var room_name = 'lab'
 
-
-@rpc("any_peer", "call_local", "reliable")
-func set_spawner_authority():
-	specimen_spawner.set_multiplayer_authority(multiplayer.get_remote_sender_id())
-	specimen_synchronizer.set_multiplayer_authority(multiplayer.get_remote_sender_id())
+func set_room_scene(name):
+	match name:
+		'lab':
+			$/root/Main/Sketchfab_Scene.show()
+			$/root/Main/XROrigin3D/OpenXRFbPassthroughGeometry.hide()
+			$/root/Main/Black.hide()
+			room_name = name
+		'black':
+			$/root/Main/Sketchfab_Scene.hide()
+			$/root/Main/XROrigin3D/OpenXRFbPassthroughGeometry.hide()
+			$/root/Main/Black.show()
+			room_name = name
+		'passthrough':
+			$/root/Main/Sketchfab_Scene.hide()
+			$/root/Main/XROrigin3D/OpenXRFbPassthroughGeometry.show()
+			$/root/Main/Black.hide()
+			room_name = name
+		'world_scale':
+			$/root/Main/Sketchfab_Scene.hide()
+			$/root/Main/XROrigin3D/OpenXRFbPassthroughGeometry.hide()
+			$/root/Main/Black.hide()

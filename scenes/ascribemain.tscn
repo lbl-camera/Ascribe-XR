@@ -1,16 +1,22 @@
-[gd_scene load_steps=33 format=3 uid="uid://do7g4piyhqxid"]
+[gd_scene load_steps=37 format=3 uid="uid://do7g4piyhqxid"]
 
 [ext_resource type="Script" uid="uid://bl1kbl82hwxv5" path="res://scripts/ascribemain.gd" id="1_wh57r"]
 [ext_resource type="PackedScene" uid="uid://b8vb8h0jlqwl7" path="res://scenes/player.tscn" id="2_cym13"]
 [ext_resource type="PackedScene" uid="uid://clc5dre31iskm" path="res://addons/godot-xr-tools/xr/start_xr.tscn" id="3_u14qs"]
 [ext_resource type="PackedScene" uid="uid://dqgio4hj2pep0" path="res://scenes/mainmenu.tscn" id="4_g577c"]
 [ext_resource type="PackedScene" uid="uid://dmxg0n8x5t8o1" path="res://scenes/sci-fi_lab.tscn" id="5_7amqy"]
+[ext_resource type="PackedScene" uid="uid://syqqioda80bt" path="res://scenes/black.tscn" id="5_cym13"]
 [ext_resource type="PackedScene" uid="uid://dbp3m7l7qf3o7" path="res://scenes/story_ui.tscn" id="7_8mub2"]
 [ext_resource type="PackedScene" uid="uid://clujaf3u776a3" path="res://addons/godot-xr-tools/objects/viewport_2d_in_3d.tscn" id="7_54uq5"]
 [ext_resource type="PackedScene" uid="uid://cfmoahalri06d" path="res://addons/player-networking/NetworkGateway.tscn" id="8_l4ajn"]
+[ext_resource type="Texture2D" uid="uid://b4dgsigyqvvhy" path="res://assets/textures/particles/kenny/star_08.png" id="8_u14qs"]
 [ext_resource type="PackedScene" uid="uid://bgw2tanm4il3j" path="res://avatars/tunnelvrplayeravatar/VRPlayerAvatar.tscn" id="9_xk2ox"]
 [ext_resource type="PackedScene" uid="uid://wtpox7m5vu2b" path="res://addons/godot-xr-tools/effects/fade.tscn" id="10_4pnrr"]
 [ext_resource type="Texture2D" uid="uid://n8in475h2ylx" path="res://assets/textures/sprites/controls.png" id="11_wh57r"]
+[ext_resource type="PackedScene" uid="uid://c776l2i8jpcq1" path="res://scenes/tools/bell.tscn" id="14_g577c"]
+
+[sub_resource type="BoxMesh" id="BoxMesh_wh57r"]
+flip_faces = true
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_7arsa"]
 sky_horizon_color = Color(0.64625, 0.65575, 0.67075, 1)
@@ -21,6 +27,7 @@ sky_material = SubResource("ProceduralSkyMaterial_7arsa")
 
 [sub_resource type="Environment" id="Environment_u3xr8"]
 background_mode = 2
+background_energy_multiplier = 0.75
 sky = SubResource("Sky_1xke3")
 tonemap_mode = 2
 glow_enabled = true
@@ -50,6 +57,8 @@ curve = SubResource("Curve_dbsq1")
 emission_shape_scale = Vector3(4, 4, 4)
 emission_shape = 1
 emission_sphere_radius = 0.05
+angular_velocity_min = -112.95
+angular_velocity_max = 113.67
 radial_velocity_min = 0.199978
 radial_velocity_max = 0.199978
 gravity = Vector3(0, 0.1, 0)
@@ -66,6 +75,7 @@ transparency = 1
 blend_mode = 1
 shading_mode = 0
 vertex_color_use_as_albedo = true
+albedo_texture = ExtResource("8_u14qs")
 billboard_mode = 3
 billboard_keep_scale = true
 particles_anim_h_frames = 1
@@ -80,14 +90,14 @@ size = Vector2(0.1, 0.1)
 resource_local_to_scene = true
 size = Vector2(3, 1.68)
 
-[sub_resource type="ViewportTexture" id="ViewportTexture_wh57r"]
+[sub_resource type="ViewportTexture" id="ViewportTexture_g577c"]
 viewport_path = NodePath("Viewport")
 
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_cym13"]
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_7amqy"]
 transparency = 1
 cull_mode = 2
 shading_mode = 0
-albedo_texture = SubResource("ViewportTexture_wh57r")
+albedo_texture = SubResource("ViewportTexture_g577c")
 texture_filter = 1
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_7amqy"]
@@ -98,13 +108,13 @@ size = Vector3(3, 1.68, 0.02)
 resource_local_to_scene = true
 size = Vector2(3, 2)
 
-[sub_resource type="ViewportTexture" id="ViewportTexture_u14qs"]
+[sub_resource type="ViewportTexture" id="ViewportTexture_lu54x"]
 viewport_path = NodePath("Viewport")
 
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_g577c"]
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_54uq5"]
 transparency = 1
 cull_mode = 2
-albedo_texture = SubResource("ViewportTexture_u14qs")
+albedo_texture = SubResource("ViewportTexture_lu54x")
 texture_filter = 1
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_tjbaa"]
@@ -122,6 +132,11 @@ script = ExtResource("1_wh57r")
 [node name="XROrigin3D" parent="." instance=ExtResource("2_cym13")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.11907, 0)
 
+[node name="OpenXRFbPassthroughGeometry" type="OpenXRFbPassthroughGeometry" parent="XROrigin3D"]
+mesh = SubResource("BoxMesh_wh57r")
+transform = Transform3D(17.736, 0, 0, 0, 3.71391, 0, 0, 0, 17.7197, 1.74937, 0.903838, -0.867503)
+visible = false
+
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]
 environment = SubResource("Environment_u3xr8")
 
@@ -133,6 +148,7 @@ shadow_enabled = true
 
 [node name="Floor" type="StaticBody3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.0231537, 0)
+visible = false
 
 [node name="MeshInstance3D" type="MeshInstance3D" parent="Floor"]
 mesh = SubResource("PlaneMesh_x70eu")
@@ -144,11 +160,18 @@ shape = SubResource("ConcavePolygonShape3D_hbosa")
 [node name="mainmenu" parent="." instance=ExtResource("4_g577c")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -1.48147)
 
+[node name="Black" parent="." instance=ExtResource("5_cym13")]
+visible = false
+
 [node name="Sketchfab_Scene" parent="." instance=ExtResource("5_7amqy")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.00717, 0, -1.72411)
 
 [node name="spawnmarker1" type="Marker3D" parent="Sketchfab_Scene"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.96063, 0.941911, -0.340131)
+
+[node name="Sprite3D" type="Sprite3D" parent="Sketchfab_Scene"]
+transform = Transform3D(-1.31134e-08, 0, 0.3, 0, 0.3, 0, -0.3, 0, -1.31134e-08, -2.9866, 1.11662, 2.90154)
+texture = ExtResource("11_wh57r")
 
 [node name="GPUParticles3D" type="GPUParticles3D" parent="."]
 transform = Transform3D(2, 0, 0, 0, 2, 0, 0, 0, 2, -0.044663, 0.766067, -1.89914)
@@ -161,7 +184,6 @@ draw_pass_1 = SubResource("QuadMesh_euaxi")
 [node name="StoryUIViewport" parent="." instance=ExtResource("7_54uq5")]
 transform = Transform3D(0.707107, 0, -0.707107, 0, 1, 0, 0.707107, 0, 0.707107, 2.51358, 1.57187, -2.0405)
 screen_size = Vector2(3, 1.68)
-collision_layer = 5242880
 scene = ExtResource("7_8mub2")
 viewport_size = Vector2(1152, 648)
 unshaded = true
@@ -172,10 +194,9 @@ size = Vector2i(1152, 648)
 
 [node name="Screen" parent="StoryUIViewport" index="1"]
 mesh = SubResource("QuadMesh_wh57r")
-surface_material_override/0 = SubResource("StandardMaterial3D_cym13")
+surface_material_override/0 = SubResource("StandardMaterial3D_7amqy")
 
 [node name="StaticBody3D" parent="StoryUIViewport" index="2"]
-collision_layer = 5242880
 screen_size = Vector2(3, 1.68)
 viewport_size = Vector2(1152, 648)
 
@@ -189,7 +210,7 @@ viewport_size = Vector2(1152, 648)
 unshaded = true
 
 [node name="ViewportNetworkGateway" parent="." instance=ExtResource("7_54uq5")]
-transform = Transform3D(-4.37114e-08, 0, 1, 0, 1, 0, -1, 0, -4.37114e-08, -4.90758, 1.63634, 1.13298)
+transform = Transform3D(-0.9, 0, 1.35896e-07, 0, 0.9, 0, -1.35896e-07, 0, -0.9, -0.0960379, 1.08073, 3.1931)
 visible = false
 viewport_size = Vector2(690, 400)
 
@@ -202,7 +223,7 @@ localplayerscene = ""
 
 [node name="Screen" parent="ViewportNetworkGateway" index="1"]
 mesh = SubResource("QuadMesh_t38f3")
-surface_material_override/0 = SubResource("StandardMaterial3D_g577c")
+surface_material_override/0 = SubResource("StandardMaterial3D_54uq5")
 
 [node name="StaticBody3D" parent="ViewportNetworkGateway" index="2"]
 viewport_size = Vector2(690, 400)
@@ -221,13 +242,13 @@ root_path = NodePath("../Specimens")
 replication_config = SubResource("SceneReplicationConfig_tjbaa")
 
 [node name="SpecimenSpawner" type="MultiplayerSpawner" parent="."]
+_spawnable_scenes = PackedStringArray("uid://cx5ms3ytmwp1o", "uid://da2unp2h8qc18", "uid://lb78icrhffqj", "uid://crul1hw0w62d8", "uid://bk56w1twe7qp4", "uid://b5dc3bmfthxq5", "uid://cwgsy2hdr4bdc", "uid://dtsuxanqj41ss", "uid://djplj22paplnw", "uid://cy3c2vv1feuv2", "uid://t1a88rx0ame4", "uid://qe82kq4mc3sf", "uid://df38t5025dpny", "uid://dumwd3vggd4vu", "uid://8y82a7jnx07l", "uid://cafx2cui2qu52", "uid://co2awtql7i3co", "uid://chmjd077ul8nk", "uid://nsaby1sui3c")
 spawn_path = NodePath("../Specimens")
 
 [node name="Fade" parent="." instance=ExtResource("10_4pnrr")]
 
-[node name="Sprite3D" type="Sprite3D" parent="."]
-transform = Transform3D(-1.31134e-08, 0, 0.3, 0, 0.3, 0, -0.3, 0, -1.31134e-08, -4.99377, 1.11662, -0.638908)
-texture = ExtResource("11_wh57r")
+[node name="Node3D" parent="." instance=ExtResource("14_g577c")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8.2788, 0.76799, -1.62273)
 
 [editable path="StoryUIViewport"]
 [editable path="ViewportNetworkGateway"]

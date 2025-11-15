@@ -6,6 +6,8 @@
 resource_local_to_scene = true
 render_priority = 0
 shader = ExtResource("1_2r7k8")
+shader_parameter/max_steps = 256
+shader_parameter/step_size = 0.005
 shader_parameter/zoom = 2.0
 shader_parameter/opacity = 1.0
 shader_parameter/gamma = 1.0

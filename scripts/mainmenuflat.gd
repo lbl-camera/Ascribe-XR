@@ -1,60 +1,90 @@
+@tool
 extends Panel
 
-var dirty: bool = true
+var _scan_started: bool = false
 
-@export var scenes_directory: String = "res://specimens":
+@export var scenes_directory: String = "res://specimens"
+			
+@export var RebuldMenu: bool:
 	set(value):
-		if value != scenes_directory:
-			dirty = true
-			scenes_directory=value
-
-@export var button_size: Vector2 = Vector2(556, 500): # Fixed button size
-	set(value):
-		if value != button_size:
-			dirty = true
-			button_size = value
-
+		rebuild_menu()
+		
+func _ready():
+	for i in range(%ItemList.item_count):
+		%ItemList.set_item_disabled(i, true)
 
 # Called when the node enters the scene tree for the first time.
 func _process(dt) -> void:
-	scan_and_create_buttons()
+	if not _scan_started or not %ItemList.item_count:
+		_scan_started = true
+		scan_and_create_buttons()
 	process_scene_load()
 
+var scenes_to_load: Array[String] = []
 var loading_scenes: Array[String] = []
 
+var scenes: Dictionary = {}
+@export var scenes_paths: Dictionary = {}
+
+func rebuild_menu():
+	scenes.clear()
+	scenes_to_load.clear()
+	loading_scenes.clear()
+	%ItemList.clear()
+	_scan_started = false
 
 func process_scene_load():
-	for loading_scene in loading_scenes:
-		var progress: Array[int] = []
-		var status: int          = ResourceLoader.load_threaded_get_status(loading_scene, progress)
-		print_debug(loading_scene, progress)
-
-		if status in [ResourceLoader.THREAD_LOAD_FAILED, ResourceLoader.THREAD_LOAD_INVALID_RESOURCE]:
-			loading_scenes.erase(loading_scene)
-		elif status == ResourceLoader.THREAD_LOAD_LOADED:
-			var scene = ResourceLoader.load_threaded_get(loading_scene)
-			create_button(scene)
-			loading_scenes.erase(loading_scene)
-			print_debug('loading finished:', scene.resource_name)
+	# Queue new scenes for loading
+	while scenes_to_load:
+		var scene = scenes_to_load.pop_front()
+		ResourceLoader.load_threaded_request(scene)
+		loading_scenes.append(scene)
+	
+	if loading_scenes.is_empty():
+		$MarginContainer/VBoxContainer/LoadingLabel.hide()
+		$MarginContainer/VBoxContainer/LoadingProgressBar.hide()
+		return
+	
+	# Update UI for first scene
+	var progress: Array[int] = []
+	var status = ResourceLoader.load_threaded_get_status(loading_scenes[0], progress)
+	$MarginContainer/VBoxContainer/LoadingProgressBar.value = progress[0] * 100.0
+	$MarginContainer/VBoxContainer/LoadingLabel.text = "Loading " + loading_scenes[0] + " and %d others..." % (loading_scenes.size() - 1)
+	
+	# Process all loading scenes (iterate backwards to safely remove)
+	for i in range(loading_scenes.size() - 1, -1, -1):
+		var scene_name = loading_scenes[i]
+		var scene_progress: Array[int] = []
+		var scene_status = ResourceLoader.load_threaded_get_status(scene_name, scene_progress)
+		
+		match scene_status:
+			ResourceLoader.THREAD_LOAD_FAILED, ResourceLoader.THREAD_LOAD_INVALID_RESOURCE:
+				push_error('Failed to load scene: ' + scene_name)
+				loading_scenes.remove_at(i)
+			
+			ResourceLoader.THREAD_LOAD_LOADED:
+				var scene = ResourceLoader.load_threaded_get(scene_name)
+				if get_property_from_scene(scene, 'enabled', true):
+					create_button(scene)
+					scenes_paths[get_property_from_scene(scene, "display_name", "")] = scene_name
+				print_debug('Loading finished:', scene.resource_name)
+				loading_scenes.remove_at(i)
+	
+	# Hide UI when done
+	if loading_scenes.is_empty():
+		$MarginContainer/VBoxContainer/LoadingLabel.hide()
+		$MarginContainer/VBoxContainer/LoadingProgressBar.hide()
+		
+		%ItemList.sort_items_by_text()
 
 
 func scan_and_create_buttons():
-	if not dirty:
-		return
-
-	for n in %GridContainer.get_children():
-		%GridContainer.remove_child(n)
-		n.queue_free()
 
 	var file_names = ResourceLoader.list_directory(scenes_directory)
 	for file_name in file_names:
 		if file_name.ends_with(".tscn"):
-			print_debug("found specimen scene:", file_name)
-			ResourceLoader.load_threaded_request(scenes_directory.path_join(file_name))
-			loading_scenes.append(scenes_directory.path_join(file_name))
+			scenes_to_load.append(scenes_directory.path_join(file_name))
 	#create_button(scenes_directory + "/" + file_name)
-
-	dirty = false
 
 
 func get_property_from_scene(scene: PackedScene, property: String, default = null):
@@ -67,45 +97,22 @@ func get_property_from_scene(scene: PackedScene, property: String, default = nul
 
 func create_button(scene: PackedScene):
 	if scene:
-		var button = Button.new()
-		button.text = get_property_from_scene(scene, "display_name", "")
-		button.custom_minimum_size = button_size
-		button.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
-		button.size_flags_vertical = Control.SIZE_SHRINK_CENTER
-		button.connect("pressed", _on_scene_selected.bind(scene))
-
-		%GridContainer.add_child(button)
-		#button.set_owner(get_tree().edited_scene_root)
-
+		var text = get_property_from_scene(scene, "display_name", "")
 		var thumbnail: Texture2D = get_property_from_scene(scene, "thumbnail")
-		if thumbnail: # Ensure the scene provides a thumbnail atrribute
-			var vbox = VBoxContainer.new()
-			vbox.set_anchors_and_offsets_preset(PRESET_FULL_RECT)
+		scenes[text] = scene
+		var item_index = -1
+		for i in range(%ItemList.item_count):
+			if %ItemList.get_item_text(i) == text:
+				item_index = i
+		if item_index == -1:
+			%ItemList.add_item(text, thumbnail)
+		else:
+			%ItemList.set_item_disabled(item_index, false)
+		
 
-			var label = Label.new()
-			label.text = button.text
-			label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-			label.set("theme_override_font_sizes/font_size", 50)
-			label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
-			vbox.add_child(label)
-
-			var texture_rect = TextureRect.new()
-			texture_rect.texture = thumbnail
-			texture_rect.expand_mode = TextureRect.EXPAND_FIT_WIDTH  # Ensures icon scales properly
-			texture_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-			texture_rect.custom_minimum_size = Vector2(button_size.x * 0.8, button_size.y * 0.8)  # Scale within button
-			vbox.add_child(texture_rect)
-
-			button.add_child(vbox)
-
-
-#texture_rect.set_owner(get_tree().edited_scene_root)
-#label.set_owner(get_tree().edited_scene_root)
-#vbox.set_owner(get_tree().edited_scene_root)
-
-
-
-
-
-func _on_scene_selected(scene: PackedScene):
-	Ascribemain.load_3d_scene(scene)
+func _on_item_list_item_clicked_not_dragged(index: Variant) -> void:
+	var text = %ItemList.get_item_text(index)
+	if text in scenes:
+		Ascribemain.load_3d_scene(scenes[text])
+	else:
+		Ascribemain.load_3d_scene_path(scenes_paths[text])

@@ -1,10 +1,10 @@
-[gd_scene load_steps=3 format=3 uid="uid://5wnvinkuw4ju"]
+[gd_scene load_steps=3 format=3 uid="uid://dtsuxanqj41ss"]
 
-[ext_resource type="PackedScene" uid="uid://b35efg3sp0ihu" path="res://specimens/mesh_specimen.tscn" id="1_u1d1t"]
+[ext_resource type="PackedScene" uid="uid://8y82a7jnx07l" path="res://specimens/mesh_specimen.tscn" id="1_u1d1t"]
 [ext_resource type="Texture2D" uid="uid://dkqcrp3mwlu4f" path="res://assets/textures/thumbnails/concrete.png" id="2_u1d1t"]
 
 [node name="Specimen" instance=ExtResource("1_u1d1t")]
 loading_file = "res://specimen_data/aggregate_only_8_smoothed2.stl"
-display_name = "Concrete"
+display_name = "Concrete (X-ray)"
 thumbnail = ExtResource("2_u1d1t")
 story_text = Array[String](["Ancient Roman concrete's exceptional durability, low-carbon footprint, and unique interlocking mineral structure offer crucial insights for designing advanced materials. At the Advanced Light Source, a variety of instruments and techniques have been applied, including X-ray tomography (XRT), to investigate the structural characteristics of Roman concrete.", "Our Materials Data Science algorithms analyze XRT images to inspect and quantify the microstructure of ancient Roman concrete samples. We use XRT to define material phases, estimate fractions, and visualize porous networks and density gradients within two remarkable samples—ocean-submersed for two millennia, they far outlast modern concrete. Their internal organization appears to be key to their incredible longevity.", "These preliminary results highlight the advantage of combining non-destructive 3D XRT with computer vision and machine learning for characterizing complex archaeological materials. A major impact of this work is its ability to significantly reduce computational data, allowing for near real-time analysis on minimal infrastructure, potentially at the imaging facility."])
