@@ -1,30 +1,37 @@
+@tool
 extends Panel
 
-var dirty: bool = true
+var _scan_started: bool = false
 
-@export var scenes_directory: String = "res://specimens":
+@export var scenes_directory: String = "res://specimens"
+			
+@export var RebuldMenu: bool:
 	set(value):
-		if value != scenes_directory:
-			dirty = true
-			scenes_directory=value
-
-@export var button_size: Vector2 = Vector2(556, 500): # Fixed button size
-	set(value):
-		if value != button_size:
-			dirty = true
-			button_size = value
-
+		rebuild_menu()
+		
+func _ready():
+	for i in range(%ItemList.item_count):
+		%ItemList.set_item_disabled(i, true)
 
 # Called when the node enters the scene tree for the first time.
 func _process(dt) -> void:
-	scan_and_create_buttons()
+	if not _scan_started or not %ItemList.item_count:
+		_scan_started = true
+		scan_and_create_buttons()
 	process_scene_load()
 
 var scenes_to_load: Array[String] = []
 var loading_scenes: Array[String] = []
 
-var scenes: Array = []
+var scenes: Dictionary = {}
+@export var scenes_paths: Dictionary = {}
 
+func rebuild_menu():
+	scenes.clear()
+	scenes_to_load.clear()
+	loading_scenes.clear()
+	%ItemList.clear()
+	_scan_started = false
 
 func process_scene_load():
 	# Queue new scenes for loading
@@ -59,6 +66,7 @@ func process_scene_load():
 				var scene = ResourceLoader.load_threaded_get(scene_name)
 				if get_property_from_scene(scene, 'enabled', true):
 					create_button(scene)
+					scenes_paths[get_property_from_scene(scene, "display_name", "")] = scene_name
 				print_debug('Loading finished:', scene.resource_name)
 				loading_scenes.remove_at(i)
 	
@@ -66,22 +74,17 @@ func process_scene_load():
 	if loading_scenes.is_empty():
 		$MarginContainer/VBoxContainer/LoadingLabel.hide()
 		$MarginContainer/VBoxContainer/LoadingProgressBar.hide()
+		
+		%ItemList.sort_items_by_text()
 
 
 func scan_and_create_buttons():
-	if not dirty:
-		return
-
-	%ItemList.clear()
-	scenes.clear()
 
 	var file_names = ResourceLoader.list_directory(scenes_directory)
 	for file_name in file_names:
 		if file_name.ends_with(".tscn"):
 			scenes_to_load.append(scenes_directory.path_join(file_name))
 	#create_button(scenes_directory + "/" + file_name)
-
-	dirty = false
 
 
 func get_property_from_scene(scene: PackedScene, property: String, default = null):
@@ -96,9 +99,20 @@ func create_button(scene: PackedScene):
 	if scene:
 		var text = get_property_from_scene(scene, "display_name", "")
 		var thumbnail: Texture2D = get_property_from_scene(scene, "thumbnail")
-		scenes.append(scene)
-		%ItemList.add_item(text, thumbnail)
+		scenes[text] = scene
+		var item_index = -1
+		for i in range(%ItemList.item_count):
+			if %ItemList.get_item_text(i) == text:
+				item_index = i
+		if item_index == -1:
+			%ItemList.add_item(text, thumbnail)
+		else:
+			%ItemList.set_item_disabled(item_index, false)
 		
 
 func _on_item_list_item_clicked_not_dragged(index: Variant) -> void:
-	Ascribemain.load_3d_scene(scenes[index])
+	var text = %ItemList.get_item_text(index)
+	if text in scenes:
+		Ascribemain.load_3d_scene(scenes[text])
+	else:
+		Ascribemain.load_3d_scene_path(scenes_paths[text])
