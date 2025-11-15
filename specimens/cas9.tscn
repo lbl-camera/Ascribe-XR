@@ -1,6 +1,6 @@
-[gd_scene load_steps=3 format=3 uid="uid://c657us7dmimf4"]
+[gd_scene load_steps=3 format=3 uid="uid://b5dc3bmfthxq5"]
 
-[ext_resource type="PackedScene" uid="uid://b35efg3sp0ihu" path="res://specimens/mesh_specimen.tscn" id="1_tr15f"]
+[ext_resource type="PackedScene" uid="uid://8y82a7jnx07l" path="res://specimens/mesh_specimen.tscn" id="1_tr15f"]
 [ext_resource type="Texture2D" uid="uid://c1u5a2iggugy6" path="res://assets/textures/thumbnails/cas9.png" id="2_tr15f"]
 
 [node name="Specimen" instance=ExtResource("1_tr15f")]

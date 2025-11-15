@@ -1,6 +1,6 @@
-[gd_scene load_steps=3 format=3 uid="uid://bn7scvgdpdokh"]
+[gd_scene load_steps=3 format=3 uid="uid://lb78icrhffqj"]
 
-[ext_resource type="PackedScene" uid="uid://b35efg3sp0ihu" path="res://specimens/mesh_specimen.tscn" id="1_i0jbs"]
+[ext_resource type="PackedScene" uid="uid://8y82a7jnx07l" path="res://specimens/mesh_specimen.tscn" id="1_i0jbs"]
 [ext_resource type="Texture2D" uid="uid://dinuu34a0kwip" path="res://assets/textures/thumbnails/brain.png" id="2_i0jbs"]
 
 [node name="Specimen" instance=ExtResource("1_i0jbs")]

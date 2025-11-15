@@ -1,6 +1,6 @@
 [gd_scene load_steps=3 format=3 uid="uid://chmjd077ul8nk"]
 
-[ext_resource type="PackedScene" uid="uid://b35efg3sp0ihu" path="res://specimens/mesh_specimen.tscn" id="1_8i2op"]
+[ext_resource type="PackedScene" uid="uid://8y82a7jnx07l" path="res://specimens/mesh_specimen.tscn" id="1_8i2op"]
 [ext_resource type="Texture2D" uid="uid://cpk1sjvjvc3wp" path="res://assets/textures/thumbnails/virus.png" id="2_ub3ss"]
 
 [node name="Specimen" instance=ExtResource("1_8i2op")]

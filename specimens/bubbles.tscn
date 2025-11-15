@@ -5,7 +5,7 @@
 
 [node name="Specimen" instance=ExtResource("1_iy716")]
 loading_file = "res://specimen_data/bubbleSaye.stl"
-culling = false
 display_name = "Bubbles Simulation"
 thumbnail = ExtResource("2_iy716")
+enabled = false
 story_text = Array[String](["Bubble simulation used as part of project on industrial spray painting; project HPC for manufacture led by Rob Saye."])
