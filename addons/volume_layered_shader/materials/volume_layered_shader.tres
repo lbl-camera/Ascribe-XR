@@ -1,0 +1,16 @@
+[gd_resource type="ShaderMaterial" load_steps=2 format=4 uid="uid://b474tuur3w8tn"]
+
+[ext_resource type="Shader" uid="uid://o2nyo0pdjh67" path="res://shaders/raymarching.gdshader" id="1_2r7k8"]
+
+[resource]
+resource_local_to_scene = true
+render_priority = 0
+shader = ExtResource("1_2r7k8")
+shader_parameter/max_steps = 256
+shader_parameter/step_size = 0.005
+shader_parameter/zoom = 2.0
+shader_parameter/opacity = 1.0
+shader_parameter/gamma = 1.0
+shader_parameter/color_scalar = 1.0
+shader_parameter/num_exclusion_planes = 0
+shader_parameter/exclusion_planes = PackedVector4Array(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)

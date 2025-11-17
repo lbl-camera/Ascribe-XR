@@ -1,0 +1,10 @@
+[gd_scene load_steps=3 format=3 uid="uid://b5dc3bmfthxq5"]
+
+[ext_resource type="PackedScene" uid="uid://8y82a7jnx07l" path="res://specimens/mesh_specimen.tscn" id="1_tr15f"]
+[ext_resource type="Texture2D" uid="uid://c1u5a2iggugy6" path="res://assets/textures/thumbnails/cas9.png" id="2_tr15f"]
+
+[node name="Specimen" instance=ExtResource("1_tr15f")]
+loading_file = "res://specimen_data/cas9.stl"
+display_name = "CRISPR-Cas9"
+thumbnail = ExtResource("2_tr15f")
+story_text = Array[String](["Cas9 (CRISPR-associated protein 9) is an enzyme that plays a crucial role in the CRISPR-Cas9 gene editing system. Cas9 acts as a DNA nuclease, meaning it can cut DNA at specific locations. It is guided by a short RNA molecule called a guide RNA (gRNA) to recognize and target a specific DNA sequence. Once Cas9 reaches the target sequence, it cuts both strands of DNA, creating a double-stranded break."])

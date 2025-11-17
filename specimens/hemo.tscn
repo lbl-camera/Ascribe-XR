@@ -1,0 +1,10 @@
+[gd_scene load_steps=3 format=3 uid="uid://dumwd3vggd4vu"]
+
+[ext_resource type="PackedScene" uid="uid://8y82a7jnx07l" path="res://specimens/mesh_specimen.tscn" id="1_7gmu8"]
+[ext_resource type="Texture2D" uid="uid://cfu26tgj3b216" path="res://assets/textures/thumbnails/hemo.png" id="2_7gmu8"]
+
+[node name="Specimen" instance=ExtResource("1_7gmu8")]
+loading_file = "res://specimen_data/hemo-model.stl"
+display_name = "Hemoglobin"
+thumbnail = ExtResource("2_7gmu8")
+story_text = Array[String](["Structural features for hemoglobin, a protein that transports oxygen in our blood - with triangulation suitable to 3D printer."])

@@ -1,0 +1,36 @@
+# Godot 4+ specific ignores
+.godot/
+/android/
+*.tmp
+
+# builds
+*.aab
+*.apk
+*.exe
+*.pck
+
+# keystore
+*.keystore
+
+# plug
+.plugged/
+addons/godot-xr-tools
+addons/godot-openxrvendors
+addons/mqtt
+addons/terrain_3d
+addons/twovoip
+addons/webrtc
+addons/xr-autohandtracker
+addons/xr-simulator
+addons/player-networking
+addons/godotopenxrvendors
+
+#  aider
+.aider*
+
+# Rider
+.idea/
+
+# build
+bin/
+build/

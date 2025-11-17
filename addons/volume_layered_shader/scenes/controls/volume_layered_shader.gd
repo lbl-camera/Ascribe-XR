@@ -1,0 +1,210 @@
+# MIT License
+#
+# Copyright (c) 2023 Mark McKay
+# https://github.com/blackears/godot_volume_layers
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+
+@tool
+extends Node3D
+class_name VolumeLayers
+
+var mat: Material = preload("res://addons/volume_layered_shader/materials/volume_layered_shader.tres").duplicate()
+
+@export_file("*.bin") var bin_file: String:
+	get:
+		return bin_file
+	set(value):
+		if value:
+			var shape = Vector3i(256, 256, 10)
+
+			# Open the binary file
+			var file = FileAccess.open(value, FileAccess.READ)
+			var data = file.get_buffer(file.get_length())
+			file.close()
+
+			var images     = Array()
+			var frame_size = shape[0] * shape[1]
+			for z in range(shape[2]):
+				var image = Image.new()
+				var start = z * frame_size
+				image.set_data(shape[0], shape[1], false, Image.FORMAT_L8, data.slice(start, start+frame_size))
+				images.append(image)
+
+			# Create a 3D texture
+			var bin_texture = ImageTexture3D.new()
+			bin_texture.create(Image.FORMAT_L8, shape[0], shape[1], shape[2], false, images)
+			#bin_texture.init_ref()
+			texture = bin_texture
+		bin_file = value
+
+@export var texture: Texture3D:
+	get:
+		return texture
+	set(value):
+		if texture == value:
+			return
+
+		if texture:
+			texture.changed.disconnect(on_texture_changed)
+
+		mat.set_shader_parameter("texture_volume", value)
+		texture = value
+
+		if texture:
+			texture.changed.connect(on_texture_changed)
+
+@export_range(0, 10) var gamma: float = 1:
+	get:
+		return gamma
+	set(value):
+		if value == mat.get_shader_parameter("gamma"):
+			return
+		mat.set_shader_parameter("gamma", value)
+		gamma = value
+		rebuild_layers = true
+
+@export_range(0, 1) var opacity: float = 1:
+	get:
+		return opacity
+	set(value):
+		if value == mat.get_shader_parameter("opacity"):
+			return
+		mat.set_shader_parameter("opacity", value)
+		opacity = value
+		rebuild_layers = true
+
+@export_range(0, 10) var color_scalar: float = 1:
+	get:
+		return color_scalar
+	set(value):
+		if value == mat.get_shader_parameter("color_scalar"):
+			return
+		mat.set_shader_parameter("color_scalar", value)
+		color_scalar = value
+		rebuild_layers = true
+		
+@export_range(0, 512) var max_steps: float = 256:
+	get:
+		return max_steps
+	set(value):
+		if value == mat.get_shader_parameter("max_steps"):
+			return
+		mat.set_shader_parameter("max_steps", value)
+		max_steps = value
+		rebuild_layers = true
+		
+@export_range(0, .1) var step_size: float = .005:
+	get:
+		return step_size
+	set(value):
+		if value == mat.get_shader_parameter("step_size"):
+			return
+		mat.set_shader_parameter("step_size", value)
+		step_size = value
+		rebuild_layers = true
+		
+@export_range(0, 10) var zoom: float = 2:
+	get:
+		return zoom
+	set(value):
+		if value == mat.get_shader_parameter("zoom"):
+			return
+		mat.set_shader_parameter("zoom", value)
+		zoom = value
+		rebuild_layers = true
+
+@export var gradient: GradientTexture1D:
+	get:
+		return gradient
+	set(value):
+		if value == mat.get_shader_parameter("gradient"):
+			return
+		mat.set_shader_parameter("gradient", value)
+		gradient = value
+
+@export var exclusion_planes: Array[NodePath]:
+	get:
+		return exclusion_planes
+	set(value):
+		if value == exclusion_planes:
+			return
+		exclusion_planes = value
+		rebuild_layers = true
+
+var rebuild_layers: bool = true
+var mesh_inst: MeshInstance3D
+
+
+func on_texture_changed():
+	rebuild_layers = true
+
+
+# Called when the node enters the scene tree for the first time.
+func _ready():
+	mesh_inst = MeshInstance3D.new()
+	add_child(mesh_inst)
+
+	var mesh: BoxMesh = BoxMesh.new()
+	#	mesh.flip_faces = true
+	mesh.flip_faces = false
+	mesh_inst.mesh = mesh
+
+	mesh_inst.set_surface_override_material(0, mat)
+	pass # Replace with function body.
+
+
+# Called every frame. 'delta' is the elapsed time since the previous frame.
+func _process(delta):
+	#print("<0>")
+	#	if rebuild_layers:
+	if !texture:
+		return
+
+	var x: float = texture.get_width()
+	var y: float = texture.get_height()
+	var z: float = texture.get_depth()
+
+	#print("texture size  ", Vector3i(x, y, z))
+
+	var basis: Basis = Basis.IDENTITY
+	basis = basis * Basis.from_euler(Vector3(deg_to_rad(-90), 0, 0))
+	basis = basis * Basis.from_scale(Vector3(x, y, z) / min(x, y, z))
+	mesh_inst.transform = Transform3D(basis)
+
+	var plane_count: int = 0
+	var plane_list: PackedFloat32Array
+	for node_path in exclusion_planes:
+		if node_path.is_empty():
+			continue
+
+		var node: Node = get_node(node_path)
+		#print("node_path ", node_path)
+		#print("node ", node)
+		if node is Node3D:
+			var xform: Transform3D = (node as Node3D).global_transform
+			var p: Plane           = Plane(xform.basis.z, xform.origin)
+			plane_count += 1
+			plane_list.append(p.x)
+			plane_list.append(p.y)
+			plane_list.append(p.z)
+			plane_list.append(p.d)
+
+	mat.set_shader_parameter("num_exclusion_planes", plane_count)
+	mat.set_shader_parameter("exclusion_planes", plane_list)

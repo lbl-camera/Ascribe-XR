@@ -1,0 +1,16 @@
+[gd_scene load_steps=3 format=3 uid="uid://syqqioda80bt"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_avyx7"]
+albedo_color = Color(0, 0, 0, 1)
+
+[sub_resource type="BoxMesh" id="BoxMesh_jq5d3"]
+lightmap_size_hint = Vector2i(504, 756)
+material = SubResource("StandardMaterial3D_avyx7")
+flip_faces = true
+size = Vector3(50, 5, 50)
+
+[node name="Black" type="Node3D"]
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.55, 0)
+mesh = SubResource("BoxMesh_jq5d3")

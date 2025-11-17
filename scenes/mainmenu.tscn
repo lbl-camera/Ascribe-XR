@@ -1,0 +1,32 @@
+[gd_scene load_steps=4 format=3 uid="uid://dqgio4hj2pep0"]
+
+[ext_resource type="PackedScene" uid="uid://clujaf3u776a3" path="res://addons/godot-xr-tools/objects/viewport_2d_in_3d.tscn" id="3_dlvms"]
+[ext_resource type="PackedScene" uid="uid://cxr6ip1xkqkcj" path="res://scenes/room_select.tscn" id="3_r3g3c"]
+[ext_resource type="PackedScene" uid="uid://buycbcke7jh2k" path="res://scenes/mainmenuflat.tscn" id="4_ris1p"]
+
+[node name="Node3D" type="Node3D"]
+transform = Transform3D(0.999192, 0, 0, 0, 0.999192, 0, 0, 0, 0.999192, 0, 0, 0)
+
+[node name="Viewport2Din3D" parent="." instance=ExtResource("3_dlvms")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.29591, 0)
+screen_size = Vector2(2, 2)
+scene = ExtResource("4_ris1p")
+viewport_size = Vector2(3000, 3000)
+unshaded = true
+scene_properties_keys = PackedStringArray("mainmenuflat.gd", "scenes_directory", "button_size")
+scenes_directory = "res://specimens"
+button_size = Vector2(556, 500)
+
+[node name="Viewport2Din3D2" parent="." instance=ExtResource("3_dlvms")]
+transform = Transform3D(0.433013, 0, -0.5, 0, 1, 0, 0.25, 0, 0.866025, 1.524, 1.296, 0.28)
+screen_size = Vector2(2, 2)
+viewport_size = Vector2(500, 1000)
+unshaded = true
+
+[node name="Viewport2Din3D3" parent="." instance=ExtResource("3_dlvms")]
+transform = Transform3D(0.433013, 0, 0.5, 0, 1, 0, -0.25, 0, 0.866025, -1.524, 1.296, 0.28)
+screen_size = Vector2(2, 2)
+scene = ExtResource("3_r3g3c")
+viewport_size = Vector2(500, 1000)
+unshaded = true
+scene_properties_keys = PackedStringArray("room_select.gd")

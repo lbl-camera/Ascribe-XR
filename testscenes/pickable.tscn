@@ -1,0 +1,65 @@
+[gd_scene load_steps=12 format=3 uid="uid://bc535xm33w7x1"]
+
+[ext_resource type="Script" path="res://testscenes/pickable.gd" id="1_h1bx1"]
+[ext_resource type="PackedScene" uid="uid://b8vb8h0jlqwl7" path="res://scenes/player.tscn" id="3_h1bx1"]
+[ext_resource type="PackedScene" uid="uid://doq5u7h5wo2vf" path="res://scenes/pickable/scalable_multiplayer_pickable.tscn" id="4_fe485"]
+[ext_resource type="PackedScene" uid="uid://clc5dre31iskm" path="res://addons/godot-xr-tools/xr/start_xr.tscn" id="4_y1fng"]
+
+[sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_tkmk6"]
+sky_horizon_color = Color(0.64625, 0.65575, 0.67075, 1)
+ground_horizon_color = Color(0.64625, 0.65575, 0.67075, 1)
+
+[sub_resource type="Sky" id="Sky_1xke3"]
+sky_material = SubResource("ProceduralSkyMaterial_tkmk6")
+
+[sub_resource type="Environment" id="Environment_h1bx1"]
+background_mode = 2
+background_energy_multiplier = 0.75
+sky = SubResource("Sky_1xke3")
+tonemap_mode = 2
+glow_enabled = true
+
+[sub_resource type="BoxMesh" id="BoxMesh_k0x1c"]
+
+[sub_resource type="ConvexPolygonShape3D" id="ConvexPolygonShape3D_y1fng"]
+points = PackedVector3Array(0.5, 0.5, 0.5, 0.5, 0.5, -0.5, -0.5, 0.5, 0.5, 0.5, -0.5, 0.5, 0.5, -0.5, -0.5, -0.5, 0.5, -0.5, -0.5, -0.5, 0.5, -0.5, -0.5, -0.5)
+
+[sub_resource type="PlaneMesh" id="PlaneMesh_tkmk6"]
+size = Vector2(20, 20)
+
+[sub_resource type="ConvexPolygonShape3D" id="ConvexPolygonShape3D_h1bx1"]
+points = PackedVector3Array(-10, 0, -10, -10, 0, 10, 10, 0, -10, 10, 0, 10)
+
+[node name="SimpleVRpickable" type="Node3D"]
+script = ExtResource("1_h1bx1")
+
+[node name="StartXR" parent="." instance=ExtResource("4_y1fng")]
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Environment_h1bx1")
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
+transform = Transform3D(-0.866025, -0.433013, 0.25, 0, 0.5, 0.866025, -0.5, 0.75, -0.433013, 0, 0.0276108, 0)
+shadow_enabled = true
+
+[node name="XROrigin3D" parent="." instance=ExtResource("3_h1bx1")]
+
+[node name="ScalableMultiplayerPickableObject" parent="." instance=ExtResource("4_fe485")]
+unique_name_in_owner = true
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="ScalableMultiplayerPickableObject"]
+mesh = SubResource("BoxMesh_k0x1c")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="ScalableMultiplayerPickableObject"]
+shape = SubResource("ConvexPolygonShape3D_y1fng")
+
+[node name="StaticBody3D" type="StaticBody3D" parent="."]
+
+[node name="floor" type="MeshInstance3D" parent="StaticBody3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -1.03763, 0)
+mesh = SubResource("PlaneMesh_tkmk6")
+skeleton = NodePath("../..")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="StaticBody3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -1.03763, 0)
+shape = SubResource("ConvexPolygonShape3D_h1bx1")

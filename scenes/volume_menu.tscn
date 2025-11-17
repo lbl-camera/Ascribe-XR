@@ -1,0 +1,152 @@
+[gd_scene load_steps=4 format=3 uid="uid://cv58flunkbv02"]
+
+[ext_resource type="Script" uid="uid://cmhyucotgx1b0" path="res://scripts/colormaps/gradient_menu.gd" id="1_uu17j"]
+[ext_resource type="PackedScene" uid="uid://c8k84ysosm2jr" path="res://scenes/filedialog.tscn" id="2_wdy41"]
+[ext_resource type="Theme" uid="uid://ckuoidwkfc7y2" path="res://assets/ascribemenu.tres" id="3_1ken0"]
+
+[node name="Panel" type="Panel"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="FileDialogLayer" type="CanvasLayer" parent="."]
+unique_name_in_owner = true
+
+[node name="FileDialog" parent="FileDialogLayer" instance=ExtResource("2_wdy41")]
+unique_name_in_owner = true
+theme = null
+file_filters = Array[String](["*.zip", "*.bin", "*.npy"])
+
+[node name="SettingsLayer" type="CanvasLayer" parent="."]
+unique_name_in_owner = true
+visible = false
+
+[node name="MarginContainer" type="MarginContainer" parent="SettingsLayer"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 20
+theme_override_constants/margin_top = 20
+theme_override_constants/margin_right = 20
+theme_override_constants/margin_bottom = 20
+
+[node name="VBoxContainer" type="VBoxContainer" parent="SettingsLayer/MarginContainer"]
+layout_mode = 2
+
+[node name="GridContainer" type="GridContainer" parent="SettingsLayer/MarginContainer/VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+columns = 2
+
+[node name="Gamma" type="Label" parent="SettingsLayer/MarginContainer/VBoxContainer/GridContainer"]
+layout_mode = 2
+text = "Gamma"
+
+[node name="gammaSlider" type="HSlider" parent="SettingsLayer/MarginContainer/VBoxContainer/GridContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 4
+min_value = 0.1
+max_value = 10.0
+step = 0.1
+value = 0.1
+exp_edit = true
+
+[node name="Opacity" type="Label" parent="SettingsLayer/MarginContainer/VBoxContainer/GridContainer"]
+layout_mode = 2
+text = "Opacity"
+
+[node name="opacitySlider" type="HSlider" parent="SettingsLayer/MarginContainer/VBoxContainer/GridContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 4
+max_value = 1.0
+step = 0.01
+
+[node name="ColorScalar" type="Label" parent="SettingsLayer/MarginContainer/VBoxContainer/GridContainer"]
+layout_mode = 2
+text = "Color Scalar"
+
+[node name="color_scalarSlider" type="HSlider" parent="SettingsLayer/MarginContainer/VBoxContainer/GridContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 4
+max_value = 10.0
+step = 0.1
+
+[node name="MaxSteps" type="Label" parent="SettingsLayer/MarginContainer/VBoxContainer/GridContainer"]
+layout_mode = 2
+text = "Max Steps"
+
+[node name="max_stepsSlider" type="HSlider" parent="SettingsLayer/MarginContainer/VBoxContainer/GridContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 4
+max_value = 512.0
+
+[node name="StepSize" type="Label" parent="SettingsLayer/MarginContainer/VBoxContainer/GridContainer"]
+layout_mode = 2
+text = "Step Size"
+
+[node name="step_sizeSlider" type="HSlider" parent="SettingsLayer/MarginContainer/VBoxContainer/GridContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 4
+max_value = 0.1
+step = 0.001
+
+[node name="Zoom" type="Label" parent="SettingsLayer/MarginContainer/VBoxContainer/GridContainer"]
+layout_mode = 2
+text = "Zoom"
+
+[node name="zoomSlider" type="HSlider" parent="SettingsLayer/MarginContainer/VBoxContainer/GridContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 4
+min_value = 0.1
+max_value = 10.0
+step = 0.1
+value = 0.1
+exp_edit = true
+
+[node name="Gradient" type="Label" parent="SettingsLayer/MarginContainer/VBoxContainer/GridContainer"]
+layout_mode = 2
+text = "Gradient"
+
+[node name="GradientItemList" type="ItemList" parent="SettingsLayer/MarginContainer/VBoxContainer/GridContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+max_columns = 6
+script = ExtResource("1_uu17j")
+
+[node name="LoadingLayer" type="CanvasLayer" parent="."]
+unique_name_in_owner = true
+visible = false
+
+[node name="GridContainer" type="GridContainer" parent="LoadingLayer"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme = ExtResource("3_1ken0")
+columns = 2
+
+[node name="Label2" type="Label" parent="LoadingLayer/GridContainer"]
+layout_mode = 2
+text = "Load Progress"
+
+[node name="ProgressBar" type="ProgressBar" parent="LoadingLayer/GridContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 4
+max_value = 1.0
+
+[connection signal="item_selected" from="SettingsLayer/MarginContainer/VBoxContainer/GridContainer/GradientItemList" to="SettingsLayer/MarginContainer/VBoxContainer/GridContainer/GradientItemList" method="_on_item_list_item_selected"]
