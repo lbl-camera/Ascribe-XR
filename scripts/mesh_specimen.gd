@@ -93,7 +93,7 @@ func process_mesh_load() -> void:
 func _on_file_dialog_file_selected(path: String) -> void:
 	var mesh_data = load_path(path)
 	if mesh_data != null:
-		set_and_send_mesh(mesh_data['vertices'])
+		set_and_send_mesh(mesh_data)
 
 func load_fbx(path:String):
 	var doc = FBXDocument.new()
@@ -225,14 +225,14 @@ func build_mesh(data: Dictionary) -> ArrayMesh:
 
 	return mesh
 
-const CHUNK_SIZE = 2000
+const CHUNK_SIZE = 20000
 
 # Helper function to calculate chunk count
 func _get_chunk_count(array_size: int) -> int:
 	return ceili(float(array_size) / CHUNK_SIZE)
 
 # Helper function to send array data in chunks
-func _send_array_chunks(array, chunk_offset: int, total_chunks: int, rpc_method: String, is_final_array: bool) -> void:
+func _send_array_chunks(array, chunk_offset: int, total_chunks: int, field: String, is_final_array: bool) -> void:
 	if array == null or array.size() == 0:
 		return
 
@@ -246,37 +246,60 @@ func _send_array_chunks(array, chunk_offset: int, total_chunks: int, rpc_method:
 		var global_chunk_index = chunk_offset + i
 		var is_last = is_final_array and (i == local_chunk_count - 1)
 
-		call(rpc_method, chunk, global_chunk_index, total_chunks, is_last)
-		print("Sent %s chunk %d of %d" % [rpc_method, i + 1, local_chunk_count])
+		receive_mesh_data.rpc(chunk, field, global_chunk_index, total_chunks, is_last)
+		print("Sent %s chunk %d of %d" % [field, i + 1, local_chunk_count])
 
 		await get_tree().process_frame
 
 func send_mesh(data: Dictionary):
-	var verts: PackedFloat32Array = data.get('vertices', PackedFloat32Array())
+	var verts = data.get('vertices', PackedFloat32Array())
 	var indices: PackedInt32Array = data.get('indices', PackedInt32Array())
-	var normals: PackedFloat32Array = data.get('normals', PackedFloat32Array())
-
+	var normals = data.get('normals', PackedFloat32Array())
+	
+	# Convert PackedVector3Array to PackedFloat32Array if needed
+	if typeof(verts) == TYPE_PACKED_VECTOR3_ARRAY:
+		print("Converting vertices from PackedVector3Array to flat array")
+		var flat_verts = PackedFloat32Array()
+		flat_verts.resize(verts.size() * 3)
+		for i in range(verts.size()):
+			flat_verts[i * 3] = verts[i].x
+			flat_verts[i * 3 + 1] = verts[i].y
+			flat_verts[i * 3 + 2] = verts[i].z
+		verts = flat_verts
+	
+	# Convert normals if they're PackedVector3Array
+	if typeof(normals) == TYPE_PACKED_VECTOR3_ARRAY:
+		print("Converting normals from PackedVector3Array to flat array")
+		var flat_normals = PackedFloat32Array()
+		flat_normals.resize(normals.size() * 3)
+		for i in range(normals.size()):
+			flat_normals[i * 3] = normals[i].x
+			flat_normals[i * 3 + 1] = normals[i].y
+			flat_normals[i * 3 + 2] = normals[i].z
+		normals = flat_normals
+	
 	# Calculate total chunks
 	var vert_chunks = _get_chunk_count(verts.size())
 	var index_chunks = _get_chunk_count(indices.size()) if indices.size() > 0 else 0
 	var normal_chunks = _get_chunk_count(normals.size()) if normals.size() > 0 else 0
 	var total_chunks = vert_chunks + index_chunks + normal_chunks
-
+	
+	print("Sending mesh: %d vert chunks, %d index chunks, %d normal chunks" % [vert_chunks, index_chunks, normal_chunks])
+	
 	# Send vertices
-	await _send_array_chunks(verts, 0, total_chunks, "receive_mesh_vertices", index_chunks == 0 and normal_chunks == 0)
-
+	await _send_array_chunks(verts, 0, total_chunks, "vertices", index_chunks == 0 and normal_chunks == 0)
+	
 	# Send indices if present
 	if index_chunks > 0:
-		await _send_array_chunks(indices, vert_chunks, total_chunks, "receive_mesh_indices", normal_chunks == 0)
-
+		await _send_array_chunks(indices, vert_chunks, total_chunks, "indices", normal_chunks == 0)
+	
 	# Send normals if present
 	if normal_chunks > 0:
-		await _send_array_chunks(normals, vert_chunks + index_chunks, total_chunks, "receive_mesh_normals", true)
-
+		await _send_array_chunks(normals, vert_chunks + index_chunks, total_chunks, "normals", true)
 # Received data storage
-var received_verts: PackedFloat32Array = PackedFloat32Array()
-var received_indices: PackedInt32Array = PackedInt32Array()
-var received_normals: PackedFloat32Array = PackedFloat32Array()
+var received_data = {'vertices': PackedFloat32Array(),
+					 'indices': PackedInt32Array(),
+					 'normals': PackedFloat32Array()}
 
 # Helper to update UI
 func _update_receive_ui(index: int, total: int) -> void:
@@ -284,36 +307,16 @@ func _update_receive_ui(index: int, total: int) -> void:
 	ui_instance.get_node("%FileDialog").hide()
 	ui_instance.get_node("%ProgressBar").value = index
 	ui_instance.get_node("%ProgressBar").max_value = total
-
+	
 @rpc("any_peer", "call_remote", "reliable")
-func receive_mesh_vertices(chunk: PackedFloat32Array, index: int, total: int, is_last: bool) -> void:
+func receive_mesh_data(chunk, field:String, index: int, total: int, is_last: bool) -> void:
 	_update_receive_ui(index, total)
-	received_verts.append_array(chunk)
-
+	received_data[field].append_array(chunk)
 	if is_last:
-		set_mesh({'vertices': received_verts})
-		received_verts = PackedFloat32Array()
-
-@rpc("any_peer", "call_remote", "reliable")
-func receive_mesh_indices(chunk: PackedInt32Array, index: int, total: int, is_last: bool) -> void:
-	_update_receive_ui(index, total)
-	received_indices.append_array(chunk)
-
-	if is_last:
-		set_mesh({'vertices': received_verts, 'indices': received_indices})
-		received_verts = PackedFloat32Array()
-		received_indices = PackedInt32Array()
-
-@rpc("any_peer", "call_remote", "reliable")
-func receive_mesh_normals(chunk: PackedFloat32Array, index: int, total: int, is_last: bool) -> void:
-	_update_receive_ui(index, total)
-	received_normals.append_array(chunk)
-
-	if is_last:
-		set_mesh({'vertices': received_verts, 'indices': received_indices, 'normals': received_normals})
-		received_verts = PackedFloat32Array()
-		received_indices = PackedInt32Array()
-		received_normals = PackedFloat32Array()
+		set_mesh(received_data)
+		received_data = {'vertices': PackedFloat32Array(),
+						 'indices': PackedInt32Array(),
+						 'normals': PackedFloat32Array()}
 
 func set_mesh(data):
 	print('mesh set on ', multiplayer.get_unique_id())
