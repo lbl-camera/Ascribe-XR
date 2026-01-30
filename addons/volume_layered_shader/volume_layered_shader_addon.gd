@@ -1,13 +1,12 @@
 @tool
 extends EditorPlugin
 
-
 func _enter_tree():
 	# Initialization of the plugin goes here.
-	add_custom_type("VolumeLayeredShader", "Node3D", 
-		preload("res://addons/volume_layered_shader/scenes/controls/volume_layered_shader.gd"), 
-		preload("res://addons/volume_layered_shader/art/icons/volume_layered.svg"))
-		
+	add_custom_type("VolumeLayeredShader", "Node3D",
+	preload("res://addons/volume_layered_shader/scenes/controls/volume_layered_shader.gd"),
+	preload("res://addons/volume_layered_shader/art/icons/volume_layered.svg"))
+
 	pass
 
 
