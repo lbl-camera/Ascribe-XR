@@ -1,8 +1,6 @@
-[gd_resource type="GradientTexture1D" format=3 uid="uid://bb8bdgbv3lc4m"]
+[gd_resource type="GradientTexture1D" load_steps=2 format=3 uid="uid://bb8bdgbv3lc4m"]
 
-[sub_resource type="Gradient" id="Gradient_22blr"]
-offsets = PackedFloat32Array(0, 0.0648855, 0.114504, 0.171756, 0.484733, 0.538168)
-colors = PackedColorArray(1, 1, 1, 0, 0.724031, 0.598858, 0.906734, 0.0144033, 0.588235, 0.403922, 0.862745, 0.247059, 0.480151, 0.244361, 0.824312, 0.0271318, 1, 1, 1, 0, 1, 1, 1, 1)
+[ext_resource type="Gradient" uid="uid://bd4ldf822hhnh" path="res://addons/volume_layered_shader/textures/purple_gradient.tres" id="1_mkgil"]
 
 [resource]
-gradient = SubResource("Gradient_22blr")
+gradient = ExtResource("1_mkgil")
