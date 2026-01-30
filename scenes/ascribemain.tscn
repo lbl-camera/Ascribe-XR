@@ -1,4 +1,4 @@
-[gd_scene load_steps=36 format=3 uid="uid://do7g4piyhqxid"]
+[gd_scene format=3 uid="uid://do7g4piyhqxid"]
 
 [ext_resource type="Script" uid="uid://bl1kbl82hwxv5" path="res://scripts/ascribemain.gd" id="1_wh57r"]
 [ext_resource type="PackedScene" uid="uid://b8vb8h0jlqwl7" path="res://scenes/player.tscn" id="2_cym13"]
@@ -85,38 +85,38 @@ particles_anim_loop = false
 material = SubResource("StandardMaterial3D_y21xb")
 size = Vector2(0.1, 0.1)
 
-[sub_resource type="QuadMesh" id="QuadMesh_wh57r"]
+[sub_resource type="QuadMesh" id="QuadMesh_u14qs"]
 resource_local_to_scene = true
 size = Vector2(3, 1.68)
 
-[sub_resource type="ViewportTexture" id="ViewportTexture_u14qs"]
-viewport_path = NodePath("Viewport")
+[sub_resource type="ViewportTexture" id="ViewportTexture_g577c"]
+viewport_path = NodePath("StoryUIViewport/Viewport")
 
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_g577c"]
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_7amqy"]
 transparency = 1
 cull_mode = 2
 shading_mode = 0
-albedo_texture = SubResource("ViewportTexture_u14qs")
+albedo_texture = SubResource("ViewportTexture_g577c")
 texture_filter = 1
 
-[sub_resource type="BoxShape3D" id="BoxShape3D_7amqy"]
+[sub_resource type="BoxShape3D" id="BoxShape3D_lu54x"]
 resource_local_to_scene = true
 size = Vector3(3, 1.68, 0.02)
 
-[sub_resource type="QuadMesh" id="QuadMesh_t38f3"]
+[sub_resource type="QuadMesh" id="QuadMesh_54uq5"]
 resource_local_to_scene = true
 size = Vector2(3, 2)
 
-[sub_resource type="ViewportTexture" id="ViewportTexture_7amqy"]
-viewport_path = NodePath("Viewport")
+[sub_resource type="ViewportTexture" id="ViewportTexture_l4ajn"]
+viewport_path = NodePath("ViewportNetworkGateway/Viewport")
 
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_lu54x"]
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_xk2ox"]
 transparency = 1
 cull_mode = 2
-albedo_texture = SubResource("ViewportTexture_7amqy")
+albedo_texture = SubResource("ViewportTexture_l4ajn")
 texture_filter = 1
 
-[sub_resource type="BoxShape3D" id="BoxShape3D_tjbaa"]
+[sub_resource type="BoxShape3D" id="BoxShape3D_4pnrr"]
 resource_local_to_scene = true
 size = Vector3(3, 2, 0.02)
 
@@ -125,54 +125,54 @@ properties/0/path = NodePath(".:position")
 properties/0/spawn = true
 properties/0/replication_mode = 1
 
-[node name="Main" type="Node3D"]
+[node name="Main" type="Node3D" unique_id=2013375791]
 script = ExtResource("1_wh57r")
 
-[node name="XROrigin3D" parent="." instance=ExtResource("2_cym13")]
+[node name="XROrigin3D" parent="." unique_id=615549016 instance=ExtResource("2_cym13")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.11907, 0)
 
-[node name="OpenXRFbPassthroughGeometry" type="OpenXRFbPassthroughGeometry" parent="XROrigin3D"]
+[node name="OpenXRFbPassthroughGeometry" type="OpenXRFbPassthroughGeometry" parent="XROrigin3D" unique_id=593142721]
 mesh = SubResource("BoxMesh_wh57r")
 transform = Transform3D(17.736, 0, 0, 0, 3.71391, 0, 0, 0, 17.7197, 1.74937, 0.903838, -0.867503)
 visible = false
 
-[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+[node name="WorldEnvironment" type="WorldEnvironment" parent="." unique_id=1760452411]
 environment = SubResource("Environment_u3xr8")
 
-[node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="." unique_id=2127886819]
 transform = Transform3D(-0.866025, -0.433013, 0.25, 0, 0.5, 0.866025, -0.5, 0.75, -0.433013, 0, 0.0276108, 0)
 shadow_enabled = true
 
-[node name="StartXR" parent="." instance=ExtResource("3_u14qs")]
+[node name="StartXR" parent="." unique_id=1380298445 instance=ExtResource("3_u14qs")]
 
-[node name="Floor" type="StaticBody3D" parent="."]
+[node name="Floor" type="StaticBody3D" parent="." unique_id=209694255]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.0231537, 0)
 visible = false
 
-[node name="MeshInstance3D" type="MeshInstance3D" parent="Floor"]
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Floor" unique_id=343973943]
 mesh = SubResource("PlaneMesh_x70eu")
 skeleton = NodePath("../..")
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="Floor"]
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Floor" unique_id=1406324059]
 shape = SubResource("ConcavePolygonShape3D_hbosa")
 
-[node name="mainmenu" parent="." instance=ExtResource("4_g577c")]
+[node name="mainmenu" parent="." unique_id=1161664091 instance=ExtResource("4_g577c")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -1.48147)
 
-[node name="Black" parent="." instance=ExtResource("5_cym13")]
+[node name="Black" parent="." unique_id=2087094944 instance=ExtResource("5_cym13")]
 visible = false
 
-[node name="Sketchfab_Scene" parent="." instance=ExtResource("5_7amqy")]
+[node name="Sketchfab_Scene" parent="." unique_id=1146355029 instance=ExtResource("5_7amqy")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.00717, 0, -1.72411)
 
-[node name="spawnmarker1" type="Marker3D" parent="Sketchfab_Scene"]
+[node name="spawnmarker1" type="Marker3D" parent="Sketchfab_Scene" unique_id=577859278]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.96063, 0.941911, -0.340131)
 
-[node name="Sprite3D" type="Sprite3D" parent="Sketchfab_Scene"]
+[node name="Sprite3D" type="Sprite3D" parent="Sketchfab_Scene" unique_id=536560121]
 transform = Transform3D(-1.31134e-08, 0, 0.3, 0, 0.3, 0, -0.3, 0, -1.31134e-08, -2.9866, 1.11662, 2.90154)
 texture = ExtResource("11_wh57r")
 
-[node name="GPUParticles3D" type="GPUParticles3D" parent="."]
+[node name="GPUParticles3D" type="GPUParticles3D" parent="." unique_id=770225503]
 transform = Transform3D(2, 0, 0, 0, 2, 0, 0, 0, 2, -0.044663, 0.766067, -1.89914)
 emitting = false
 amount = 128
@@ -180,11 +180,12 @@ one_shot = true
 process_material = SubResource("ParticleProcessMaterial_gpljf")
 draw_pass_1 = SubResource("QuadMesh_euaxi")
 
-[node name="StoryUIViewport" parent="." instance=ExtResource("7_54uq5")]
+[node name="StoryUIViewport" parent="." unique_id=124545011 instance=ExtResource("7_54uq5")]
 transform = Transform3D(0.707107, 0, -0.707107, 0, 1, 0, 0.707107, 0, 0.707107, 2.51358, 1.57187, -2.0405)
 screen_size = Vector2(3, 1.68)
 scene = ExtResource("7_8mub2")
 viewport_size = Vector2(1152, 648)
+transparent = 1
 unshaded = true
 scene_properties_keys = PackedStringArray("story_ui.gd")
 
@@ -192,59 +193,63 @@ scene_properties_keys = PackedStringArray("story_ui.gd")
 size = Vector2i(1152, 648)
 
 [node name="Screen" parent="StoryUIViewport" index="1"]
-mesh = SubResource("QuadMesh_wh57r")
-surface_material_override/0 = SubResource("StandardMaterial3D_g577c")
+mesh = SubResource("QuadMesh_u14qs")
+surface_material_override/0 = SubResource("StandardMaterial3D_7amqy")
 
 [node name="StaticBody3D" parent="StoryUIViewport" index="2"]
 screen_size = Vector2(3, 1.68)
 viewport_size = Vector2(1152, 648)
 
 [node name="CollisionShape3D" parent="StoryUIViewport/StaticBody3D" index="0"]
-shape = SubResource("BoxShape3D_7amqy")
+shape = SubResource("BoxShape3D_lu54x")
 
-[node name="SpecimenUIViewport" parent="." instance=ExtResource("7_54uq5")]
+[node name="SpecimenUIViewport" parent="." unique_id=1596973923 instance=ExtResource("7_54uq5")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.59675, -3.139)
 screen_size = Vector2(3, 1.68)
 viewport_size = Vector2(1152, 648)
+transparent = 1
 unshaded = true
+scene_properties_keys = PackedStringArray()
 
-[node name="ViewportNetworkGateway" parent="." instance=ExtResource("7_54uq5")]
+[node name="ViewportNetworkGateway" parent="." unique_id=387978706 instance=ExtResource("7_54uq5")]
 transform = Transform3D(-0.9, 0, 1.35896e-07, 0, 0.9, 0, -1.35896e-07, 0, -0.9, -0.0960379, 1.08073, 3.1931)
 visible = false
 viewport_size = Vector2(690, 400)
+transparent = 1
+scene_properties_keys = PackedStringArray()
 
 [node name="Viewport" parent="ViewportNetworkGateway" index="0"]
 size = Vector2i(690, 400)
 
-[node name="NetworkGateway" parent="ViewportNetworkGateway/Viewport" index="0" instance=ExtResource("8_l4ajn")]
+[node name="NetworkGateway" parent="ViewportNetworkGateway/Viewport" index="0" unique_id=1367364702 instance=ExtResource("8_l4ajn")]
 playersnodepath = NodePath("../../../Players")
 localplayerscene = ""
 
 [node name="Screen" parent="ViewportNetworkGateway" index="1"]
-mesh = SubResource("QuadMesh_t38f3")
-surface_material_override/0 = SubResource("StandardMaterial3D_lu54x")
+mesh = SubResource("QuadMesh_54uq5")
+surface_material_override/0 = SubResource("StandardMaterial3D_xk2ox")
 
 [node name="StaticBody3D" parent="ViewportNetworkGateway" index="2"]
 viewport_size = Vector2(690, 400)
 
 [node name="CollisionShape3D" parent="ViewportNetworkGateway/StaticBody3D" index="0"]
-shape = SubResource("BoxShape3D_tjbaa")
+shape = SubResource("BoxShape3D_4pnrr")
 
-[node name="Players" type="Node3D" parent="."]
+[node name="Players" type="Node3D" parent="." unique_id=2072121869]
 
-[node name="VRPlayerAvatar" parent="Players" instance=ExtResource("9_xk2ox")]
+[node name="VRPlayerAvatar" parent="Players" unique_id=2108223737 instance=ExtResource("9_xk2ox")]
 
-[node name="Specimens" type="Node3D" parent="."]
+[node name="Specimens" type="Node3D" parent="." unique_id=969131302]
 
-[node name="SpecimenSynchronizer" type="MultiplayerSynchronizer" parent="."]
+[node name="SpecimenSynchronizer" type="MultiplayerSynchronizer" parent="." unique_id=145409447]
 root_path = NodePath("../Specimens")
 replication_config = SubResource("SceneReplicationConfig_tjbaa")
 
-[node name="SpecimenSpawner" type="MultiplayerSpawner" parent="."]
-_spawnable_scenes = PackedStringArray("uid://cx5ms3ytmwp1o", "uid://da2unp2h8qc18", "uid://lb78icrhffqj", "uid://crul1hw0w62d8", "uid://bk56w1twe7qp4", "uid://b5dc3bmfthxq5", "uid://cwgsy2hdr4bdc", "uid://dtsuxanqj41ss", "uid://djplj22paplnw", "uid://cy3c2vv1feuv2", "uid://t1a88rx0ame4", "uid://qe82kq4mc3sf", "uid://df38t5025dpny", "uid://dumwd3vggd4vu", "uid://8y82a7jnx07l", "uid://cafx2cui2qu52", "uid://co2awtql7i3co", "uid://chmjd077ul8nk", "uid://nsaby1sui3c")
+[node name="SpecimenSpawner" type="MultiplayerSpawner" parent="." unique_id=665263542]
+_spawnable_scenes = PackedStringArray("uid://cx5ms3ytmwp1o", "uid://lb78icrhffqj", "uid://crul1hw0w62d8", "uid://bk56w1twe7qp4", "uid://b5dc3bmfthxq5", "uid://cwgsy2hdr4bdc", "uid://dtsuxanqj41ss", "uid://djplj22paplnw", "uid://cy3c2vv1feuv2", "uid://t1a88rx0ame4", "uid://qe82kq4mc3sf", "uid://df38t5025dpny", "uid://dumwd3vggd4vu", "uid://8y82a7jnx07l", "uid://co2awtql7i3co", "uid://chmjd077ul8nk", "uid://nsaby1sui3c", "uid://da2unp2h8qc18", "uid://cafx2cui2qu52")
 spawn_path = NodePath("../Specimens")
 
-[node name="Fade" parent="." instance=ExtResource("10_4pnrr")]
+[node name="Fade" parent="." unique_id=2077979272 instance=ExtResource("10_4pnrr")]
 
 [editable path="StoryUIViewport"]
 [editable path="ViewportNetworkGateway"]

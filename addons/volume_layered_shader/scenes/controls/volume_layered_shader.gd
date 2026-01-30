@@ -25,121 +25,75 @@
 extends Node3D
 class_name VolumeLayers
 
-var mat: Material = preload("res://addons/volume_layered_shader/materials/volume_layered_shader.tres").duplicate()
-
-@export_file("*.bin") var bin_file: String:
-	get:
-		return bin_file
-	set(value):
-		if value:
-			var shape = Vector3i(256, 256, 10)
-
-			# Open the binary file
-			var file = FileAccess.open(value, FileAccess.READ)
-			var data = file.get_buffer(file.get_length())
-			file.close()
-
-			var images     = Array()
-			var frame_size = shape[0] * shape[1]
-			for z in range(shape[2]):
-				var image = Image.new()
-				var start = z * frame_size
-				image.set_data(shape[0], shape[1], false, Image.FORMAT_L8, data.slice(start, start+frame_size))
-				images.append(image)
-
-			# Create a 3D texture
-			var bin_texture = ImageTexture3D.new()
-			bin_texture.create(Image.FORMAT_L8, shape[0], shape[1], shape[2], false, images)
-			#bin_texture.init_ref()
-			texture = bin_texture
-		bin_file = value
-
-@export var texture: Texture3D:
+@export var texture:Texture3D:
 	get:
 		return texture
 	set(value):
 		if texture == value:
 			return
-
+		
 		if texture:
 			texture.changed.disconnect(on_texture_changed)
-
-		mat.set_shader_parameter("texture_volume", value)
+			
 		texture = value
-
+		
 		if texture:
 			texture.changed.connect(on_texture_changed)
+		
 
-@export_range(0, 10) var gamma: float = 1:
+
+@export var num_layers:int = 10:
+	get:
+		return num_layers
+	set(value):
+		if value == num_layers:
+			return
+		num_layers = value
+		rebuild_layers = true
+
+@export_range(0, 4, .01, "or_greater") var gamma:float = 1:
 	get:
 		return gamma
 	set(value):
-		if value == mat.get_shader_parameter("gamma"):
+		if value == gamma:
 			return
-		mat.set_shader_parameter("gamma", value)
 		gamma = value
 		rebuild_layers = true
 
-@export_range(0, 1) var opacity: float = 1:
+@export_range(0, 4, .01, "or_greater") var normal_influence:float = 1:
+	set(value):
+		if value == normal_influence:
+			return
+		normal_influence = value
+		rebuild_layers = true
+
+@export_range(0, 2, .01, "or_greater") var opacity:float = 1:
 	get:
 		return opacity
 	set(value):
-		if value == mat.get_shader_parameter("opacity"):
+		if value == opacity:
 			return
-		mat.set_shader_parameter("opacity", value)
 		opacity = value
 		rebuild_layers = true
 
-@export_range(0, 10) var color_scalar: float = 1:
+@export_range(0, 4) var color_scalar:float = 1:
 	get:
 		return color_scalar
 	set(value):
-		if value == mat.get_shader_parameter("color_scalar"):
+		if value == color_scalar:
 			return
-		mat.set_shader_parameter("color_scalar", value)
 		color_scalar = value
 		rebuild_layers = true
-		
-@export_range(0, 512) var max_steps: float = 256:
-	get:
-		return max_steps
-	set(value):
-		if value == mat.get_shader_parameter("max_steps"):
-			return
-		mat.set_shader_parameter("max_steps", value)
-		max_steps = value
-		rebuild_layers = true
-		
-@export_range(0, .1) var step_size: float = .005:
-	get:
-		return step_size
-	set(value):
-		if value == mat.get_shader_parameter("step_size"):
-			return
-		mat.set_shader_parameter("step_size", value)
-		step_size = value
-		rebuild_layers = true
-		
-@export_range(0, 10) var zoom: float = 2:
-	get:
-		return zoom
-	set(value):
-		if value == mat.get_shader_parameter("zoom"):
-			return
-		mat.set_shader_parameter("zoom", value)
-		zoom = value
-		rebuild_layers = true
 
-@export var gradient: GradientTexture1D:
+@export var gradient:GradientTexture1D = preload("res://addons/volume_layered_shader/textures/purple_gradient_texture.tres"):
 	get:
 		return gradient
 	set(value):
-		if value == mat.get_shader_parameter("gradient"):
+		if value == gradient:
 			return
-		mat.set_shader_parameter("gradient", value)
 		gradient = value
 
-@export var exclusion_planes: Array[NodePath]:
+@export var exclusion_planes:Array[NodePath]:
 	get:
 		return exclusion_planes
 	set(value):
@@ -148,24 +102,25 @@ var mat: Material = preload("res://addons/volume_layered_shader/materials/volume
 		exclusion_planes = value
 		rebuild_layers = true
 
-var rebuild_layers: bool = true
-var mesh_inst: MeshInstance3D
 
+var rebuild_layers:bool = true
+var mesh_inst:MeshInstance3D
 
 func on_texture_changed():
 	rebuild_layers = true
-
+	
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
 	mesh_inst = MeshInstance3D.new()
 	add_child(mesh_inst)
-
-	var mesh: BoxMesh = BoxMesh.new()
-	#	mesh.flip_faces = true
+	
+	var mesh:BoxMesh = BoxMesh.new()
+#	mesh.flip_faces = true
 	mesh.flip_faces = false
 	mesh_inst.mesh = mesh
-
+	
+	var mat:Material = preload("res://addons/volume_layered_shader/materials/volume_layered_shader.tres").duplicate()
 	mesh_inst.set_surface_override_material(0, mat)
 	pass # Replace with function body.
 
@@ -173,38 +128,50 @@ func _ready():
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process(delta):
 	#print("<0>")
-	#	if rebuild_layers:
+#	if rebuild_layers:
 	if !texture:
 		return
-
-	var x: float = texture.get_width()
-	var y: float = texture.get_height()
-	var z: float = texture.get_depth()
-
+	
+	var x:float = texture.get_width()
+	var y:float = texture.get_height()
+	var z:float = texture.get_depth()
+	
 	#print("texture size  ", Vector3i(x, y, z))
-
-	var basis: Basis = Basis.IDENTITY
+	
+	var basis:Basis = Basis.IDENTITY
 	basis = basis * Basis.from_euler(Vector3(deg_to_rad(-90), 0, 0))
 	basis = basis * Basis.from_scale(Vector3(x, y, z) / min(x, y, z))
 	mesh_inst.transform = Transform3D(basis)
-
-	var plane_count: int = 0
-	var plane_list: PackedFloat32Array
+	
+	#print("aabb_size ", basis.get_scale())
+	var mat:ShaderMaterial = mesh_inst.get_surface_override_material(0)
+	mat.set_shader_parameter("texture_volume", texture)
+	mat.set_shader_parameter("aabb_size", basis.get_scale())
+	mat.set_shader_parameter("layers", num_layers)
+	mat.set_shader_parameter("opacity", opacity)
+	mat.set_shader_parameter("normal_influence", normal_influence)
+	mat.set_shader_parameter("color_scalar", color_scalar)
+	mat.set_shader_parameter("gamma", gamma)
+	mat.set_shader_parameter("gradient", gradient)
+	
+	var plane_count:int = 0
+	var plane_list:PackedFloat32Array
 	for node_path in exclusion_planes:
 		if node_path.is_empty():
 			continue
 
-		var node: Node = get_node(node_path)
+		var node:Node = get_node(node_path)
 		#print("node_path ", node_path)
 		#print("node ", node)
 		if node is Node3D:
-			var xform: Transform3D = (node as Node3D).global_transform
-			var p: Plane           = Plane(xform.basis.z, xform.origin)
+			var xform:Transform3D = (node as Node3D).global_transform
+			var p:Plane = Plane(xform.basis.z, xform.origin)
 			plane_count += 1
 			plane_list.append(p.x)
 			plane_list.append(p.y)
 			plane_list.append(p.z)
 			plane_list.append(p.d)
-
+			
 	mat.set_shader_parameter("num_exclusion_planes", plane_count)
 	mat.set_shader_parameter("exclusion_planes", plane_list)
+		
