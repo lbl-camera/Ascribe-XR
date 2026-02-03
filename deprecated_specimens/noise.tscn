@@ -1,6 +1,6 @@
-[gd_scene load_steps=3 format=3 uid="uid://bo1pff7ovsjn8"]
+[gd_scene format=3 uid="uid://bo1pff7ovsjn8"]
 
-[ext_resource type="PackedScene" uid="uid://5wygpbthgiou" path="res://scenes/volumetric_specimen.tscn" id="1_jllqe"]
+[ext_resource type="PackedScene" uid="uid://5wygpbthgiou" path="res://scenes/Specimen/volumetric_specimen.tscn" id="1_jllqe"]
 [ext_resource type="Texture2D" uid="uid://ckne1iwfftpnl" path="res://assets/textures/thumbnails/head.png" id="2_84po3"]
 
 [node name="Specimen2" instance=ExtResource("1_jllqe")]

@@ -2,7 +2,7 @@
 .godot/
 /android/
 *.tmp
-
+*.import
 # builds
 *.aab
 *.apk
@@ -14,16 +14,16 @@
 
 # plug
 # .plugged/
-# addons/godot-xr-tools
-# addons/godot-openxrvendors
-# addons/mqtt
-# addons/terrain_3d
-# addons/twovoip
-# addons/webrtc
-# addons/xr-autohandtracker
-# addons/xr-simulator
-# addons/player-networking
-# addons/godotopenxrvendors
+ addons/godot-xr-tools
+ addons/godot-openxrvendors
+ addons/mqtt
+ addons/terrain_3d
+ addons/twovoip
+ addons/webrtc
+ addons/xr-autohandtracker
+ addons/xr-simulator
+ addons/player-networking
+ addons/godotopenxrvendors
 
 #  aider
 .aider*
