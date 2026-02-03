@@ -31,7 +31,7 @@ driver/enable_input=true
 XRToolsUserSettings="*uid://bqgb8i74tm0t"
 XRToolsRumbleManager="*uid://by853dk86g1qw"
 XrSimulator="*res://addons/xr-simulator/XRSimulator.tscn"
-Ascribemain="*res://scripts/main.gd"
+SceneManager="*res://scripts/main.gd"
 
 [editor]
 

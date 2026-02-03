@@ -1,0 +1,85 @@
+[gd_scene format=3 uid="uid://b8vb8h0jlqwl7"]
+
+[ext_resource type="PackedScene" uid="uid://bq86r4yll8po" path="res://addons/godot-xr-tools/hands/scenes/lowpoly/left_fullglove_low.tscn" id="1_6xita"]
+[ext_resource type="Script" uid="uid://bpes0gqpr3oa0" path="res://scripts/debug_label.gd" id="1_31r2h"]
+[ext_resource type="Script" uid="uid://b6aqndnmwhunf" path="res://scripts/player.gd" id="1_ivps1"]
+[ext_resource type="PackedScene" uid="uid://xqimcf20s2jp" path="res://addons/godot-xr-tools/hands/scenes/lowpoly/right_fullglove_low.tscn" id="2_4pri4"]
+[ext_resource type="PackedScene" uid="uid://btknduttnmoxf" path="res://addons/godot-xr-tools/misc/vr_common_shader_cache.tscn" id="2_ai0f7"]
+[ext_resource type="PackedScene" uid="uid://b4ysuy43poobf" path="res://addons/godot-xr-tools/functions/function_pickup.tscn" id="2_v33fx"]
+[ext_resource type="Script" uid="uid://dc4hg8kq5ia5y" path="res://addons/godot-xr-tools/functions/movement_direct.gd" id="4_wfmft"]
+[ext_resource type="Script" uid="uid://kuxqh057vr5y" path="res://addons/godot-xr-tools/functions/movement_turn.gd" id="5_jjl1l"]
+[ext_resource type="PackedScene" uid="uid://diyu06cw06syv" path="res://addons/godot-xr-tools/player/player_body.tscn" id="6_keit0"]
+[ext_resource type="PackedScene" uid="uid://cqhw276realc" path="res://addons/godot-xr-tools/functions/function_pointer.tscn" id="7_qssuy"]
+[ext_resource type="Script" uid="uid://vyag4h2e7n0p" path="res://addons/godot-xr-tools/functions/movement_flight.gd" id="8_oprun"]
+[ext_resource type="PackedScene" uid="uid://dgdb1texynduw" path="res://addons/godot-xr-tools/objects/virtual_keyboard.tscn" id="13_bwjto"]
+[ext_resource type="PackedScene" uid="uid://wtpox7m5vu2b" path="res://addons/godot-xr-tools/effects/fade.tscn" id="14_606se"]
+
+[node name="XROrigin3D" type="XROrigin3D" unique_id=1551876214]
+script = ExtResource("1_ivps1")
+
+[node name="XRCamera3D" type="XRCamera3D" parent="." unique_id=101239405]
+
+[node name="DebugLabel" type="Label3D" parent="XRCamera3D" unique_id=1359596462]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.2, -0.1, -1.98502)
+visible = false
+text = "debug:"
+font_size = 16
+script = ExtResource("1_31r2h")
+
+[node name="VRCommonShaderCache" parent="XRCamera3D" unique_id=1599360766 instance=ExtResource("2_ai0f7")]
+
+[node name="AudioListener3D" type="AudioListener3D" parent="XRCamera3D" unique_id=238095928]
+current = true
+
+[node name="LeftHandController" type="XRController3D" parent="." unique_id=1144144685]
+tracker = &"left_hand"
+
+[node name="XRToolsMovementDirect" type="Node3D" parent="LeftHandController" unique_id=1266900596 groups=["movement_providers"]]
+script = ExtResource("4_wfmft")
+strafe = true
+metadata/_custom_type_script = "uid://dc4hg8kq5ia5y"
+
+[node name="LeftHand" parent="LeftHandController" unique_id=1748734250 instance=ExtResource("1_6xita")]
+
+[node name="FunctionPickup" parent="LeftHandController" unique_id=1484538014 instance=ExtResource("2_v33fx")]
+ranged_distance = 10.0
+ranged_angle = 45.0
+impulse_factor = 2.0
+
+[node name="XRToolsMovementFlight" type="Node3D" parent="LeftHandController" unique_id=574560575 groups=["movement_providers"]]
+script = ExtResource("8_oprun")
+metadata/_custom_type_script = "uid://vyag4h2e7n0p"
+
+[node name="RightHandController" type="XRController3D" parent="." unique_id=1664541611]
+tracker = &"right_hand"
+
+[node name="RightHand" parent="RightHandController" unique_id=114374070 instance=ExtResource("2_4pri4")]
+
+[node name="FunctionPickup" parent="RightHandController" unique_id=1643629898 instance=ExtResource("2_v33fx")]
+ranged_distance = 10.0
+ranged_angle = 45.0
+impulse_factor = 2.0
+
+[node name="XRToolsMovementTurn" type="Node3D" parent="RightHandController" unique_id=1136175209 groups=["movement_providers"]]
+script = ExtResource("5_jjl1l")
+metadata/_custom_type_script = "uid://kuxqh057vr5y"
+
+[node name="PlayerBody" parent="." unique_id=1538611712 instance=ExtResource("6_keit0")]
+collision_mask = 3
+platform_floor_layers = 2
+player_calibrate_height = false
+
+[node name="FunctionPointer" parent="." unique_id=1006435028 instance=ExtResource("7_qssuy")]
+show_laser = 2
+laser_length = 1
+show_target = true
+collision_mask = 5242884
+
+[node name="VirtualKeyboard" parent="." unique_id=943683133 instance=ExtResource("13_bwjto")]
+transform = Transform3D(1, 0, 0, 0, 0.75354, 0.657402, 0, -0.657402, 0.75354, 0, -0.49593, -0.728043)
+visible = false
+scene_properties_keys = PackedStringArray("virtual_keyboard_2d.gd")
+
+[node name="Fade" parent="." unique_id=1968975387 instance=ExtResource("14_606se")]
+
+[connection signal="button_pressed" from="LeftHandController" to="." method="_on_left_hand_controller_button_pressed"]

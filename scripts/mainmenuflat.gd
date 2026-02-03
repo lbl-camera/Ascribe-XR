@@ -113,6 +113,6 @@ func create_button(scene: PackedScene):
 func _on_item_list_item_clicked_not_dragged(index: Variant) -> void:
 	var text = %ItemList.get_item_text(index)
 	if text in scenes:
-		Ascribemain.load_3d_scene(scenes[text])
+		SceneManager.load_3d_scene(scenes[text])
 	else:
-		Ascribemain.load_3d_scene_path(scenes_paths[text])
+		SceneManager.load_3d_scene_path(scenes_paths[text])

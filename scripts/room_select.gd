@@ -1,11 +1,11 @@
 extends Panel
 
 var room_scenes = {
-	"lab": preload("res://scenes/sci-fi_lab.tscn"),
-	"passthrough": preload("res://scenes/passthrough.tscn"),
-	"black": preload("res://scenes/black.tscn"),
+	"lab": preload("res://scenes/Rooms/sci-fi_lab.tscn"),
+	"passthrough": preload("res://scenes/Rooms/passthrough.tscn"),
+	"black": preload("res://scenes/Rooms/black.tscn"),
 	}
 
 
 func _set_room_scene(room_name: String) -> void:
-	Ascribemain.set_room_scene(room_name)
+	SceneManager.set_room_scene(room_name)

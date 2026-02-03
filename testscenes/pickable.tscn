@@ -1,7 +1,7 @@
-[gd_scene load_steps=12 format=3 uid="uid://bc535xm33w7x1"]
+[gd_scene format=3 uid="uid://bc535xm33w7x1"]
 
 [ext_resource type="Script" uid="uid://dbwqg1ilaf832" path="res://testscenes/pickable.gd" id="1_h1bx1"]
-[ext_resource type="PackedScene" uid="uid://b8vb8h0jlqwl7" path="res://scenes/player.tscn" id="3_h1bx1"]
+[ext_resource type="PackedScene" uid="uid://b8vb8h0jlqwl7" path="res://scenes/Player/player.tscn" id="3_h1bx1"]
 [ext_resource type="PackedScene" uid="uid://doq5u7h5wo2vf" path="res://scenes/pickable/scalable_multiplayer_pickable.tscn" id="4_fe485"]
 [ext_resource type="PackedScene" uid="uid://clc5dre31iskm" path="res://addons/godot-xr-tools/xr/start_xr.tscn" id="4_y1fng"]
 

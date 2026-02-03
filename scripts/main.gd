@@ -90,7 +90,7 @@ func post_change_3d_scene():
 			i+=1
 			print(i)
 			await get_tree().process_frame  # Let the engine breathe
-		if i==100:
+		if i==1000:
 			push_error('Unable to change specimen; ',multiplayer.get_remote_sender_id(),'->',multiplayer.get_unique_id())
 			return
 		else:
@@ -157,3 +157,4 @@ func set_room_scene(name):
 			$/root/Main/Sketchfab_Scene.hide()
 			$/root/Main/XROrigin3D/OpenXRFbPassthroughGeometry.hide()
 			$/root/Main/Black.hide()
+			room_name = name
