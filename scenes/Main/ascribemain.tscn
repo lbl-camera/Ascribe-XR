@@ -1,6 +1,6 @@
 [gd_scene format=3 uid="uid://do7g4piyhqxid"]
 
-[ext_resource type="Script" uid="uid://bl1kbl82hwxv5" path="res://scripts/ascribemain.gd" id="1_wh57r"]
+[ext_resource type="Script" uid="uid://bl1kbl82hwxv5" path="res://scripts/AscribeMain/ascribemain.gd" id="1_wh57r"]
 [ext_resource type="PackedScene" uid="uid://b8vb8h0jlqwl7" path="res://scenes/Player/player.tscn" id="2_cym13"]
 [ext_resource type="PackedScene" uid="uid://clc5dre31iskm" path="res://addons/godot-xr-tools/xr/start_xr.tscn" id="3_u14qs"]
 [ext_resource type="PackedScene" uid="uid://dqgio4hj2pep0" path="res://scenes/UI/mainmenu.tscn" id="4_g577c"]
@@ -85,38 +85,38 @@ particles_anim_loop = false
 material = SubResource("StandardMaterial3D_y21xb")
 size = Vector2(0.1, 0.1)
 
-[sub_resource type="QuadMesh" id="QuadMesh_u14qs"]
+[sub_resource type="QuadMesh" id="QuadMesh_iab35"]
 resource_local_to_scene = true
 size = Vector2(3, 1.68)
 
-[sub_resource type="ViewportTexture" id="ViewportTexture_g577c"]
+[sub_resource type="ViewportTexture" id="ViewportTexture_fhiau"]
 viewport_path = NodePath("StoryUIViewport/Viewport")
 
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_7amqy"]
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_2bw3l"]
 transparency = 1
 cull_mode = 2
 shading_mode = 0
-albedo_texture = SubResource("ViewportTexture_g577c")
+albedo_texture = SubResource("ViewportTexture_fhiau")
 texture_filter = 1
 
-[sub_resource type="BoxShape3D" id="BoxShape3D_lu54x"]
+[sub_resource type="BoxShape3D" id="BoxShape3D_2r3nh"]
 resource_local_to_scene = true
 size = Vector3(3, 1.68, 0.02)
 
-[sub_resource type="QuadMesh" id="QuadMesh_54uq5"]
+[sub_resource type="QuadMesh" id="QuadMesh_qwjbb"]
 resource_local_to_scene = true
 size = Vector2(3, 2)
 
-[sub_resource type="ViewportTexture" id="ViewportTexture_l4ajn"]
+[sub_resource type="ViewportTexture" id="ViewportTexture_2bpg8"]
 viewport_path = NodePath("ViewportNetworkGateway/Viewport")
 
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_xk2ox"]
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_fcj7w"]
 transparency = 1
 cull_mode = 2
-albedo_texture = SubResource("ViewportTexture_l4ajn")
+albedo_texture = SubResource("ViewportTexture_2bpg8")
 texture_filter = 1
 
-[sub_resource type="BoxShape3D" id="BoxShape3D_4pnrr"]
+[sub_resource type="BoxShape3D" id="BoxShape3D_jhejl"]
 resource_local_to_scene = true
 size = Vector3(3, 2, 0.02)
 
@@ -193,15 +193,15 @@ scene_properties_keys = PackedStringArray("story_ui.gd")
 size = Vector2i(1152, 648)
 
 [node name="Screen" parent="StoryUIViewport" index="1"]
-mesh = SubResource("QuadMesh_u14qs")
-surface_material_override/0 = SubResource("StandardMaterial3D_7amqy")
+mesh = SubResource("QuadMesh_iab35")
+surface_material_override/0 = SubResource("StandardMaterial3D_2bw3l")
 
 [node name="StaticBody3D" parent="StoryUIViewport" index="2"]
 screen_size = Vector2(3, 1.68)
 viewport_size = Vector2(1152, 648)
 
 [node name="CollisionShape3D" parent="StoryUIViewport/StaticBody3D" index="0"]
-shape = SubResource("BoxShape3D_lu54x")
+shape = SubResource("BoxShape3D_2r3nh")
 
 [node name="SpecimenUIViewport" parent="." unique_id=1596973923 instance=ExtResource("7_54uq5")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.59675, -3.139)
@@ -226,14 +226,14 @@ playersnodepath = NodePath("../../../Players")
 localplayerscene = ""
 
 [node name="Screen" parent="ViewportNetworkGateway" index="1"]
-mesh = SubResource("QuadMesh_54uq5")
-surface_material_override/0 = SubResource("StandardMaterial3D_xk2ox")
+mesh = SubResource("QuadMesh_qwjbb")
+surface_material_override/0 = SubResource("StandardMaterial3D_fcj7w")
 
 [node name="StaticBody3D" parent="ViewportNetworkGateway" index="2"]
 viewport_size = Vector2(690, 400)
 
 [node name="CollisionShape3D" parent="ViewportNetworkGateway/StaticBody3D" index="0"]
-shape = SubResource("BoxShape3D_4pnrr")
+shape = SubResource("BoxShape3D_jhejl")
 
 [node name="Players" type="Node3D" parent="." unique_id=2072121869]
 

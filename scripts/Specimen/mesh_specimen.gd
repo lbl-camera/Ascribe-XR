@@ -225,11 +225,11 @@ func build_mesh(data: Dictionary) -> ArrayMesh:
 
 	return mesh
 
-const CHUNK_SIZE = 20000
+
 
 # Helper function to calculate chunk count
 func _get_chunk_count(array_size: int) -> int:
-	return ceili(float(array_size) / CHUNK_SIZE)
+	return ceili(float(array_size) / Config.CHUNK_SIZE)
 
 # Helper function to send array data in chunks
 func _send_array_chunks(array, chunk_offset: int, total_chunks: int, field: String, is_final_array: bool) -> void:
@@ -239,8 +239,8 @@ func _send_array_chunks(array, chunk_offset: int, total_chunks: int, field: Stri
 	var local_chunk_count = _get_chunk_count(array.size())
 
 	for i in range(local_chunk_count):
-		var start_idx = i * CHUNK_SIZE
-		var end_idx = mini((i + 1) * CHUNK_SIZE, array.size())
+		var start_idx = i * Config.CHUNK_SIZE
+		var end_idx = mini((i + 1) * Config.CHUNK_SIZE, array.size())
 		var chunk = array.slice(start_idx, end_idx)
 
 		var global_chunk_index = chunk_offset + i

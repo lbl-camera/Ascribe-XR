@@ -3,7 +3,7 @@ extends Node3D
 @onready var NetworkGateway = $ViewportNetworkGateway/Viewport/NetworkGateway
 #@onready var mqtt = NetworkGateway.find_child('MQTT', true, false)
 
-@export var webrtcroomname = "ascribe"
+
 #export var webrtcbroker = "mosquitto.doesliverpool.xyz"
 
 # use this one for WebXR because it can only come from HTML5 served from an https:// link
@@ -11,11 +11,10 @@ extends Node3D
 #export var webrtcbroker = "ws://mosquitto.doesliverpool.xyz:8080"
 #export var webrtcbroker = "ssl://mosquitto.doesliverpool.xyz:8884"
 #@export var webrtcbroker = "mosquitto.doesliverpool.xyz"
-@export var webrtcbroker = "vision.lbl.gov"
+
 #@export var webrtcbroker = "localhost"
 # "ws://broker.mqttdashboard.com:8webrtcbroker000"
-@export var PCstartupprotocol = "webrtc"
-@export var QUESTstartupprotocol = "webrtc"
+
 
 
 # symlinks from the addons directory
@@ -35,14 +34,14 @@ extends Node3D
 func _ready():
 	#mqtt.set_user_pass('ascribe', 'Ascribe1')
 	if OS.has_feature("QUEST"):
-		if QUESTstartupprotocol == "webrtc":
-			NetworkGateway.initialstatemqttwebrtc(NetworkGateway.NETWORK_OPTIONS_MQTT_WEBRTC.AS_NECESSARY, webrtcroomname, webrtcbroker)
-		elif QUESTstartupprotocol == "enet":
+		if Config.QUESTstartupprotocol == "webrtc":
+			NetworkGateway.initialstatemqttwebrtc(NetworkGateway.NETWORK_OPTIONS_MQTT_WEBRTC.AS_NECESSARY, Config.webrtcroomname, Config.webrtcbroker)
+		elif Config.QUESTstartupprotocol == "enet":
 			NetworkGateway.initialstatenormal(NetworkGateway.NETWORK_PROTOCOL.ENET, NetworkGateway.NETWORK_OPTIONS.AS_CLIENT)
 	else:
-		if PCstartupprotocol == "webrtc":
-			NetworkGateway.initialstatemqttwebrtc(NetworkGateway.NETWORK_OPTIONS_MQTT_WEBRTC.AS_NECESSARY, webrtcroomname, webrtcbroker)
-		elif PCstartupprotocol == "enet":
+		if Config.PCstartupprotocol == "webrtc":
+			NetworkGateway.initialstatemqttwebrtc(NetworkGateway.NETWORK_OPTIONS_MQTT_WEBRTC.AS_NECESSARY, Config.webrtcroomname, Config.webrtcbroker)
+		elif Config.PCstartupprotocol == "enet":
 			NetworkGateway.initialstatenormal(NetworkGateway.NETWORK_PROTOCOL.ENET, NetworkGateway.NETWORK_OPTIONS.AS_SERVER)
 
 	#get_node("/root").msaa = SubViewport.MSAA_4X
@@ -52,9 +51,9 @@ func _ready():
 
 	$XROrigin3D/PlayerBody.default_physics.move_drag = 45
 	NetworkGateway.set_process_input(false)
-	if webrtcroomname:
-		NetworkGateway.MQTTsignalling.Roomnametext.text = webrtcroomname
-		NetworkGateway.simple_webrtc_connect(webrtcroomname)
+	if Config.webrtcroomname:
+		NetworkGateway.MQTTsignalling.Roomnametext.text = Config.webrtcroomname
+		NetworkGateway.simple_webrtc_connect(Config.webrtcroomname)
 
 
 func vr_right_button_pressed(button: String):
@@ -150,6 +149,6 @@ func _process(delta):
 
 func _on_interactable_area_button_button_pressed(button):
 	if NetworkGateway.is_disconnected():
-		NetworkGateway.simple_webrtc_connect(webrtcroomname)
+		NetworkGateway.simple_webrtc_connect(Config.webrtcroomname)
 	if button:
 		button.get_node("Label3D").text = "X"

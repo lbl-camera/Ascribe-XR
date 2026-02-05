@@ -1,6 +1,6 @@
-[gd_scene load_steps=7 format=3 uid="uid://72jwyxncf6lq"]
+[gd_scene format=3 uid="uid://72jwyxncf6lq"]
 
-[ext_resource type="Script" uid="uid://di2tedt3klytf" path="res://scripts/terrain_marker.gd" id="1_w5tjr"]
+[ext_resource type="Script" uid="uid://di2tedt3klytf" path="res://scripts/UX/terrain_marker.gd" id="1_w5tjr"]
 [ext_resource type="PackedScene" uid="uid://fp2t4ue7owj4" path="res://assets/models/3D RightArrow.fbx" id="2_26y18"]
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_w5tjr"]
