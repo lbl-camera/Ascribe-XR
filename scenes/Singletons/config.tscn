@@ -1,0 +1,6 @@
+[gd_scene format=3 uid="uid://dvwptjg7itnl8"]
+
+[ext_resource type="Script" uid="uid://cs75o8uk3rq6j" path="res://scripts/singletons/config.gd" id="1_rtsot"]
+
+[node name="Config" type="Node" unique_id=979948190]
+script = ExtResource("1_rtsot")

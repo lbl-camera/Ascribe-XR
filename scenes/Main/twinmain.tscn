@@ -1,6 +1,6 @@
 [gd_scene format=3 uid="uid://bcm2h8t7rn7np"]
 
-[ext_resource type="Script" uid="uid://bl1kbl82hwxv5" path="res://scripts/ascribemain.gd" id="1_nqfk7"]
+[ext_resource type="Script" uid="uid://bl1kbl82hwxv5" path="res://scripts/AscribeMain/ascribemain.gd" id="1_nqfk7"]
 [ext_resource type="PackedScene" uid="uid://b8vb8h0jlqwl7" path="res://scenes/Player/player.tscn" id="2_tsy7g"]
 [ext_resource type="PackedScene" uid="uid://clc5dre31iskm" path="res://addons/godot-xr-tools/xr/start_xr.tscn" id="3_8j6pw"]
 [ext_resource type="Script" uid="uid://bfrlpbsqg5lqr" path="res://addons/godot-xr-tools/objects/pickable.gd" id="8_wtm6h"]
