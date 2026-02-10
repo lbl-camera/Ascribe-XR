@@ -1,4 +1,4 @@
-extends "res://scripts/mesh_specimen.gd"
+extends "res://scripts/Specimen/mesh_specimen.gd"
 
 var mqtt_client = null
 

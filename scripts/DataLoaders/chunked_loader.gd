@@ -1,0 +1,2 @@
+extends Loader
+class_name ChunkedLoader

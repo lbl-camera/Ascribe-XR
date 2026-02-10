@@ -1,7 +1,7 @@
 [gd_scene format=3 uid="uid://5wygpbthgiou"]
 
 [ext_resource type="PackedScene" uid="uid://bajc3fgqqv584" path="res://scenes/Specimen/specimen.tscn" id="1_bjarh"]
-[ext_resource type="Script" uid="uid://po8ew5vgyu4d" path="res://scripts/volumetric_specimen.gd" id="2_siuyl"]
+[ext_resource type="Script" uid="uid://po8ew5vgyu4d" path="res://scripts/Specimen/volumetric_specimen.gd" id="2_siuyl"]
 [ext_resource type="PackedScene" uid="uid://cv58flunkbv02" path="res://scenes/UI/volume_menu.tscn" id="3_epps1"]
 [ext_resource type="PackedScene" uid="uid://doq5u7h5wo2vf" path="res://scenes/pickable/scalable_multiplayer_pickable.tscn" id="4_586tx"]
 [ext_resource type="Script" uid="uid://bb2lef7rn0ovi" path="res://addons/volume_layered_shader/scenes/controls/volume_layered_shader.gd" id="5_krtx6"]

@@ -13,7 +13,7 @@ static var TABLE_SIZE: float   = 1
 
 func _enter_tree():
 	super._enter_tree()
-
+	
 	if loading_file:
 		if loading_file.begins_with('uid://'):
 			loading_file = ResourceUID.get_id_path(ResourceUID.text_to_id(loading_file))
@@ -68,6 +68,7 @@ func process_mesh_load() -> void:
 		return
 
 	var progress    = []
+	# give the thing youre trying to load, progress is an
 	var status: int = ResourceLoader.load_threaded_get_status(loading_file, progress)
 	ui_instance.get_node("%ProgressBar").value = progress[0]
 	if status in [ResourceLoader.THREAD_LOAD_FAILED, ResourceLoader.THREAD_LOAD_INVALID_RESOURCE]:
@@ -123,6 +124,7 @@ func load_path(path):
 	elif extension == 'stl':
 		var importer = stl_importer.new()
 		var mesh_data = importer.import(path, flip_normals)
+		# print(path)
 		return mesh_data
 		#set_mesh.rpc([1,2,3, 2,3,4,5,6,7])
 

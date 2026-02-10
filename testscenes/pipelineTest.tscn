@@ -1,0 +1,37 @@
+[gd_scene format=3 uid="uid://ennd61ka4fih"]
+
+[ext_resource type="Script" uid="uid://bx6s8uwpyjuqe" path="res://testscenes/pipeline_test.gd" id="1_pqqlb"]
+[ext_resource type="Script" uid="uid://cw08njpngfbd1" path="res://scripts/DataSources/file_source.gd" id="2_cdirf"]
+
+[sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_cdirf"]
+sky_horizon_color = Color(0.66224277, 0.6717428, 0.6867428, 1)
+ground_horizon_color = Color(0.66224277, 0.6717428, 0.6867428, 1)
+
+[sub_resource type="Sky" id="Sky_1i7jx"]
+sky_material = SubResource("ProceduralSkyMaterial_cdirf")
+
+[sub_resource type="Environment" id="Environment_cdvb7"]
+background_mode = 2
+sky = SubResource("Sky_1i7jx")
+tonemap_mode = 2
+glow_enabled = true
+
+[node name="pipelineTest" type="Node3D" unique_id=1840050567 node_paths=PackedStringArray("source")]
+script = ExtResource("1_pqqlb")
+source = NodePath("FileSource")
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="." unique_id=146064044]
+environment = SubResource("Environment_cdvb7")
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="." unique_id=1515652123]
+transform = Transform3D(-0.8660254, -0.43301278, 0.25, 0, 0.49999997, 0.86602545, -0.50000006, 0.75, -0.43301266, 0, 0, 0)
+shadow_enabled = true
+
+[node name="CSGBox3D" type="CSGBox3D" parent="." unique_id=1966365022]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.4515381, -0.6207681, 1.4255371)
+size = Vector3(15.467041, 1, 3.8510742)
+
+[node name="FileSource" type="Node3D" parent="." unique_id=1778731335]
+script = ExtResource("2_cdirf")
+loading_file = "res://specimen_data/aggregate_only_8_smoothed2.stl"
+metadata/_custom_type_script = "uid://cw08njpngfbd1"
