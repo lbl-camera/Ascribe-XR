@@ -1,7 +1,104 @@
 extends Node3D
 class_name DataSource
 
+func build_mesh(data: Dictionary) -> ArrayMesh:
+	var vertices = data.get("vertices", PackedVector3Array())
+	var indices = data.get("indices", PackedInt32Array())
+	var normals = data.get("normals", PackedVector3Array())
 
+	# Convert flat float array to PackedVector3Array if needed
+	if typeof(vertices) != TYPE_PACKED_VECTOR3_ARRAY:
+		print("Converting vertices from flat array to PackedVector3Array")
+		if vertices.size() % 3 != 0:
+			push_error("Vertex array size (%d) is not a multiple of 3" % vertices.size())
+			return null
+
+		var v3_array = PackedVector3Array()
+		v3_array.resize(vertices.size() / 3)
+		for i in range(vertices.size() / 3):
+			v3_array[i] = Vector3(vertices[i * 3], vertices[i * 3 + 1], vertices[i * 3 + 2])
+		vertices = v3_array
+
+	# Convert flat float array to PackedVector3Array for normals if needed
+	if normals != null and normals.size() > 0 and typeof(normals) != TYPE_PACKED_VECTOR3_ARRAY:
+		print("Converting normals from flat array to PackedVector3Array")
+		if normals.size() % 3 != 0:
+			push_error("Normal array size (%d) is not a multiple of 3" % normals.size())
+			return null
+
+		var n3_array = PackedVector3Array()
+		n3_array.resize(normals.size() / 3)
+		for i in range(normals.size() / 3):
+			n3_array[i] = Vector3(normals[i * 3], normals[i * 3 + 1], normals[i * 3 + 2])
+		normals = n3_array
+
+	# Validate data
+	if vertices.size() == 0:
+		push_error("No vertices to build mesh from.")
+		return null
+
+	if indices.size() == 0:
+		push_error("No indices to build mesh from.")
+		return null
+
+	if indices.size() % 3 != 0:
+		push_error("Index count (%d) is not a multiple of 3" % indices.size())
+		return null
+
+	# Validate indices are within bounds
+	var max_index = -1
+	for i in indices:
+		if i < 0:
+			push_error("Negative index found: %d" % i)
+			return null
+		if i >= vertices.size():
+			push_error("Index out of bounds: %d (vertex count: %d)" % [i, vertices.size()])
+			return null
+		if i > max_index:
+			max_index = i
+
+	print("Building mesh: %d vertices, %d indices, %d normals" % [vertices.size(), indices.size(), normals.size()])
+
+	if normals.size() > 0 and normals.size() != vertices.size():
+		push_warning("Normal count (%d) doesn't match vertex count (%d)" % [normals.size(), vertices.size()])
+
+	# Build mesh arrays
+	var arrays = []
+	arrays.resize(Mesh.ARRAY_MAX)
+	arrays[Mesh.ARRAY_VERTEX] = vertices
+	arrays[Mesh.ARRAY_INDEX] = indices
+
+	if normals.size() == vertices.size():
+		arrays[Mesh.ARRAY_NORMAL] = normals
+	else:
+		push_warning("Generating normals automatically due to size mismatch")
+		var st = SurfaceTool.new()
+		st.begin(Mesh.PRIMITIVE_TRIANGLES)
+
+		for v in vertices:
+			st.add_vertex(v)
+
+		for i in indices:
+			st.add_index(i)
+
+		st.generate_normals()
+		var result = st.commit()
+		print("Mesh created via SurfaceTool with %d surfaces" % result.get_surface_count())
+		return result
+
+	# Create and return mesh
+	var mesh = ArrayMesh.new()
+	mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arrays)
+
+	# Check if surface was added
+	if mesh.get_surface_count() == 0:
+		push_error("Failed to add surface to mesh!")
+		push_error("Vertices type: %d, Indices type: %d, Normals type: %d" % [typeof(vertices), typeof(indices), typeof(normals)])
+		return null
+
+	print("Mesh created successfully with %d surfaces" % mesh.get_surface_count())
+
+	return mesh
 
 func extract_mesh_data(mesh: ArrayMesh) -> Dictionary:
 	var all_vertices: PackedFloat32Array = []

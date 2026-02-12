@@ -8,6 +8,7 @@ static var TABLE_SIZE: float   = 1
 var loader: Loader
 var data_source: DataSource
 var data: Data
+var PICKABLE_SCENE = preload("res://scenes/pickable/scalable_multiplayer_pickable.tscn")
 # Called when the node enters the scene tree for the first time.
 
 
@@ -26,17 +27,21 @@ func _process(delta: float) -> void:
 # run pipeline needs to load the specimen from the source
 # from there we can generate pickables
 # when a pickable is made, signal goes out to the specimen to add it to the tree
-func run_pipeline(source: DataSource) -> void:
+func run_pipeline(source: DataSource):
 	data_source = source
 	loader = ThreadedLoader.new(source.get_file_path())
-	var mesh = loader.load_data(data_source)
-	make_pickable(mesh)
-	##FIXME
-	#source = FileSource.new()
-	##source.set_path(path)
-	#loader = ThreadedLoader.new(ui_instance, source.get_file_path())
-	#var mesh = loader.load_path()
-	## var mesh_data = loader.load_path(path)
+	var mesh_data: Dictionary = loader.load_data(data_source)
+	if mesh_data is Dictionary:
+		data = MeshData.new()
+		data = data.set_data(mesh_data)
+	var mesh = source.build_mesh(mesh_data)
+
+	var mesh_instance = MeshInstance3D.new()
+	mesh_instance.mesh = mesh
+	mesh_instance.transform = Transform3D.IDENTITY
+	var pickable = make_pickable(mesh_instance)
+	return pickable
+	
 	
 # specimen can have a data source (file source for right now)
 # in the context a file describing a mesh
@@ -75,7 +80,7 @@ func get_node_aabb(node: Node, exclude_top_level_transform: bool = true) -> AABB
 
 func make_pickable(node: Node3D):
 	var collision: CollisionShape3D         = CollisionShape3D.new()
-	var pickable = ScalableMultiplayerPickable.new()
+	var pickable = PICKABLE_SCENE.instantiate()
 	pickable.add_child(node)
 	pickable.add_child(collision)
 
@@ -90,3 +95,6 @@ func make_pickable(node: Node3D):
 	node.position -= base/bounds.get_longest_axis_size()
 	collision.position -= base/bounds.get_longest_axis_size()
 	collision.scale *= specimen_base_scale
+	pickables.append(pickable)
+	
+	return pickable

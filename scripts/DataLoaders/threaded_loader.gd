@@ -10,7 +10,7 @@ func _init( _loaded_file: String):
 	
 	
 func load_data(source: DataSource):
-	var data = load_path(source.get_file_path)
+	var data = load_path(source.get_file_path())
 	return data
 
 
