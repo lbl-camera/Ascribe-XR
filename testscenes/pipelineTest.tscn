@@ -1,7 +1,7 @@
 [gd_scene format=3 uid="uid://ennd61ka4fih"]
 
 [ext_resource type="Script" uid="uid://bx6s8uwpyjuqe" path="res://testscenes/pipeline_test.gd" id="1_pqqlb"]
-[ext_resource type="Script" uid="uid://cw08njpngfbd1" path="res://scripts/DataSources/file_source.gd" id="2_cdirf"]
+[ext_resource type="Resource" uid="uid://3kh8wt6fdehb" path="res://testscenes/new_resource.tres" id="2_cdvb7"]
 [ext_resource type="PackedScene" uid="uid://clc5dre31iskm" path="res://addons/godot-xr-tools/xr/start_xr.tscn" id="3_cdvb7"]
 [ext_resource type="PackedScene" uid="uid://b8vb8h0jlqwl7" path="res://scenes/Player/player.tscn" id="4_50sj8"]
 
@@ -25,14 +25,9 @@ size = Vector2(20, 20)
 [sub_resource type="ConvexPolygonShape3D" id="ConvexPolygonShape3D_rlpqq"]
 points = PackedVector3Array(-10, 0, -10, -10, 0, 10, 10, 0, -10, 10, 0, 10)
 
-[node name="pipelineTest" type="Node3D" unique_id=1840050567 node_paths=PackedStringArray("source")]
+[node name="pipelineTest" type="Node3D" unique_id=1840050567]
 script = ExtResource("1_pqqlb")
-source = NodePath("FileSource")
-
-[node name="FileSource" type="Node3D" parent="." unique_id=1778731335]
-script = ExtResource("2_cdirf")
-loading_file = "res://specimen_data/aggregate_only_8_smoothed2.stl"
-metadata/_custom_type_script = "uid://cw08njpngfbd1"
+pipeline = ExtResource("2_cdvb7")
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="." unique_id=1408766886]
 environment = SubResource("Environment_sdup0")

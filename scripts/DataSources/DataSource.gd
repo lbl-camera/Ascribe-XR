@@ -1,4 +1,4 @@
-extends Node3D
+extends Resource
 class_name DataSource
 
 func build_mesh(data: Dictionary) -> ArrayMesh:

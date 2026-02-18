@@ -1,5 +1,6 @@
 @tool
 extends Specimen
+class_name VolumeSpecimen
 
 var volume_layered: VolumeLayers
 var mat: ShaderMaterial

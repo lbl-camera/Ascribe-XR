@@ -4,9 +4,6 @@ class_name ThreadedLoader
 var loading_file: String
 var data_source: DataSource
 
-func _init( _loaded_file: String):
-
-	loading_file = _loaded_file
 	
 	
 func load_data(source: DataSource):

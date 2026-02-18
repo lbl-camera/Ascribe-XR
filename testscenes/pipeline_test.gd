@@ -1,16 +1,18 @@
 extends Node3D
 
-@export var source: FileSource
-var pipeline: Pipeline
+@export var pipeline: Pipeline
+
+var source: DataSource 
 var loader: Loader
 var pickable: ScalableMultiplayerPickable
 
 
 # Called when the node enters the scene tree for the first time.
 func _ready() -> void:
-	pipeline = Pipeline.new()
-	pickable = pipeline.run_pipeline(source)
-	print(pickable)
+	source = pipeline.data_source
+	loader = pipeline.loader
+	pickable = pipeline.run_pipeline()
+	
 	add_child(pickable)
 	
 

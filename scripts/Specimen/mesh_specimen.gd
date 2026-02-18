@@ -1,4 +1,5 @@
 extends Specimen
+class_name MeshSpecimen
 
 var stl_importer = preload("res://tools/stl_importer.gd")
 @export_file("*.stl", "*.fbx") var loading_file: String

@@ -13,7 +13,10 @@ enum ScaleMode {TABLE, WORLD}
 @export_multiline var story_text: Array[String]
 
 var ui_instance: Control
-var pipeline: Pipeline
+@export var pipeline: Pipeline
+
+func add_pickable(pickable):
+	add_child(pickable)
 
 func _enter_tree() -> void:
 	# pipeline = Pipeline.new()
@@ -29,4 +32,5 @@ func _enter_tree() -> void:
 			story_ui_viewport.get_node("Viewport/StoryUI").story = story_text
 		else:
 			story_ui_viewport.get_node("Viewport/StoryUI").story = PackedStringArray()
-	# pipeline.run_pipeline(ui_instance)
+	pipeline.connect("add_pickable", add_pickable)
+	pipeline.run_pipeline()

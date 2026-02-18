@@ -1,6 +1,7 @@
 extends Data
 class_name MeshData
 
+var flip_normals: bool = false # might need export as a resource
 
 var data: Dictionary
 

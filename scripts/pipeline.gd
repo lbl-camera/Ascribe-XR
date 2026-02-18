@@ -1,7 +1,9 @@
 class_name Pipeline
-extends Node
+extends Resource
 
-signal add_pickable
+@export var specimen_def: SpecimenDef
+
+signal add_pickable(pickable)
 var pickables: Array[MultiplayerPickable]
 var specimen_base_scale: float = 1
 static var TABLE_SIZE: float   = 1
@@ -9,11 +11,10 @@ var loader: Loader
 var data_source: DataSource
 var data: Data
 var PICKABLE_SCENE = preload("res://scenes/pickable/scalable_multiplayer_pickable.tscn")
+
 # Called when the node enters the scene tree for the first time.
 
 
-	
-	
 
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
@@ -27,14 +28,18 @@ func _process(delta: float) -> void:
 # run pipeline needs to load the specimen from the source
 # from there we can generate pickables
 # when a pickable is made, signal goes out to the specimen to add it to the tree
-func run_pipeline(source: DataSource):
-	data_source = source
-	loader = ThreadedLoader.new(source.get_file_path())
+func run_pipeline():
+	if !specimen_def:
+		print("no specimen def when running pipeline")
+		return
+	data_source = specimen_def.source
+	loader = specimen_def.loader
+	# loader = ThreadedLoader.new(source.get_file_path())
 	var mesh_data: Dictionary = loader.load_data(data_source)
 	if mesh_data is Dictionary:
 		data = MeshData.new()
 		data = data.set_data(mesh_data)
-	var mesh = source.build_mesh(mesh_data)
+	var mesh = data_source.build_mesh(mesh_data)
 
 	var mesh_instance = MeshInstance3D.new()
 	mesh_instance.mesh = mesh
@@ -96,5 +101,6 @@ func make_pickable(node: Node3D):
 	collision.position -= base/bounds.get_longest_axis_size()
 	collision.scale *= specimen_base_scale
 	pickables.append(pickable)
-	
+	add_pickable.emit(pickable)
 	return pickable
+	
