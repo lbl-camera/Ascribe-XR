@@ -1,21 +1,13 @@
-extends Resource
+## Base loader strategy interface.
+## Defines HOW data is loaded (sync, threaded, chunked).
 class_name Loader
+extends Resource
 
-var stl_importer = preload("res://tools/stl_importer.gd")
-var ui_instance: Control
-# Called when the node enters the scene tree for the first time.
-func _ready() -> void:
-	pass # Replace with function body.
+signal load_complete(data: Data)
+signal load_progress(progress: float)
+signal load_error(error: String)
 
-
-# Called every frame. 'delta' is the elapsed time since the previous frame.
-func _process(delta: float) -> void:
-	pass
-
-
-func process_mesh_data():
-	pass
-
-func load_data(source: DataSource):
-	pass
-		
+## Parse raw data from source into a typed data container.
+## Subclasses implement format-specific parsing.
+func load_data(source_data: Variant, target: Data) -> void:
+	push_error("Loader.load_data() must be overridden")

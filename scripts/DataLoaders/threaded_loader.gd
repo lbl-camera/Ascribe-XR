@@ -1,66 +1,93 @@
-extends Loader
+## Threaded (background) loader.
+## Uses Godot's ResourceLoader for threaded loading (OBJ, etc.)
+## and falls back to SyncronousLoader on a Thread for other formats.
 class_name ThreadedLoader
+extends Loader
 
-var loading_file: String
-var data_source: DataSource
-
-	
-	
-func load_data(source: DataSource):
-	var data = load_path(source.get_file_path())
-	return data
+var _sync_loader: SyncronousLoader
+var _thread: Thread
+var _polling_path: String = ""
+var _polling_target: Data = null
 
 
+func _init() -> void:
+	_sync_loader = SyncronousLoader.new()
+	_sync_loader.load_complete.connect(func(d): load_complete.emit(d))
+	_sync_loader.load_error.connect(func(e): load_error.emit(e))
 
-func _process(delta: float) -> void:
-	process_mesh_load()
+
+func load_data(source_data: Variant, target: Data) -> void:
+	if source_data is String:
+		var ext := source_data.get_extension().to_lower()
+		if ext == "obj":
+			# Use Godot's built-in threaded resource loader
+			ResourceLoader.load_threaded_request(source_data)
+			_polling_path = source_data
+			_polling_target = target
+			return
+
+	# For other formats, run sync loader on a background thread
+	_thread = Thread.new()
+	_thread.start(_threaded_load.bind(source_data, target))
 
 
-func process_mesh_load() -> void:
-	if not loading_file:
-		return
-	var data = null
-	var progress    = []
-	# give the thing youre trying to load, progress is an
-	var status: int = ResourceLoader.load_threaded_get_status(loading_file, progress)
-	ui_instance.get_node("%ProgressBar").value = progress[0]
-	if status in [ResourceLoader.THREAD_LOAD_FAILED, ResourceLoader.THREAD_LOAD_INVALID_RESOURCE]:
-		loading_file = ""
-		ui_instance.get_node("LoadingLayer").hide()
-	elif status == ResourceLoader.THREAD_LOAD_LOADED:
-		var mesh_resource = ResourceLoader.load_threaded_get(loading_file)
-		if mesh_resource is ArrayMesh:
-			data = data_source.extract_mesh_data(mesh_resource)
-			# set_and_send_mesh(data)
-		loading_file = ""
-		ui_instance.get_node("LoadingLayer").hide()
+## Must be called each frame to poll ResourceLoader status.
+## Returns true when loading is complete (or failed).
+func poll() -> bool:
+	if _polling_path == "":
+		return true
 
-		
+	var progress := []
+	var status: int = ResourceLoader.load_threaded_get_status(_polling_path, progress)
 
-func load_fbx(path:String):
-	var doc = FBXDocument.new()
-	var state = FBXState.new()  # or maybe FBXState if available
-	var err = doc.append_from_file(path, state)
-	if err != OK:
-		push_error("Failed to parse FBX: %s" % err)
-		return
-	var scene_root = doc.generate_scene(state)
-	if not scene_root:
-		push_error("FBXDocument.generate_scene returned null")
-		return
+	if progress.size() > 0:
+		load_progress.emit(progress[0])
 
-func load_path(path):
-	var extension: String = path.get_extension()
-	if extension == 'fbx':
-		var scene = load_fbx(path)
-		var mesh = data_source.combine_meshes_from_node(scene)
-		var data = data_source.extract_mesh_data(mesh)
-		return data
-	elif extension == 'obj':
-		ui_instance.get_node("LoadingLayer").show()
-		ResourceLoader.load_threaded_request(path)
-		loading_file = path
-	elif extension == 'stl':
-		var importer = stl_importer.new()
-		var mesh_data = importer.import(path, false)
-		return mesh_data
+	match status:
+		ResourceLoader.THREAD_LOAD_IN_PROGRESS:
+			return false
+		ResourceLoader.THREAD_LOAD_LOADED:
+			var resource = ResourceLoader.load_threaded_get(_polling_path)
+			_polling_path = ""
+			_handle_loaded_resource(resource, _polling_target)
+			_polling_target = null
+			return true
+		_:
+			load_error.emit("Resource load failed for: %s" % _polling_path)
+			_polling_path = ""
+			_polling_target = null
+			return true
+
+	return true
+
+
+func _handle_loaded_resource(resource: Variant, target: Data) -> void:
+	if target is MeshData:
+		var mesh: ArrayMesh = null
+		if resource is PackedScene:
+			var instance = resource.instantiate()
+			mesh = MeshUtils.find_mesh_instance(instance)
+			if mesh:
+				var data = MeshUtils.extract_mesh_data(mesh)
+				target.set_from_dict(data)
+			instance.queue_free()
+		elif resource is ArrayMesh:
+			var data = MeshUtils.extract_mesh_data(resource)
+			target.set_from_dict(data)
+		else:
+			load_error.emit("Unsupported resource type for mesh loading")
+			return
+		load_complete.emit(target)
+	else:
+		load_error.emit("ThreadedLoader: Cannot handle resource for this data type")
+
+
+func _threaded_load(source_data: Variant, target: Data) -> void:
+	_sync_loader.load_data(source_data, target)
+
+
+## Clean up thread if still running.
+func cleanup() -> void:
+	if _thread and _thread.is_started():
+		_thread.wait_to_finish()
+		_thread = null

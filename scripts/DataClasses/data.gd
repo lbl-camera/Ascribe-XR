@@ -1,15 +1,22 @@
-extends Node3D
+## Base data container interface.
+## Subclasses represent specific data types (mesh, volumetric, etc.)
 class_name Data
+extends RefCounted
 
+## Emitted when data is ready for use
+signal data_ready
 
-# Called when the node enters the scene tree for the first time.
-func _ready() -> void:
-	pass # Replace with function body.
+## Emitted on error
+signal load_failed(error: String)
 
+## Returns true if data is loaded and valid
+func is_valid() -> bool:
+	return false
 
-# Called every frame. 'delta' is the elapsed time since the previous frame.
-func _process(delta: float) -> void:
-	pass
+## Returns the data in a format suitable for the specimen
+func get_data() -> Variant:
+	return null
 
-func set_data(data):
+## Clears loaded data and frees resources
+func clear() -> void:
 	pass

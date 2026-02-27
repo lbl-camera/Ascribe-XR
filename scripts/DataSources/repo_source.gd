@@ -1,12 +1,12 @@
-extends DataSource
+## Repository-based data source (future).
+## Will fetch data from a centralized data repository.
 class_name RepoSource
+extends DataSource
 
 
-# Called when the node enters the scene tree for the first time.
-func _ready() -> void:
-	pass # Replace with function body.
+func is_available() -> bool:
+	return false
 
 
-# Called every frame. 'delta' is the elapsed time since the previous frame.
-func _process(delta: float) -> void:
-	pass
+func fetch() -> void:
+	source_error.emit("RepoSource: Not yet implemented")

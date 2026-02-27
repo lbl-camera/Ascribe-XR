@@ -2,21 +2,25 @@ extends Node3D
 
 @export var pipeline: Pipeline
 
-var source: DataSource 
-var loader: Loader
-var pickable: ScalableMultiplayerPickable
 
-
-# Called when the node enters the scene tree for the first time.
 func _ready() -> void:
-	source = pipeline.data_source
-	loader = pipeline.loader
-	pickable = pipeline.run_pipeline()
-	
+	if pipeline:
+		pipeline.pipeline_complete.connect(_on_complete)
+		pipeline.pipeline_error.connect(_on_error)
+		pipeline.add_pickable.connect(_on_pickable)
+		pipeline.run_pipeline()
+	else:
+		push_error("PipelineTest: No pipeline assigned")
+
+
+func _on_complete(data: Data) -> void:
+	print("Pipeline complete: data valid = %s" % data.is_valid())
+
+
+func _on_error(error: String) -> void:
+	push_error("Pipeline error: %s" % error)
+
+
+func _on_pickable(pickable: Node3D) -> void:
 	add_child(pickable)
-	
-
-
-# Called every frame. 'delta' is the elapsed time since the previous frame.
-func _process(delta: float) -> void:
-	pass
+	print("Pickable added to scene")

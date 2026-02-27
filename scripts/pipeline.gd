@@ -1,106 +1,151 @@
+## Orchestrates source → loader → data type.
+## Wires signals between components for async data flow.
 class_name Pipeline
 extends Resource
 
+signal pipeline_complete(data: Data)
+signal pipeline_progress(progress: float)
+signal pipeline_error(error: String)
+signal add_pickable(pickable: Node3D)
+
 @export var specimen_def: SpecimenDef
 
-signal add_pickable(pickable)
-var pickables: Array[MultiplayerPickable]
+var _source: DataSource
+var _loader: Loader
+var _target: Data
+var pickables: Array = []
 var specimen_base_scale: float = 1
-static var TABLE_SIZE: float   = 1
-var loader: Loader
-var data_source: DataSource
-var data: Data
+static var TABLE_SIZE: float = 1
+
 var PICKABLE_SCENE = preload("res://scenes/pickable/scalable_multiplayer_pickable.tscn")
 
-# Called when the node enters the scene tree for the first time.
+
+## Configure the pipeline with explicit components.
+func configure(source: DataSource, loader: Loader, target: Data) -> Pipeline:
+	_source = source
+	_loader = loader
+	_target = target
+	_wire_signals()
+	return self
 
 
+## Run the pipeline using the SpecimenDef (if set) or pre-configured components.
+func run_pipeline() -> Variant:
+	if specimen_def:
+		_source = specimen_def.source
+		_loader = specimen_def.loader
+		if _source is FileSource:
+			# Determine target type from file extension
+			var ext = _source.get_file_type()
+			match ext:
+				"stl", "fbx", "obj":
+					_target = MeshData.new()
+				"bin", "zip":
+					_target = VolumetricData.new()
+				_:
+					pipeline_error.emit("Unknown file type: %s" % ext)
+					return null
+		elif _source is MQTTSource:
+			_target = MeshData.new()
+		else:
+			_target = MeshData.new()
+		_wire_signals()
+
+	if _source == null or _loader == null or _target == null:
+		pipeline_error.emit("Pipeline not configured: missing source, loader, or target")
+		return null
+
+	_source.fetch()
+	return null
 
 
-# Called every frame. 'delta' is the elapsed time since the previous frame.
-func _process(delta: float) -> void:
-	pass
-# from specimens, run the pipeline
-# when running the pipeline 
-# the specimen has a pipeline
-# pipeline has a data source, data loader, and type
-
-# run pipeline needs to load the specimen from the source
-# from there we can generate pickables
-# when a pickable is made, signal goes out to the specimen to add it to the tree
-func run_pipeline():
-	if !specimen_def:
-		print("no specimen def when running pipeline")
+func _wire_signals() -> void:
+	if _source.data_available.is_connected(_on_source_data):
 		return
-	data_source = specimen_def.source
-	loader = specimen_def.loader
-	# loader = ThreadedLoader.new(source.get_file_path())
-	var mesh_data: Dictionary = loader.load_data(data_source)
-	if mesh_data is Dictionary:
-		data = MeshData.new()
-		data = data.set_data(mesh_data)
-	var mesh = data_source.build_mesh(mesh_data)
+	_source.data_available.connect(_on_source_data)
+	_source.progress_updated.connect(func(p): pipeline_progress.emit(p * 0.5))
+	_source.source_error.connect(func(e): pipeline_error.emit("Source: " + e))
+
+	_loader.load_complete.connect(_on_load_complete)
+	_loader.load_progress.connect(func(p): pipeline_progress.emit(0.5 + p * 0.5))
+	_loader.load_error.connect(func(e): pipeline_error.emit("Loader: " + e))
+
+
+func _on_source_data(raw_data: Variant) -> void:
+	_loader.load_data(raw_data, _target)
+
+
+func _on_load_complete(data: Data) -> void:
+	pipeline_complete.emit(data)
+	if data is MeshData:
+		_create_mesh_pickable(data)
+
+
+func _create_mesh_pickable(mesh_data: MeshData) -> void:
+	var mesh = mesh_data.get_data()
+	if mesh == null:
+		pipeline_error.emit("Failed to build mesh from data")
+		return
 
 	var mesh_instance = MeshInstance3D.new()
 	mesh_instance.mesh = mesh
 	mesh_instance.transform = Transform3D.IDENTITY
 	var pickable = make_pickable(mesh_instance)
-	return pickable
-	
-	
-# specimen can have a data source (file source for right now)
-# in the context a file describing a mesh
-# in FileResource, read and parse the file, you will probably get a mesh array (file source)
-# loader.load will unpack the resource, gives opportunity for changing how unpacking is executed
-# from there, get the return value from the source
-# different routes to deal with different returned types: 
-# that mesh gets sent to make pickable
-	
-## Return the [AABB] of the node.
-func get_node_aabb(node: Node, exclude_top_level_transform: bool = true) -> AABB:
-	var bounds: AABB = AABB()
+	return
 
-	# Do not include children that is queued for deletion
-	if node.is_queued_for_deletion():
-		return bounds
 
-	# Get the aabb of the visual instance
-	if node is VisualInstance3D:
-		bounds = node.get_aabb();
-
-	# Recurse through all children
-	for child in node.get_children():
-		if "transform" not in child:
-			continue
-		var child_bounds: AABB = get_node_aabb(child, false)
-		if bounds.size == Vector3.ZERO:
-			bounds = child_bounds
-		else:
-			bounds = bounds.merge(child_bounds)
-
-	if !exclude_top_level_transform:
-		bounds = node.transform * bounds
-
-	return bounds
-
-func make_pickable(node: Node3D):
-	var collision: CollisionShape3D         = CollisionShape3D.new()
+func make_pickable(node: Node3D) -> Node3D:
+	var collision: CollisionShape3D = CollisionShape3D.new()
 	var pickable = PICKABLE_SCENE.instantiate()
 	pickable.add_child(node)
 	pickable.add_child(collision)
 
-	#specimen_scene = node
-	#specimen_collision = collision
-
-	var bounds = get_node_aabb(node)
-	var base   = bounds.get_center()-Vector3(0, bounds.position.y/2, 0)
+	var bounds = MeshUtils.get_node_aabb(node)
+	var base = bounds.get_center() - Vector3(0, bounds.position.y / 2, 0)
 	collision.make_convex_from_siblings()
-	specimen_base_scale = TABLE_SIZE/bounds.get_longest_axis_size()
+	specimen_base_scale = TABLE_SIZE / bounds.get_longest_axis_size()
 	node.scale *= specimen_base_scale
-	node.position -= base/bounds.get_longest_axis_size()
-	collision.position -= base/bounds.get_longest_axis_size()
+	node.position -= base / bounds.get_longest_axis_size()
+	collision.position -= base / bounds.get_longest_axis_size()
 	collision.scale *= specimen_base_scale
 	pickables.append(pickable)
 	add_pickable.emit(pickable)
 	return pickable
-	
+
+
+## Factory: file → mesh pipeline
+static func file_to_mesh(path: String) -> Pipeline:
+	var pipeline := Pipeline.new()
+	var source := FileSource.new(path)
+	var ext := path.get_extension().to_lower()
+	var loader: Loader
+	if ext == "obj":
+		loader = ThreadedLoader.new()
+	else:
+		loader = SyncronousLoader.new()
+	var target := MeshData.new()
+	return pipeline.configure(source, loader, target)
+
+
+## Factory: file → volumetric pipeline
+static func file_to_volume(path: String) -> Pipeline:
+	var pipeline := Pipeline.new()
+	var source := FileSource.new(path)
+	var loader := SyncronousLoader.new()
+	var target := VolumetricData.new()
+	return pipeline.configure(source, loader, target)
+
+
+## Factory: MQTT → mesh pipeline
+static func mqtt_to_mesh(mqtt: Node, function_name: String, args: Array = [], kwargs: Dictionary = {}) -> Pipeline:
+	var pipeline := Pipeline.new()
+	var source := MQTTSource.new()
+	source.setup(mqtt)
+	source.set_request({
+		"function_name": function_name,
+		"args": args,
+		"kwargs": kwargs
+	})
+	var loader := SyncronousLoader.new()
+	var target := MeshData.new()
+	return pipeline.configure(source, loader, target)
