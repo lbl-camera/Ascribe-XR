@@ -18,7 +18,7 @@ func _init() -> void:
 
 func load_data(source_data: Variant, target: Data) -> void:
 	if source_data is String:
-		var ext := source_data.get_extension().to_lower()
+		var ext: String = source_data.get_extension().to_lower()
 		if ext == "obj":
 			# Use Godot's built-in threaded resource loader
 			ResourceLoader.load_threaded_request(source_data)
