@@ -88,6 +88,6 @@ textures/vram_compression/import_etc2_astc=true
 [xr]
 
 openxr/enabled=true
-openxr/default_action_map="uid://wjd3nesv07uu"
+openxr/default_action_map="uid://dhjvjc7ft8dmd"
 shaders/enabled=true
 openxr/extensions/meta/passthrough=true
