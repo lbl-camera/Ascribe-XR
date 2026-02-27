@@ -1,74 +1,81 @@
-extends "res://scripts/Specimen/mesh_specimen.gd"
+## Dynamic mesh specimen — loads meshes from Python via MQTT.
+## Uses MQTTSource for the data pipeline.
+extends MeshSpecimen
 
-var mqtt_client = null
+var _mqtt_source: MQTTSource
+var _mqtt_client: Node
+var specimens: Array = []
+var mesh_received: bool = false
 
-var specimens = []
 
 func _enter_tree() -> void:
 	super()
-	mqtt_client = get_tree().get_root().find_child("MQTT", true, false)
-	mqtt_client.subscribe("python/processing_responses")
-	mqtt_client.subscribe("python/specimen_responses")
-	mqtt_client.connect("received_message", _on_mqtt_message_received)
 
-	var specimen_list:ItemList = ui_instance.get_node('%SpecimenList')
-	specimen_list.item_selected.connect(specimen_selected)
+	_mqtt_client = get_tree().get_root().find_child("MQTT", true, false)
+	if _mqtt_client == null:
+		push_error("DynamicMeshSpecimen: MQTT client not found")
+		return
 
-	ui_instance.get_node("%FileDialogLayer").hide()
+	# Set up MQTT source for processing requests
+	_mqtt_source = MQTTSource.new()
+	_mqtt_source.setup(_mqtt_client)
+	_mqtt_source.data_available.connect(_on_mqtt_data)
+	_mqtt_source.source_error.connect(func(e): push_error("MQTT: " + e))
 
-	send_specimens_request()
-	
-func specimen_selected(index:int):
-	ui_instance.get_node("%SpecimenLayer").hide()
-	send_processing_request(specimens[index])
-	
-func send_specimens_request():
-	mqtt_client.publish("godot/specimen_requests", JSON.stringify(null))
+	# Also subscribe to specimen list responses
+	_mqtt_client.subscribe("python/specimen_responses")
+	_mqtt_client.received_message.connect(_on_raw_mqtt_message)
 
-func send_processing_request(function_name, args=null, kwargs=null):
-	if args == null:
-		args = []
+	if ui_instance:
+		var specimen_list: ItemList = ui_instance.get_node('%SpecimenList')
+		specimen_list.item_selected.connect(_on_specimen_selected)
+		ui_instance.get_node("%FileDialogLayer").hide()
 
-	if kwargs == null:
-		kwargs = {}
+	_request_specimen_list()
 
-	var request_data = {
-		'function_name': function_name,
-		'args': args,
-		'kwargs': kwargs
-	}
-	mqtt_client.publish("godot/processing_requests", JSON.stringify(request_data))
 
-var mesh_received = false
+func _request_specimen_list() -> void:
+	_mqtt_client.publish("godot/specimen_requests", JSON.stringify(null))
 
-func _on_mqtt_message_received(_topic, message):
-	match _topic:
-		"python/processing_responses":
-			if mesh_received == true:
-				return
 
-			if multiplayer.get_unique_id() != 1:
-				return
+func _on_specimen_selected(index: int) -> void:
+	if ui_instance:
+		ui_instance.get_node("%SpecimenLayer").hide()
+	mesh_received = false
+	_mqtt_source.set_request({
+		"function_name": specimens[index],
+		"args": [],
+		"kwargs": {}
+	})
+	_mqtt_source.fetch()
 
-			var result_data = JSON.parse_string(message)
 
-			#var max_idx = 0
-			#for i in idxs:
-				#if i >= verts.size():
-					#push_error("Bad index: " + str(i))
-				#max_idx = max(max_idx, i)
-			#print("Max index:", max_idx, "Vertex count:", verts.size())
+func _on_mqtt_data(result_data: Variant) -> void:
+	if mesh_received:
+		return
+	if multiplayer.get_unique_id() != 1:
+		return
 
-			set_and_send_mesh(result_data)
-			#send_mesh(verts, idxs)
-			mesh_received = true
-		"python/specimen_responses":
-			specimens = JSON.parse_string(message)['names']
-			print("new specimens: ", specimens)
-			generate_specimen_menu(specimens)
-			
-func generate_specimen_menu(specimens:Array):
+	mesh_received = true
+	var data = MeshData.new()
+	data.set_from_dict(result_data)
+	_mesh_data = data
+	_set_and_send_mesh(data)
+
+
+## Handle specimen list responses (separate from the MQTTSource pipeline).
+func _on_raw_mqtt_message(topic: String, message: String) -> void:
+	if topic == "python/specimen_responses":
+		var parsed = JSON.parse_string(message)
+		if parsed and parsed.has("names"):
+			specimens = parsed["names"]
+			_generate_specimen_menu(specimens)
+
+
+func _generate_specimen_menu(specimen_names: Array) -> void:
+	if ui_instance == null:
+		return
 	var specimen_list: ItemList = ui_instance.get_node('%SpecimenList')
 	specimen_list.clear()
-	for specimen_name in specimens:
+	for specimen_name in specimen_names:
 		specimen_list.add_item(specimen_name)
