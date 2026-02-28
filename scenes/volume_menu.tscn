@@ -1,4 +1,4 @@
-[gd_scene load_steps=4 format=3 uid="uid://cv58flunkbv02"]
+[gd_scene format=3 uid="uid://cv58flunkbv02"]
 
 [ext_resource type="Script" uid="uid://cmhyucotgx1b0" path="res://scripts/colormaps/gradient_menu.gd" id="1_uu17j"]
 [ext_resource type="PackedScene" uid="uid://c8k84ysosm2jr" path="res://scenes/filedialog.tscn" id="2_wdy41"]

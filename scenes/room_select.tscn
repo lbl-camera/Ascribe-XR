@@ -1,4 +1,4 @@
-[gd_scene load_steps=2 format=3 uid="uid://cxr6ip1xkqkcj"]
+[gd_scene format=3 uid="uid://cxr6ip1xkqkcj"]
 
 [ext_resource type="Script" uid="uid://cvpmlkwfmyhom" path="res://scripts/room_select.gd" id="1_nkcfx"]
 

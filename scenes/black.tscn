@@ -1,4 +1,4 @@
-[gd_scene load_steps=3 format=3 uid="uid://syqqioda80bt"]
+[gd_scene format=3 uid="uid://syqqioda80bt"]
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_avyx7"]
 albedo_color = Color(0, 0, 0, 1)
