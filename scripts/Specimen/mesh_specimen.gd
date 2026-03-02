@@ -15,7 +15,7 @@ static var TABLE_SIZE: float = 1
 func _enter_tree():
 	super._enter_tree()
 
-	if loading_file:
+	if loading_file and is_multiplayer_authority():
 		if loading_file.begins_with('uid://'):
 			loading_file = ResourceUID.get_id_path(ResourceUID.text_to_id(loading_file))
 		_load_file(loading_file)
@@ -106,7 +106,8 @@ func _set_mesh_from_data(data: MeshData) -> void:
 
 func _set_and_send_mesh(data: MeshData) -> void:
 	_set_mesh_from_data(data)
-	_send_mesh(data.to_dict())
+	if is_multiplayer_authority():
+		_send_mesh(data.to_dict())
 
 
 func _set_pickable(node: Node3D) -> void:
