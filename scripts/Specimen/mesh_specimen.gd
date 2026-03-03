@@ -89,9 +89,14 @@ func _on_file_dialog_file_selected(path: String) -> void:
 # --- Mesh display ---
 
 func _set_mesh_from_data(data: MeshData) -> void:
+	print("MeshSpecimen: Building mesh — verts=%d, indices=%d, normals=%d" % [
+		data.vertices.size(), data.indices.size(), data.normals.size()])
 	var mesh = data.get_data()
 	if mesh == null:
-		push_error("MeshSpecimen: Failed to build mesh")
+		push_error("MeshSpecimen: Failed to build mesh (verts=%d, indices=%d, normals=%d)" % [
+			data.vertices.size(), data.indices.size(), data.normals.size()])
+		if ui_instance:
+			ui_instance.get_node("LoadingLayer").hide()
 		return
 
 	var mesh_instance = MeshInstance3D.new()
@@ -198,6 +203,10 @@ func _receive_mesh_data(chunk, field: String, index: int, total: int, is_last: b
 	_update_receive_ui(index, total)
 	_received_data[field].append_array(chunk)
 	if is_last:
+		print("MeshSpecimen RPC: Receive complete — verts=%d, indices=%d, normals=%d" % [
+			_received_data['vertices'].size(),
+			_received_data['indices'].size(),
+			_received_data['normals'].size()])
 		var data = MeshData.new()
 		data.set_from_dict(_received_data)
 		_mesh_data = data
