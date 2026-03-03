@@ -48,34 +48,21 @@ func _load_file_and_sync(path: String) -> void:
 
 
 ## Internal: load a mesh file using the pipeline.
+## All formats use ThreadedLoader to avoid freezing the app.
 func _load_file(path: String) -> void:
-	var ext = path.get_extension().to_lower()
-
-	if ext == "obj":
-		# OBJ uses threaded loading (needs _process polling)
-		_threaded_loader = ThreadedLoader.new()
-		var target = MeshData.new()
-		target.flip_normals = flip_normals
-		_threaded_loader.load_complete.connect(_on_pipeline_complete)
-		_threaded_loader.load_error.connect(_on_pipeline_error)
-		_threaded_loader.load_progress.connect(_on_load_progress)
-		var source = FileSource.new(path)
-		source.data_available.connect(func(d): _threaded_loader.load_data(d, target))
-		source.source_error.connect(_on_pipeline_error)
-		source.fetch()
-		if ui_instance:
-			ui_instance.get_node("LoadingLayer").show()
-	else:
-		# STL/FBX use sync pipeline
-		var p = Pipeline.file_to_mesh(path)
-		p.pipeline_complete.connect(_on_pipeline_complete)
-		p.pipeline_error.connect(_on_pipeline_error)
-		# Set flip_normals on the target MeshData
-		if p._target is MeshData:
-			p._target.flip_normals = flip_normals
-		p.run_pipeline()
+	_threaded_loader = ThreadedLoader.new()
+	var target = MeshData.new()
+	target.flip_normals = flip_normals
+	_threaded_loader.load_complete.connect(_on_pipeline_complete)
+	_threaded_loader.load_error.connect(_on_pipeline_error)
+	_threaded_loader.load_progress.connect(_on_load_progress)
+	var source = FileSource.new(path)
+	source.data_available.connect(func(d): _threaded_loader.load_data(d, target))
+	source.source_error.connect(_on_pipeline_error)
+	source.fetch()
 
 	if ui_instance:
+		ui_instance.get_node("LoadingLayer").show()
 		ui_instance.get_node("%FileDialogLayer").hide()
 
 

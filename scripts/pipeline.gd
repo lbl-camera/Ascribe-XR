@@ -113,16 +113,11 @@ func make_pickable(node: Node3D) -> Node3D:
 	return pickable
 
 
-## Factory: file → mesh pipeline
+## Factory: file → mesh pipeline (always threaded to avoid UI freezes)
 static func file_to_mesh(path: String) -> Pipeline:
 	var pipeline := Pipeline.new()
 	var source := FileSource.new(path)
-	var ext := path.get_extension().to_lower()
-	var loader: Loader
-	if ext == "obj":
-		loader = ThreadedLoader.new()
-	else:
-		loader = SyncronousLoader.new()
+	var loader := ThreadedLoader.new()
 	var target := MeshData.new()
 	return pipeline.configure(source, loader, target)
 
