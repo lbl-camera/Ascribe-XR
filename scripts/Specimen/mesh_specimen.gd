@@ -157,8 +157,6 @@ func _send_array_chunks(array, chunk_offset: int, total_chunks: int, field: Stri
 		var global_chunk_index = chunk_offset + i
 		var is_last = is_final_array and (i == local_chunk_count - 1)
 		_receive_mesh_data.rpc(chunk, field, global_chunk_index, total_chunks, is_last)
-		# Wait multiple frames between chunks to avoid overwhelming ENet reliable channel
-		await get_tree().process_frame
 		await get_tree().process_frame
 
 
