@@ -210,8 +210,8 @@ static func combine_meshes_from_node(root: Node) -> ArrayMesh:
 ## Convert a flat PackedFloat32Array to PackedVector3Array.
 static func unflatten_vector3(flat: PackedFloat32Array) -> PackedVector3Array:
 	if flat.size() % 3 != 0:
-		push_error("MeshUtils: Array size (%d) is not a multiple of 3" % flat.size())
-		return PackedVector3Array()
+		push_warning("MeshUtils: Array size (%d) is not a multiple of 3 — truncating" % flat.size())
+		flat = flat.slice(0, flat.size() - (flat.size() % 3))
 	var arr := PackedVector3Array()
 	arr.resize(flat.size() / 3)
 	for i in range(arr.size()):

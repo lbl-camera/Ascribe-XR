@@ -223,17 +223,9 @@ func _receive_mesh_data(chunk, field: String, index: int, total: int, is_last: b
 			n_size, _expected_sizes['normals']])
 
 		if v_size != _expected_sizes['vertices'] or i_size != _expected_sizes['indices'] or n_size != _expected_sizes['normals']:
-			push_error("MeshSpecimen RPC: Data size mismatch! Expected v=%d i=%d n=%d, got v=%d i=%d n=%d" % [
+			push_warning("MeshSpecimen RPC: Data size mismatch — expected v=%d i=%d n=%d, got v=%d i=%d n=%d. Proceeding anyway." % [
 				_expected_sizes['vertices'], _expected_sizes['indices'], _expected_sizes['normals'],
 				v_size, i_size, n_size])
-			if ui_instance:
-				ui_instance.get_node("LoadingLayer").hide()
-			_received_data = {
-				'vertices': PackedFloat32Array(),
-				'indices': PackedInt32Array(),
-				'normals': PackedFloat32Array()
-			}
-			return
 
 		var data = MeshData.new()
 		data.set_from_dict(_received_data)
