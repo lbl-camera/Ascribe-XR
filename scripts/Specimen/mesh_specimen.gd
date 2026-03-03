@@ -157,6 +157,8 @@ func _send_array_chunks(array, chunk_offset: int, total_chunks: int, field: Stri
 		var global_chunk_index = chunk_offset + i
 		var is_last = is_final_array and (i == local_chunk_count - 1)
 		_receive_mesh_data.rpc(chunk, field, global_chunk_index, total_chunks, is_last)
+		# Wait multiple frames between chunks to avoid overwhelming ENet reliable channel
+		await get_tree().process_frame
 		await get_tree().process_frame
 
 
@@ -176,6 +178,9 @@ func _send_mesh(data: Dictionary) -> void:
 	var normal_chunks = _get_chunk_count(normals.size()) if normals.size() > 0 else 0
 	var total_chunks = vert_chunks + index_chunks + normal_chunks
 
+	# Send expected sizes first so receiver can validate
+	_receive_mesh_header.rpc(verts.size(), indices.size(), normals.size(), total_chunks)
+
 	await _send_array_chunks(verts, 0, total_chunks, "vertices", index_chunks == 0 and normal_chunks == 0)
 	if index_chunks > 0:
 		await _send_array_chunks(indices, vert_chunks, total_chunks, "indices", normal_chunks == 0)
@@ -188,6 +193,21 @@ var _received_data = {
 	'indices': PackedInt32Array(),
 	'normals': PackedFloat32Array()
 }
+var _expected_sizes = { 'vertices': 0, 'indices': 0, 'normals': 0 }
+var _expected_total_chunks: int = 0
+
+
+@rpc("any_peer", "call_remote", "reliable")
+func _receive_mesh_header(vert_size: int, index_size: int, normal_size: int, total_chunks: int) -> void:
+	_expected_sizes = { 'vertices': vert_size, 'indices': index_size, 'normals': normal_size }
+	_expected_total_chunks = total_chunks
+	_received_data = {
+		'vertices': PackedFloat32Array(),
+		'indices': PackedInt32Array(),
+		'normals': PackedFloat32Array()
+	}
+	print("MeshSpecimen RPC: Header — expecting verts=%d, indices=%d, normals=%d, chunks=%d" % [
+		vert_size, index_size, normal_size, total_chunks])
 
 
 func _update_receive_ui(index: int, total: int) -> void:
@@ -203,10 +223,27 @@ func _receive_mesh_data(chunk, field: String, index: int, total: int, is_last: b
 	_update_receive_ui(index, total)
 	_received_data[field].append_array(chunk)
 	if is_last:
-		print("MeshSpecimen RPC: Receive complete — verts=%d, indices=%d, normals=%d" % [
-			_received_data['vertices'].size(),
-			_received_data['indices'].size(),
-			_received_data['normals'].size()])
+		var v_size = _received_data['vertices'].size()
+		var i_size = _received_data['indices'].size()
+		var n_size = _received_data['normals'].size()
+		print("MeshSpecimen RPC: Receive complete — verts=%d/%d, indices=%d/%d, normals=%d/%d" % [
+			v_size, _expected_sizes['vertices'],
+			i_size, _expected_sizes['indices'],
+			n_size, _expected_sizes['normals']])
+
+		if v_size != _expected_sizes['vertices'] or i_size != _expected_sizes['indices'] or n_size != _expected_sizes['normals']:
+			push_error("MeshSpecimen RPC: Data size mismatch! Expected v=%d i=%d n=%d, got v=%d i=%d n=%d" % [
+				_expected_sizes['vertices'], _expected_sizes['indices'], _expected_sizes['normals'],
+				v_size, i_size, n_size])
+			if ui_instance:
+				ui_instance.get_node("LoadingLayer").hide()
+			_received_data = {
+				'vertices': PackedFloat32Array(),
+				'indices': PackedInt32Array(),
+				'normals': PackedFloat32Array()
+			}
+			return
+
 		var data = MeshData.new()
 		data.set_from_dict(_received_data)
 		_mesh_data = data
