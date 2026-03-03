@@ -10,15 +10,17 @@ var _mesh_data: MeshData
 var _threaded_loader: ThreadedLoader  # Kept for OBJ polling in _process
 var specimen_base_scale: float = 1
 static var TABLE_SIZE: float = 1
+var _send_after_load: bool = false  # Whether to RPC-sync after loading
 
 
 func _enter_tree():
 	super._enter_tree()
 
-	if loading_file and is_multiplayer_authority():
+	# Embedded/bundled files: every peer loads locally (no RPC needed)
+	if loading_file:
 		if loading_file.begins_with('uid://'):
 			loading_file = ResourceUID.get_id_path(ResourceUID.text_to_id(loading_file))
-		_load_file(loading_file)
+		_load_file_local(loading_file)
 
 	if ui_instance:
 		ui_instance.get_node("%FileDialog").file_selected.connect(_on_file_dialog_file_selected)
@@ -33,7 +35,19 @@ func _process(delta: float) -> void:
 			_threaded_loader = null
 
 
-## Load a mesh file using the pipeline.
+## Load a mesh file locally only (no RPC sync). Used for embedded/bundled files.
+func _load_file_local(path: String) -> void:
+	_send_after_load = false
+	_load_file(path)
+
+
+## Load a mesh file and send to other peers via RPC. Used for runtime file picks.
+func _load_file_and_sync(path: String) -> void:
+	_send_after_load = true
+	_load_file(path)
+
+
+## Internal: load a mesh file using the pipeline.
 func _load_file(path: String) -> void:
 	var ext = path.get_extension().to_lower()
 
@@ -68,7 +82,10 @@ func _load_file(path: String) -> void:
 func _on_pipeline_complete(data: Data) -> void:
 	if data is MeshData:
 		_mesh_data = data
-		_set_and_send_mesh(data)
+		if _send_after_load:
+			_set_and_send_mesh(data)
+		else:
+			_set_mesh_from_data(data)
 
 
 func _on_pipeline_error(error: String) -> void:
@@ -83,7 +100,7 @@ func _on_load_progress(progress: float) -> void:
 
 
 func _on_file_dialog_file_selected(path: String) -> void:
-	_load_file(path)
+	_load_file_and_sync(path)
 
 
 # --- Mesh display ---
