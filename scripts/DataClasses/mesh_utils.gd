@@ -36,14 +36,18 @@ static func build_mesh(data: Dictionary) -> ArrayMesh:
 		push_error("MeshUtils: Index count (%d) is not a multiple of 3" % indices.size())
 		return null
 
-	# Validate indices are within bounds
-	for i in indices:
-		if i < 0:
-			push_error("MeshUtils: Negative index found: %d" % i)
+	# Validate and clamp indices to be within bounds
+	var max_idx = vertices.size() - 1
+	var clamped = false
+	for j in range(indices.size()):
+		if indices[j] < 0:
+			push_error("MeshUtils: Negative index found: %d" % indices[j])
 			return null
-		if i >= vertices.size():
-			push_error("MeshUtils: Index out of bounds: %d (vertex count: %d)" % [i, vertices.size()])
-			return null
+		if indices[j] > max_idx:
+			if not clamped:
+				push_warning("MeshUtils: Clamping out-of-bounds indices (e.g. %d, max=%d)" % [indices[j], max_idx])
+				clamped = true
+			indices[j] = max_idx
 
 	if normals.size() > 0 and normals.size() != vertices.size():
 		push_warning("MeshUtils: Normal count (%d) doesn't match vertex count (%d)" % [normals.size(), vertices.size()])
