@@ -146,7 +146,7 @@ func _get_chunk_count(array_size: int) -> int:
 	return ceili(float(array_size) / Config.CHUNK_SIZE)
 
 
-func _send_array_chunks(array, chunk_offset: int, total_chunks: int, field: String, is_final_array: bool) -> void:
+func _send_array_chunks(array, chunk_offset: int, total_chunks: int, field: String, is_final_array: bool, expected_sizes: PackedInt32Array = PackedInt32Array()) -> void:
 	if array == null or array.size() == 0:
 		return
 	var local_chunk_count = _get_chunk_count(array.size())
@@ -156,7 +156,7 @@ func _send_array_chunks(array, chunk_offset: int, total_chunks: int, field: Stri
 		var chunk = array.slice(start_idx, end_idx)
 		var global_chunk_index = chunk_offset + i
 		var is_last = is_final_array and (i == local_chunk_count - 1)
-		_receive_mesh_data.rpc(chunk, field, global_chunk_index, total_chunks, is_last)
+		_receive_mesh_data.rpc(chunk, field, global_chunk_index, total_chunks, is_last, expected_sizes)
 		await get_tree().process_frame
 
 
@@ -171,19 +171,22 @@ func _send_mesh(data: Dictionary) -> void:
 	if typeof(normals) == TYPE_PACKED_VECTOR3_ARRAY:
 		normals = MeshUtils.flatten_vector3(normals)
 
+	print("MeshSpecimen SEND: verts=%d, indices=%d, normals=%d" % [
+		verts.size(), indices.size(), normals.size()])
+
 	var vert_chunks = _get_chunk_count(verts.size())
 	var index_chunks = _get_chunk_count(indices.size()) if indices.size() > 0 else 0
 	var normal_chunks = _get_chunk_count(normals.size()) if normals.size() > 0 else 0
 	var total_chunks = vert_chunks + index_chunks + normal_chunks
 
-	# Send expected sizes first so receiver can validate
-	_receive_mesh_header.rpc(verts.size(), indices.size(), normals.size(), total_chunks)
+	# Send expected sizes as part of chunk stream (embedded in each call for robustness)
+	var expected = PackedInt32Array([verts.size(), indices.size(), normals.size()])
 
-	await _send_array_chunks(verts, 0, total_chunks, "vertices", index_chunks == 0 and normal_chunks == 0)
+	await _send_array_chunks(verts, 0, total_chunks, "vertices", index_chunks == 0 and normal_chunks == 0, expected)
 	if index_chunks > 0:
-		await _send_array_chunks(indices, vert_chunks, total_chunks, "indices", normal_chunks == 0)
+		await _send_array_chunks(indices, vert_chunks, total_chunks, "indices", normal_chunks == 0, expected)
 	if normal_chunks > 0:
-		await _send_array_chunks(normals, vert_chunks + index_chunks, total_chunks, "normals", true)
+		await _send_array_chunks(normals, vert_chunks + index_chunks, total_chunks, "normals", true, expected)
 
 
 var _received_data = {
@@ -192,20 +195,6 @@ var _received_data = {
 	'normals': PackedFloat32Array()
 }
 var _expected_sizes = { 'vertices': 0, 'indices': 0, 'normals': 0 }
-var _expected_total_chunks: int = 0
-
-
-@rpc("any_peer", "call_remote", "reliable")
-func _receive_mesh_header(vert_size: int, index_size: int, normal_size: int, total_chunks: int) -> void:
-	_expected_sizes = { 'vertices': vert_size, 'indices': index_size, 'normals': normal_size }
-	_expected_total_chunks = total_chunks
-	_received_data = {
-		'vertices': PackedFloat32Array(),
-		'indices': PackedInt32Array(),
-		'normals': PackedFloat32Array()
-	}
-	print("MeshSpecimen RPC: Header — expecting verts=%d, indices=%d, normals=%d, chunks=%d" % [
-		vert_size, index_size, normal_size, total_chunks])
 
 
 func _update_receive_ui(index: int, total: int) -> void:
@@ -217,7 +206,11 @@ func _update_receive_ui(index: int, total: int) -> void:
 
 
 @rpc("any_peer", "call_remote", "reliable")
-func _receive_mesh_data(chunk, field: String, index: int, total: int, is_last: bool) -> void:
+func _receive_mesh_data(chunk, field: String, index: int, total: int, is_last: bool, expected_sizes: PackedInt32Array) -> void:
+	# Update expected sizes from every chunk (redundant but robust)
+	if expected_sizes.size() == 3:
+		_expected_sizes = { 'vertices': expected_sizes[0], 'indices': expected_sizes[1], 'normals': expected_sizes[2] }
+
 	_update_receive_ui(index, total)
 	_received_data[field].append_array(chunk)
 	if is_last:
