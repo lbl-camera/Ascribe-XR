@@ -7,9 +7,10 @@ extends Control
 # grid containers, VBOXContainer
 var in_range: bool = false
 @onready var container = $MarginContainer/VBoxContainer
-
+@onready var button_container = $ButtonContainer
 
 @export var offset: float = 50.0
+
 
 func setup_drop_down(enum_possibilities: Array) -> OptionButton:
 	var drop_down: OptionButton = OptionButton.new()
@@ -101,3 +102,25 @@ func _ready() -> void:
 		make_ui(properties_dict) 
 				
 				
+
+func extract_parameters() -> Dictionary:
+	var param_dict: Dictionary = {}
+	var current_param_name = ""
+	for ui_component in container.get_children():
+		if ui_component is Label:
+			current_param_name = ui_component.text
+		elif ui_component is Slider:
+			param_dict[current_param_name] = ui_component.value
+		elif ui_component is CheckBox:
+			if ui_component.button_pressed:
+				param_dict[current_param_name] = true
+			else:
+				param_dict[current_param_name] = false
+		elif ui_component is OptionButton:
+			param_dict[current_param_name] = ui_component.get_item_text(ui_component.selected)
+	return param_dict
+			
+
+func _on_submit_button_pressed() -> void:
+	var parameters = extract_parameters()
+	print(parameters)
