@@ -1,0 +1,94 @@
+## Client for Ascribe-Link HTTP API.
+## Handles specimen catalog and function listing (non-pipeline operations).
+class_name AscribeLinkClient
+extends RefCounted
+
+signal specimens_loaded(specimens: Array)
+signal functions_loaded(functions: Array)
+signal request_error(error: String)
+
+var _base_url: String
+var _parent: Node
+var _specimens_request: HTTPRequest
+var _functions_request: HTTPRequest
+
+
+func _init(base_url: String = "http://localhost:8000") -> void:
+	_base_url = base_url.rstrip("/")
+
+
+## Attach to a scene tree node (required for HTTPRequest to work).
+func setup(parent: Node) -> void:
+	_parent = parent
+
+	_specimens_request = HTTPRequest.new()
+	_specimens_request.request_completed.connect(_on_specimens_completed)
+	_parent.add_child(_specimens_request)
+
+	_functions_request = HTTPRequest.new()
+	_functions_request.request_completed.connect(_on_functions_completed)
+	_parent.add_child(_functions_request)
+
+
+## Fetch the list of curated specimens.
+func fetch_specimens() -> void:
+	if _specimens_request == null:
+		request_error.emit("Client not set up")
+		return
+	var url = _base_url + "/api/specimens/"
+	var error = _specimens_request.request(url)
+	if error != OK:
+		request_error.emit("Failed to start specimens request: %s" % error_string(error))
+
+
+## Fetch the list of registered processing functions.
+func fetch_functions() -> void:
+	if _functions_request == null:
+		request_error.emit("Client not set up")
+		return
+	var url = _base_url + "/api/processing/functions"
+	var error = _functions_request.request(url)
+	if error != OK:
+		request_error.emit("Failed to start functions request: %s" % error_string(error))
+
+
+## Get the URL to download specimen data directly.
+func get_specimen_data_url(specimen_id: String) -> String:
+	return _base_url + "/api/specimens/" + specimen_id + "/data"
+
+
+## Get the URL for a specimen thumbnail.
+func get_specimen_thumbnail_url(specimen_id: String) -> String:
+	return _base_url + "/api/specimens/" + specimen_id + "/thumbnail"
+
+
+func _on_specimens_completed(result: int, response_code: int, _headers: PackedStringArray, body: PackedByteArray) -> void:
+	if result != HTTPRequest.RESULT_SUCCESS:
+		request_error.emit("Specimens request failed: result=%d" % result)
+		return
+	if response_code != 200:
+		request_error.emit("Specimens HTTP %d: %s" % [response_code, body.get_string_from_utf8()])
+		return
+
+	var parsed = JSON.parse_string(body.get_string_from_utf8())
+	if parsed == null:
+		request_error.emit("Invalid JSON in specimens response")
+		return
+
+	specimens_loaded.emit(parsed)
+
+
+func _on_functions_completed(result: int, response_code: int, _headers: PackedStringArray, body: PackedByteArray) -> void:
+	if result != HTTPRequest.RESULT_SUCCESS:
+		request_error.emit("Functions request failed: result=%d" % result)
+		return
+	if response_code != 200:
+		request_error.emit("Functions HTTP %d: %s" % [response_code, body.get_string_from_utf8()])
+		return
+
+	var parsed = JSON.parse_string(body.get_string_from_utf8())
+	if parsed == null:
+		request_error.emit("Invalid JSON in functions response")
+		return
+
+	functions_loaded.emit(parsed)

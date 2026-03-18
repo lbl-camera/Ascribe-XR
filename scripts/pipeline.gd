@@ -45,7 +45,7 @@ func run_pipeline() -> Variant:
 				_:
 					pipeline_error.emit("Unknown file type: %s" % ext)
 					return null
-		elif _source is MQTTSource:
+		elif _source is MQTTSource or _source is HTTPSource:
 			_target = MeshData.new()
 		else:
 			_target = MeshData.new()
@@ -131,8 +131,24 @@ static func file_to_volume(path: String) -> Pipeline:
 	return pipeline.configure(source, loader, target)
 
 
-## Factory: MQTT → mesh pipeline
+## Factory: HTTP → mesh pipeline (Ascribe-Link server)
+static func http_to_mesh(parent: Node, function_name: String, args: Array = [], kwargs: Dictionary = {}, base_url: String = "http://localhost:8000") -> Pipeline:
+	var pipeline := Pipeline.new()
+	var source := HTTPSource.new(base_url)
+	source.setup(parent)
+	source.set_request({
+		"function_name": function_name,
+		"args": args,
+		"kwargs": kwargs
+	})
+	var loader := SyncronousLoader.new()
+	var target := MeshData.new()
+	return pipeline.configure(source, loader, target)
+
+
+## Factory: MQTT → mesh pipeline (deprecated — use http_to_mesh instead)
 static func mqtt_to_mesh(mqtt: Node, function_name: String, args: Array = [], kwargs: Dictionary = {}) -> Pipeline:
+	push_warning("mqtt_to_mesh is deprecated — use http_to_mesh instead")
 	var pipeline := Pipeline.new()
 	var source := MQTTSource.new()
 	source.setup(mqtt)
