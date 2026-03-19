@@ -23,8 +23,10 @@ func get_data() -> ArrayMesh:
 
 
 ## Set data from a dictionary (as received from network or loaders).
-## Expects {"vertices": [...], "indices": [...], "normals": [...]}
+## Supports both legacy format {"vertices": [...], "indices": [...]}
+## and typed format {"type": "mesh", "vertices": [...], "indices": [...]}
 func set_from_dict(data: Dictionary) -> void:
+	# Handle typed format (ignore 'type' field, it's just for routing)
 	var v = data.get("vertices", PackedFloat32Array())
 	var i = data.get("indices", PackedInt32Array())
 	var n = data.get("normals", PackedFloat32Array())

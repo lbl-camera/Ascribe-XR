@@ -118,10 +118,47 @@ func _on_http_data(result_data: Variant) -> void:
 		return
 
 	mesh_received = true
+	
+	# Check for typed response (new format with 'type' field)
+	if result_data is Dictionary and result_data.has("type"):
+		var data_type: String = result_data.get("type", "mesh")
+		match data_type:
+			"mesh":
+				_handle_mesh_response(result_data)
+			"volume":
+				_handle_volume_response(result_data)
+			_:
+				push_error("DynamicMeshSpecimen: Unsupported data type '%s'" % data_type)
+				mesh_received = false
+	else:
+		# Legacy format (direct mesh data without type field)
+		_handle_mesh_response(result_data)
+
+
+func _handle_mesh_response(result_data: Dictionary) -> void:
 	var data = MeshData.new()
 	data.set_from_dict(result_data)
 	_mesh_data = data
 	_set_and_send_mesh(data)
+
+
+func _handle_volume_response(result_data: Dictionary) -> void:
+	# Volume data received — we need to switch to volume rendering
+	# For now, convert to mesh using marching cubes client-side, or notify user
+	push_warning("DynamicMeshSpecimen: Received volume data — volume rendering not yet supported in this specimen type")
+	
+	# Store the volume data for potential use
+	var volume_data = VolumetricData.new()
+	volume_data.set_from_dict(result_data)
+	
+	if volume_data.is_valid():
+		# Emit signal or handle volume display
+		# For now, we could try to extract an isosurface
+		print("DynamicMeshSpecimen: Volume loaded: %s" % str(volume_data.get_dimensions()))
+		# TODO: Add marching cubes conversion or switch specimen type
+	
+	if ui_instance:
+		ui_instance.get_node("LoadingLayer").hide()
 
 
 func _generate_specimen_menu(specimen_names: Array) -> void:

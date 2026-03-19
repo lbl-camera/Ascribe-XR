@@ -265,7 +265,12 @@ func _load_remote_specimen(specimen_id: String, display_name: String) -> void:
 		# Instantiate and configure with remote data source
 		var instance = scene.instantiate()
 		
-		# Set the data URL
+		# For volume specimens, we need to download and load the data
+		if specimen_type == "volume":
+			_load_remote_volume(instance, data_url_value, display_name, specimen_data)
+			return
+		
+		# For mesh specimens, set the data URL for lazy loading
 		if instance.has_method("set_data_url"):
 			instance.set_data_url(data_url_value)
 		elif "data_url" in instance:
@@ -287,3 +292,75 @@ func _load_remote_specimen(specimen_id: String, display_name: String) -> void:
 		SceneManager.change_3d_scene_instance(instance)
 	else:
 		push_error("Failed to load dynamic specimen scene: %s" % scene_path)
+
+
+## Load a remote volume specimen — downloads data and configures volume rendering.
+func _load_remote_volume(instance: Node3D, data_url: String, display_name: String, metadata: Dictionary) -> void:
+	# Download the volume data
+	var http = HTTPRequest.new()
+	add_child(http)
+	
+	http.request_completed.connect(
+		func(result: int, code: int, headers: PackedStringArray, body: PackedByteArray):
+			http.queue_free()
+			_on_remote_volume_loaded(instance, result, code, body, display_name, metadata)
+	)
+	
+	var err = http.request(data_url)
+	if err != OK:
+		push_error("Failed to request volume data: %s" % error_string(err))
+		instance.queue_free()
+
+
+func _on_remote_volume_loaded(
+	instance: Node3D,
+	result: int,
+	code: int,
+	body: PackedByteArray,
+	display_name: String,
+	metadata: Dictionary
+) -> void:
+	if result != HTTPRequest.RESULT_SUCCESS or code != 200:
+		push_error("Failed to download volume: result=%d, code=%d" % [result, code])
+		instance.queue_free()
+		return
+	
+	# Parse JSON response (volume data is JSON with base64 content)
+	var json_str = body.get_string_from_utf8()
+	var volume_dict = JSON.parse_string(json_str)
+	
+	if volume_dict == null:
+		# Might be a raw binary file, try to load it directly
+		# Save to temp file and load via Pipeline
+		var temp_path = "user://temp_volume.bin"
+		var file = FileAccess.open(temp_path, FileAccess.WRITE)
+		if file:
+			file.store_buffer(body)
+			file.close()
+			# TODO: Load via Pipeline.file_to_volume
+			push_warning("Raw volume file loading not yet implemented for remote volumes")
+		instance.queue_free()
+		return
+	
+	# Volume data from API (JSON with base64)
+	var volume_data = VolumetricData.new()
+	volume_data.set_from_dict(volume_dict)
+	
+	if volume_data.is_valid():
+		# Set display name
+		if "display_name" in instance:
+			instance.display_name = display_name
+		
+		# Get the volume texture and apply it
+		var texture = volume_data.get_data()
+		if texture and instance.has_method("_update_texture"):
+			SceneManager.change_3d_scene_instance(instance)
+			# Wait for instance to enter tree, then update texture
+			await instance.tree_entered
+			instance._update_texture(texture)
+		else:
+			push_error("Volume specimen missing _update_texture method")
+			instance.queue_free()
+	else:
+		push_error("Invalid volume data from server")
+		instance.queue_free()
