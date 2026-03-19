@@ -31,6 +31,8 @@ func set_property_types(type, default):
 			# if we're in a slider part don't bother
 			if in_range:
 				in_range = false
+				return
+			
 			
 			
 
@@ -124,3 +126,5 @@ func extract_parameters() -> Dictionary:
 func _on_submit_button_pressed() -> void:
 	var parameters = extract_parameters()
 	print(parameters)
+# add a signal to the 
+# se
