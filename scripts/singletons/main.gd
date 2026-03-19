@@ -63,11 +63,16 @@ func prep_for_new_3d_scene():
 		current_3d_scene = null
 
 func change_3d_scene(new_scene: PackedScene) -> void:
+	var specimen: Specimen = new_scene.instantiate()
+	change_3d_scene_instance(specimen)
+
+
+## Load a pre-instantiated specimen (used for remote Ascribe-Link specimens)
+func change_3d_scene_instance(specimen: Specimen) -> void:
 	set_spawner_authority.rpc()
 	prep_for_new_3d_scene.rpc()
 
 	$/root/Main/GPUParticles3D.emitting = true
-	var specimen: Specimen = new_scene.instantiate()
 	specimen.hide()
 
 	current_3d_scene = specimen

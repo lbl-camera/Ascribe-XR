@@ -1,5 +1,6 @@
 ## Dynamic mesh specimen — loads meshes from Python via Ascribe-Link HTTP API.
 ## Uses HTTPSource for the data pipeline and AscribeLinkClient for catalog.
+## Can also load pre-specified specimen data via data_url (set before _enter_tree).
 extends MeshSpecimen
 
 var _http_source: HTTPSource
@@ -12,6 +13,20 @@ var functions: Array = []
 var specimens: Array = []
 
 var mesh_received: bool = false
+
+## URL to directly fetch specimen data (STL, etc.) — set this before adding to tree.
+## When set, the specimen loads this URL immediately instead of showing the menu.
+@export var data_url: String = ""
+
+## Display name for the specimen (set from menu metadata)
+@export var remote_display_name: String = ""
+
+## Story text for the specimen (set from menu metadata)
+@export var remote_story_text: Array = []
+
+
+func set_data_url(url: String) -> void:
+	data_url = url
 
 
 func _enter_tree() -> void:
@@ -38,9 +53,13 @@ func _enter_tree() -> void:
 		specimen_list.item_selected.connect(_on_specimen_selected)
 		ui_instance.get_node("%FileDialogLayer").hide()
 
-	# Fetch both specimens and functions from the server
-	_link_client.fetch_functions()
-	_link_client.fetch_specimens()
+	# If data_url is set, load directly instead of showing menus
+	if data_url and not data_url.is_empty():
+		_load_from_data_url()
+	else:
+		# Fetch both specimens and functions from the server
+		_link_client.fetch_functions()
+		_link_client.fetch_specimens()
 
 
 ## Set the Ascribe-Link server URL (call before _enter_tree or use set_server_url).
@@ -112,3 +131,106 @@ func _generate_specimen_menu(specimen_names: Array) -> void:
 	specimen_list.clear()
 	for specimen_name in specimen_names:
 		specimen_list.add_item(specimen_name)
+
+
+# ---------------------------------------------------------------------------
+# Direct Data URL Loading (for curated specimens from main menu)
+# ---------------------------------------------------------------------------
+
+var _data_http_request: HTTPRequest
+
+
+## Load specimen data directly from a URL (e.g., /api/specimens/{id}/data).
+## Downloads the file and processes it using the existing mesh loading pipeline.
+func _load_from_data_url() -> void:
+	if data_url.is_empty():
+		push_error("DynamicMeshSpecimen: data_url is empty")
+		return
+
+	print("DynamicMeshSpecimen: Loading from URL: %s" % data_url)
+
+	if ui_instance:
+		ui_instance.get_node("LoadingLayer").show()
+		ui_instance.get_node("%SpecimenLayer").hide()
+
+	# Create HTTP request for downloading the file
+	_data_http_request = HTTPRequest.new()
+	_data_http_request.request_completed.connect(_on_data_url_completed)
+	add_child(_data_http_request)
+
+	var err = _data_http_request.request(data_url)
+	if err != OK:
+		push_error("DynamicMeshSpecimen: Failed to start data request: %s" % error_string(err))
+		if ui_instance:
+			ui_instance.get_node("LoadingLayer").hide()
+
+
+func _on_data_url_completed(result: int, response_code: int, headers: PackedStringArray, body: PackedByteArray) -> void:
+	if _data_http_request:
+		_data_http_request.queue_free()
+		_data_http_request = null
+
+	if result != HTTPRequest.RESULT_SUCCESS:
+		push_error("DynamicMeshSpecimen: Data request failed: result=%d" % result)
+		if ui_instance:
+			ui_instance.get_node("LoadingLayer").hide()
+		return
+
+	if response_code != 200:
+		push_error("DynamicMeshSpecimen: Data HTTP %d" % response_code)
+		if ui_instance:
+			ui_instance.get_node("LoadingLayer").hide()
+		return
+
+	# Determine file extension from Content-Disposition header or URL
+	var file_ext = _get_file_extension_from_headers(headers)
+	if file_ext.is_empty():
+		file_ext = _get_file_extension_from_url(data_url)
+	if file_ext.is_empty():
+		file_ext = "stl"  # Default to STL
+
+	# Save to temp file
+	var temp_path = "user://temp_specimen." + file_ext
+	var file = FileAccess.open(temp_path, FileAccess.WRITE)
+	if not file:
+		push_error("DynamicMeshSpecimen: Failed to create temp file")
+		if ui_instance:
+			ui_instance.get_node("LoadingLayer").hide()
+		return
+
+	file.store_buffer(body)
+	file.close()
+
+	print("DynamicMeshSpecimen: Downloaded %d bytes, loading as .%s" % [body.size(), file_ext])
+
+	# Load the file using the existing pipeline from MeshSpecimen
+	_send_after_load = true
+	_load_file(temp_path)
+
+
+func _get_file_extension_from_headers(headers: PackedStringArray) -> String:
+	for header in headers:
+		var lower = header.to_lower()
+		if lower.begins_with("content-disposition:"):
+			# Look for filename="something.ext"
+			var start = header.find('filename="')
+			if start != -1:
+				start += 10  # len('filename="')
+				var end = header.find('"', start)
+				if end != -1:
+					var filename = header.substr(start, end - start)
+					return filename.get_extension().to_lower()
+	return ""
+
+
+func _get_file_extension_from_url(url: String) -> String:
+	# Remove query params
+	var path = url.split("?")[0]
+	# Get the last path segment
+	var segments = path.split("/")
+	if segments.size() > 0:
+		var filename = segments[-1]
+		var ext = filename.get_extension()
+		if ext:
+			return ext.to_lower()
+	return ""
