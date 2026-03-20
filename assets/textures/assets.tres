@@ -1,4 +1,4 @@
-[gd_resource type="Terrain3DAssets" load_steps=9 format=3 uid="uid://dal3jhw6241qg"]
+[gd_resource type="Terrain3DAssets" format=3 uid="uid://dal3jhw6241qg"]
 
 [ext_resource type="Texture2D" uid="uid://br7bfxcxh60df" path="res://assets/textures/rock030_alb_ht.png" id="1_v81ad"]
 [ext_resource type="Texture2D" uid="uid://cr72kjil43vgj" path="res://assets/textures/rock030_nrm_rgh.png" id="2_72dup"]

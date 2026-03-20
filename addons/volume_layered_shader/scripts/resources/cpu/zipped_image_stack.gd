@@ -139,5 +139,3 @@ func calc_gradients()->ImageGradient:
 	gradient.gradients = grad_list
 	gradient.size = data_size
 	return gradient
-
-

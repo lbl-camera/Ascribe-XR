@@ -1,0 +1,26 @@
+[gd_resource type="Resource" script_class="Pipeline" format=3 uid="uid://3kh8wt6fdehb"]
+
+[ext_resource type="Script" uid="uid://byyhxvm0vlpci" path="res://scripts/pipeline.gd" id="1_2tf8e"]
+[ext_resource type="Script" uid="uid://cwwqtgu5lfgeu" path="res://scripts/DataLoaders/threaded_loader.gd" id="2_jq437"]
+[ext_resource type="Script" uid="uid://f4470obdv4nv" path="res://scripts/Specimen/SpecimenDef.gd" id="3_dfe3v"]
+[ext_resource type="Script" uid="uid://cw08njpngfbd1" path="res://scripts/DataSources/file_source.gd" id="4_iagy4"]
+
+[sub_resource type="Resource" id="Resource_2tf8e"]
+script = ExtResource("2_jq437")
+metadata/_custom_type_script = "uid://cwwqtgu5lfgeu"
+
+[sub_resource type="Resource" id="Resource_jq437"]
+script = ExtResource("4_iagy4")
+loading_file = "res://specimen_data/aggregate_only_8_smoothed2.stl"
+metadata/_custom_type_script = "uid://cw08njpngfbd1"
+
+[sub_resource type="Resource" id="Resource_dfe3v"]
+script = ExtResource("3_dfe3v")
+source = SubResource("Resource_jq437")
+loader = SubResource("Resource_2tf8e")
+metadata/_custom_type_script = "uid://f4470obdv4nv"
+
+[resource]
+script = ExtResource("1_2tf8e")
+specimen_def = SubResource("Resource_dfe3v")
+metadata/_custom_type_script = "uid://byyhxvm0vlpci"

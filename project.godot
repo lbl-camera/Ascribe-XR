@@ -8,25 +8,31 @@
 
 config_version=5
 
+[animation]
+
+compatibility/default_parent_skeleton_in_mesh_instance_3d=true
+
 [application]
 
 config/name="ascribe-xr"
 run/main_scene="uid://do7g4piyhqxid"
-config/features=PackedStringArray("4.4", "Forward Plus")
+config/features=PackedStringArray("4.6", "Forward Plus")
 boot_splash/image="uid://dcr68kgvh1b7l"
 config/icon="uid://dcr68kgvh1b7l"
 config/windows_native_icon="res://assets/textures/logo/logowhite.ico"
 
 [audio]
 
+buses/default_bus_layout="uid://det8q41c44g83"
 driver/enable_input=true
 
 [autoload]
 
-XRToolsUserSettings="*res://addons/godot-xr-tools/user_settings/user_settings.gd"
-XRToolsRumbleManager="*res://addons/godot-xr-tools/rumble/rumble_manager.gd"
+XRToolsUserSettings="*uid://bqgb8i74tm0t"
+XRToolsRumbleManager="*uid://by853dk86g1qw"
 XrSimulator="*res://addons/xr-simulator/XRSimulator.tscn"
-Ascribemain="*res://scripts/main.gd"
+SceneManager="*res://scripts/singletons/main.gd"
+Config="*uid://dvwptjg7itnl8"
 
 [editor]
 
@@ -35,7 +41,7 @@ version_control/autoload_on_startup=true
 
 [editor_plugins]
 
-enabled=PackedStringArray("res://addons/gd-plug-ui/plugin.cfg", "res://addons/godot-xr-tools/plugin.cfg", "res://addons/import_cleaner/addons/ImportCleaner/plugin.cfg", "res://addons/terrain_3d/plugin.cfg", "res://addons/volume_layered_shader/plugin.cfg")
+enabled=PackedStringArray("res://addons/godot-xr-tools/plugin.cfg", "res://addons/import_cleaner/addons/ImportCleaner/plugin.cfg", "res://addons/volume_layered_shader/plugin.cfg")
 
 [input]
 
@@ -82,6 +88,6 @@ textures/vram_compression/import_etc2_astc=true
 [xr]
 
 openxr/enabled=true
-openxr/default_action_map="uid://wjd3nesv07uu"
+openxr/default_action_map="uid://dhjvjc7ft8dmd"
 shaders/enabled=true
 openxr/extensions/meta/passthrough=true

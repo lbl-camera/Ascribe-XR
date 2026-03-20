@@ -1,0 +1,140 @@
+[gd_scene format=3 uid="uid://buycbcke7jh2k"]
+
+[ext_resource type="Theme" uid="uid://ckuoidwkfc7y2" path="res://assets/ascribemenu.tres" id="1_6lio1"]
+[ext_resource type="Script" uid="uid://cwakntoyiquke" path="res://scripts/UI/mainmenuflat.gd" id="2_sb560"]
+[ext_resource type="Texture2D" uid="uid://dcr68kgvh1b7l" path="res://assets/textures/logo/logowhite.png" id="3_a84cs"]
+[ext_resource type="Texture2D" uid="uid://bx3sryvmfghcv" path="res://assets/textures/thumbnails/volume.png" id="4_8qvfl"]
+[ext_resource type="Script" uid="uid://bwjf3sqcaryxv" path="res://scripts/XRScroll/xrscroll.gd" id="4_rw5xf"]
+[ext_resource type="Texture2D" uid="uid://cpk1sjvjvc3wp" path="res://assets/textures/thumbnails/virus.png" id="5_pxfe5"]
+[ext_resource type="Texture2D" uid="uid://ejiy44qw4edl" path="res://assets/textures/thumbnails/3d-file.png" id="6_87ho5"]
+[ext_resource type="Texture2D" uid="uid://bn67t84yo0dyq" path="res://assets/textures/thumbnails/brainreal.png" id="6_j7yh4"]
+[ext_resource type="Texture2D" uid="uid://cfu26tgj3b216" path="res://assets/textures/thumbnails/hemo.png" id="7_vo5py"]
+[ext_resource type="Texture2D" uid="uid://dexl4ji0qxxln" path="res://assets/textures/thumbnails/fibers.png" id="8_vb2nf"]
+[ext_resource type="Texture2D" uid="uid://bmtgey487468a" path="res://assets/textures/thumbnails/ascribe-link.png" id="9_8qvfl"]
+[ext_resource type="Texture2D" uid="uid://bmc6y14ggbbvd" path="res://assets/textures/thumbnails/ceramic.png" id="9_26wqc"]
+[ext_resource type="Texture2D" uid="uid://cb5awffd7mlw6" path="res://assets/textures/thumbnails/triceratops.png" id="10_pxfe5"]
+[ext_resource type="Texture2D" uid="uid://dkqcrp3mwlu4f" path="res://assets/textures/thumbnails/concrete.png" id="11_87ho5"]
+[ext_resource type="Texture2D" uid="uid://ckne1iwfftpnl" path="res://assets/textures/thumbnails/head.png" id="12_mdar6"]
+[ext_resource type="Texture2D" uid="uid://c1u5a2iggugy6" path="res://assets/textures/thumbnails/cas9.png" id="12_shpft"]
+[ext_resource type="Texture2D" uid="uid://bydeyofx5yni4" path="res://assets/textures/thumbnails/car.png" id="13_vo5py"]
+[ext_resource type="Texture2D" uid="uid://dinuu34a0kwip" path="res://assets/textures/thumbnails/brain.png" id="14_j7yh4"]
+[ext_resource type="Texture2D" uid="uid://bgruoqtnpls8a" path="res://assets/textures/thumbnails/battery.png" id="15_26wqc"]
+[ext_resource type="Texture2D" uid="uid://7cxkirl3cg22" path="res://assets/textures/thumbnails/rockneutron.jpg" id="17_kkrvv"]
+[ext_resource type="Texture2D" uid="uid://110lbuv82kk" path="res://assets/textures/thumbnails/sfbay.png" id="18_shpft"]
+
+[node name="Panel" type="Panel" unique_id=1416044583]
+custom_minimum_size = Vector2(3000, 3000)
+offset_right = 3000.0
+offset_bottom = 2000.0
+theme = ExtResource("1_6lio1")
+script = ExtResource("2_sb560")
+scenes_paths = {
+"ASCRIBE-Link Mesh": "res://specimens/dynamic_mesh_specimen.tscn",
+"Brain": "res://specimens/brain.tscn",
+"Brain (Head)": "res://specimens/head.tscn",
+"Brain Volume": "res://specimens/brainvolume.tscn",
+"CMC Fibers": "res://specimens/fibers.tscn",
+"CRISPR-Cas9": "res://specimens/cas9.tscn",
+"Ceramic Composite": "res://specimens/ceramic.tscn",
+"Concrete (X-ray)": "res://specimens/concrete.tscn",
+"F1 Car": "res://specimens/car.tscn",
+"Head": "res://specimens/head.tscn",
+"Hemoglobin": "res://specimens/hemo.tscn",
+"Lithium Battery": "res://specimens/battery.tscn",
+"Load Mesh File": "res://specimens/mesh_specimen.tscn",
+"Load Volume": "res://specimens/volume_specimen.tscn",
+"Roman Concrete (Neutron)": "res://specimens/rockneutron.tscn",
+"San Francisco Topography": "res://specimens/sanfrancisco_topography.tscn",
+"Triceratops Skull": "res://specimens/dinosaur.tscn",
+"Virus": "res://specimens/virus.tscn"
+}
+
+[node name="MarginContainer" type="MarginContainer" parent="." unique_id=1435940924]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -4.0
+offset_right = -4.0
+grow_horizontal = 2
+grow_vertical = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme = ExtResource("1_6lio1")
+theme_override_constants/margin_left = 50
+theme_override_constants/margin_top = 50
+theme_override_constants/margin_right = 50
+theme_override_constants/margin_bottom = 50
+
+[node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer" unique_id=1019299792]
+layout_mode = 2
+
+[node name="CenterContainer" type="CenterContainer" parent="MarginContainer/VBoxContainer" unique_id=1211135542]
+layout_mode = 2
+
+[node name="TextureRect" type="TextureRect" parent="MarginContainer/VBoxContainer/CenterContainer" unique_id=1263486130]
+custom_minimum_size = Vector2(1000, 1000)
+layout_mode = 2
+texture = ExtResource("3_a84cs")
+stretch_mode = 2
+
+[node name="ItemList" type="ItemList" parent="MarginContainer/VBoxContainer" unique_id=1571708182]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_font_sizes/font_size = 50
+allow_reselect = true
+allow_search = false
+item_count = 17
+max_columns = 5
+same_column_width = true
+fixed_column_width = 560
+icon_mode = 0
+fixed_icon_size = Vector2i(500, 500)
+item_0/text = "ASCRIBE-Link Mesh"
+item_0/icon = ExtResource("9_8qvfl")
+item_1/text = "Brain"
+item_1/icon = ExtResource("14_j7yh4")
+item_2/text = "Brain (Head)"
+item_2/icon = ExtResource("12_mdar6")
+item_3/text = "Brain Volume"
+item_3/icon = ExtResource("6_j7yh4")
+item_4/text = "CMC Fibers"
+item_4/icon = ExtResource("8_vb2nf")
+item_5/text = "CRISPR-Cas9"
+item_5/icon = ExtResource("12_shpft")
+item_6/text = "Ceramic Composite"
+item_6/icon = ExtResource("9_26wqc")
+item_7/text = "Concrete (X-ray)"
+item_7/icon = ExtResource("11_87ho5")
+item_8/text = "F1 Car"
+item_8/icon = ExtResource("13_vo5py")
+item_9/text = "Hemoglobin"
+item_9/icon = ExtResource("7_vo5py")
+item_10/text = "Lithium Battery"
+item_10/icon = ExtResource("15_26wqc")
+item_11/text = "Load Mesh File"
+item_11/icon = ExtResource("6_87ho5")
+item_12/text = "Load Volume"
+item_12/icon = ExtResource("4_8qvfl")
+item_13/text = "Roman Concrete (Neutron)"
+item_13/icon = ExtResource("17_kkrvv")
+item_14/text = "San Francisco Topography"
+item_14/icon = ExtResource("18_shpft")
+item_15/text = "Triceratops Skull"
+item_15/icon = ExtResource("10_pxfe5")
+item_16/text = "Virus"
+item_16/icon = ExtResource("5_pxfe5")
+script = ExtResource("4_rw5xf")
+
+[node name="LoadingLabel" type="Label" parent="MarginContainer/VBoxContainer" unique_id=352495006]
+visible = false
+layout_mode = 2
+text = "Loading res://specimens/ceramic.tscn and 0 others..."
+
+[node name="LoadingProgressBar" type="ProgressBar" parent="MarginContainer/VBoxContainer" unique_id=2038718904]
+visible = false
+layout_mode = 2
+value = 100.0
+
+[connection signal="item_clicked_not_dragged" from="MarginContainer/VBoxContainer/ItemList" to="." method="_on_item_list_item_clicked_not_dragged"]

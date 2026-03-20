@@ -99,7 +99,7 @@ var mat: Material = preload("res://addons/volume_layered_shader/materials/volume
 		mat.set_shader_parameter("color_scalar", value)
 		color_scalar = value
 		rebuild_layers = true
-		
+
 @export_range(0, 512) var max_steps: float = 256:
 	get:
 		return max_steps
@@ -109,7 +109,7 @@ var mat: Material = preload("res://addons/volume_layered_shader/materials/volume
 		mat.set_shader_parameter("max_steps", value)
 		max_steps = value
 		rebuild_layers = true
-		
+
 @export_range(0, .1) var step_size: float = .005:
 	get:
 		return step_size
@@ -119,7 +119,7 @@ var mat: Material = preload("res://addons/volume_layered_shader/materials/volume
 		mat.set_shader_parameter("step_size", value)
 		step_size = value
 		rebuild_layers = true
-		
+
 @export_range(0, 10) var zoom: float = 2:
 	get:
 		return zoom

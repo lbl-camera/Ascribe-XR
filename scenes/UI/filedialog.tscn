@@ -1,0 +1,159 @@
+[gd_scene format=3 uid="uid://c8k84ysosm2jr"]
+
+[ext_resource type="Theme" uid="uid://ckuoidwkfc7y2" path="res://assets/ascribemenu.tres" id="1_54df6"]
+[ext_resource type="Script" uid="uid://c02s0oulgpcht" path="res://scripts/UI/filedialog.gd" id="1_ki38x"]
+[ext_resource type="Texture2D" uid="uid://b7j5atnnbwct3" path="res://assets/textures/icons/arrow_left.svg" id="2_yjg1f"]
+[ext_resource type="Texture2D" uid="uid://b5du3qdjdiif0" path="res://assets/textures/icons/arrow_right.svg" id="3_54df6"]
+[ext_resource type="Texture2D" uid="uid://b8xa3kifniyow" path="res://assets/textures/icons/folder_up.svg" id="4_6yav4"]
+[ext_resource type="Texture2D" uid="uid://cr76evur82aji" path="res://assets/textures/icons/reload.svg" id="5_6hqms"]
+
+[node name="Control" type="MarginContainer"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme = ExtResource("1_54df6")
+script = ExtResource("1_ki38x")
+current_path = "C:/Users/rp/Documents"
+
+[node name="VBoxContainer" type="VBoxContainer" parent="."]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="VBoxContainer"]
+layout_mode = 2
+text = "Open a File"
+horizontal_alignment = 1
+
+[node name="UpperButtonContainer" type="HBoxContainer" parent="VBoxContainer"]
+layout_mode = 2
+
+[node name="BackButton" type="Button" parent="VBoxContainer/UpperButtonContainer"]
+layout_mode = 2
+disabled = true
+icon = ExtResource("2_yjg1f")
+
+[node name="ForwardButton" type="Button" parent="VBoxContainer/UpperButtonContainer"]
+layout_mode = 2
+disabled = true
+icon = ExtResource("3_54df6")
+
+[node name="UpButton" type="Button" parent="VBoxContainer/UpperButtonContainer"]
+layout_mode = 2
+icon = ExtResource("4_6yav4")
+
+[node name="Label" type="Label" parent="VBoxContainer/UpperButtonContainer"]
+layout_mode = 2
+text = "Path: "
+
+[node name="PathLineEdit" type="LineEdit" parent="VBoxContainer/UpperButtonContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "C:/Users/rp/Documents"
+
+[node name="RefreshButton" type="Button" parent="VBoxContainer/UpperButtonContainer"]
+layout_mode = 2
+icon = ExtResource("5_6hqms")
+
+[node name="FileList" type="ItemList" parent="VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+theme = ExtResource("1_54df6")
+allow_reselect = true
+item_count = 57
+item_0/text = "📁 3D Printing"
+item_1/text = "📁 Addictive Drums 2"
+item_2/text = "📁 Addictive Keys"
+item_3/text = "📁 Dash"
+item_4/text = "📁 Electronic Arts"
+item_5/text = "📁 FlyDigi"
+item_6/text = "📁 Fusion 360"
+item_7/text = "📁 GitHub"
+item_8/text = "📁 GodotGame1"
+item_9/text = "📁 House Flipper"
+item_10/text = "📁 KiCad"
+item_11/text = "📁 LabVIEW Data"
+item_12/text = "📁 LoversInADangerousSpacetime"
+item_13/text = "📁 MANDA_AUDIO"
+item_14/text = "📁 MEGA"
+item_15/text = "📁 MEGA Downloads"
+item_16/text = "📁 Mabinogi"
+item_17/text = "📁 Mining tower defense"
+item_18/text = "📁 My Games"
+item_19/text = "📁 Native Instruments"
+item_20/text = "📁 NoMachine"
+item_21/text = "📁 Obsidian Vault"
+item_22/text = "📁 Realtime Landscaping Architect 2020"
+item_23/text = "📁 Robot"
+item_24/text = "📁 Sound Recordings"
+item_25/text = "📁 Studio One"
+item_26/text = "📁 Timberborn"
+item_27/text = "📁 Untitled-2024-12-28-14-54-49"
+item_28/text = "📁 WhirlwindFX"
+item_29/text = "📁 WindowsPowerShell"
+item_30/text = "📁 XLN Online Installer"
+item_31/text = "📁 XLN Online Installer Logs"
+item_32/text = "📁 Zoom"
+item_33/text = "📁 docker"
+item_34/text = "📁 godot_openxr_vendors-master"
+item_35/text = "📁 paraviewgodot"
+item_36/text = "📁 steamvr"
+item_37/text = "📁 viva la vida"
+item_38/text = "📁 vr-start"
+item_39/text = "📁 vr-start - Copy"
+item_40/text = "📄 0001_2016_ALS_Acronym_SIgnature_Horizontal_SPECTRUM_RGB_ELCTRONIC.xcf"
+item_41/text = "📄 Adaptive Experiments with Tsuchinoko.pptx"
+item_42/text = "📄 Admiral Helenius.rla"
+item_43/text = "📄 Ascribe XR.mp4"
+item_44/text = "📄 Default Profile.cueprofile"
+item_45/text = "📄 Test_tiff_obj.fbx"
+item_46/text = "📄 collage1.png"
+item_47/text = "📄 config.xlaunch"
+item_48/text = "📄 phantom.png"
+item_49/text = "📄 phantom_LBL.png"
+item_50/text = "📄 phantom_gaussian_peaks.png"
+item_51/text = "📄 phantom_question_mark.png"
+item_52/text = "📄 phantom_rectangle.png"
+item_53/text = "📄 phantom_rectangle_gaussian.png"
+item_54/text = "📄 robot.xcf"
+item_55/text = "📄 rp.pub"
+item_56/text = "📄 rp2.pub"
+
+[node name="HBoxContainer" type="HBoxContainer" parent="VBoxContainer"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="VBoxContainer/HBoxContainer"]
+layout_mode = 2
+text = "File: "
+
+[node name="SelectedFile" type="LineEdit" parent="VBoxContainer/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="Label3" type="Label" parent="VBoxContainer/HBoxContainer"]
+layout_mode = 2
+text = "Filter: "
+
+[node name="Filter" type="Label" parent="VBoxContainer/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="LowerButtonContainer" type="HBoxContainer" parent="VBoxContainer"]
+layout_mode = 2
+alignment = 1
+
+[node name="Container" type="CenterContainer" parent="VBoxContainer/LowerButtonContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="SelectButton" type="Button" parent="VBoxContainer/LowerButtonContainer/Container"]
+layout_mode = 2
+text = "Open"
+
+[node name="Control" type="CenterContainer" parent="VBoxContainer/LowerButtonContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="CancelButton" type="Button" parent="VBoxContainer/LowerButtonContainer/Control"]
+layout_mode = 2
+text = "Cancel"

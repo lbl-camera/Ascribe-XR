@@ -1,7 +1,7 @@
-[gd_scene load_steps=12 format=3 uid="uid://bc535xm33w7x1"]
+[gd_scene format=3 uid="uid://bc535xm33w7x1"]
 
-[ext_resource type="Script" path="res://testscenes/pickable.gd" id="1_h1bx1"]
-[ext_resource type="PackedScene" uid="uid://b8vb8h0jlqwl7" path="res://scenes/player.tscn" id="3_h1bx1"]
+[ext_resource type="Script" uid="uid://dbwqg1ilaf832" path="res://testscenes/pickable.gd" id="1_h1bx1"]
+[ext_resource type="PackedScene" uid="uid://b8vb8h0jlqwl7" path="res://scenes/Player/player.tscn" id="3_h1bx1"]
 [ext_resource type="PackedScene" uid="uid://doq5u7h5wo2vf" path="res://scenes/pickable/scalable_multiplayer_pickable.tscn" id="4_fe485"]
 [ext_resource type="PackedScene" uid="uid://clc5dre31iskm" path="res://addons/godot-xr-tools/xr/start_xr.tscn" id="4_y1fng"]
 
@@ -9,13 +9,13 @@
 sky_horizon_color = Color(0.64625, 0.65575, 0.67075, 1)
 ground_horizon_color = Color(0.64625, 0.65575, 0.67075, 1)
 
-[sub_resource type="Sky" id="Sky_1xke3"]
+[sub_resource type="Sky" id="Sky_h1bx1"]
 sky_material = SubResource("ProceduralSkyMaterial_tkmk6")
 
 [sub_resource type="Environment" id="Environment_h1bx1"]
 background_mode = 2
 background_energy_multiplier = 0.75
-sky = SubResource("Sky_1xke3")
+sky = SubResource("Sky_h1bx1")
 tonemap_mode = 2
 glow_enabled = true
 
@@ -30,36 +30,36 @@ size = Vector2(20, 20)
 [sub_resource type="ConvexPolygonShape3D" id="ConvexPolygonShape3D_h1bx1"]
 points = PackedVector3Array(-10, 0, -10, -10, 0, 10, 10, 0, -10, 10, 0, 10)
 
-[node name="SimpleVRpickable" type="Node3D"]
+[node name="SimpleVRpickable" type="Node3D" unique_id=1954860744]
 script = ExtResource("1_h1bx1")
 
-[node name="StartXR" parent="." instance=ExtResource("4_y1fng")]
+[node name="StartXR" parent="." unique_id=227340395 instance=ExtResource("4_y1fng")]
 
-[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+[node name="WorldEnvironment" type="WorldEnvironment" parent="." unique_id=1551002139]
 environment = SubResource("Environment_h1bx1")
 
-[node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="." unique_id=169816761]
 transform = Transform3D(-0.866025, -0.433013, 0.25, 0, 0.5, 0.866025, -0.5, 0.75, -0.433013, 0, 0.0276108, 0)
 shadow_enabled = true
 
-[node name="XROrigin3D" parent="." instance=ExtResource("3_h1bx1")]
+[node name="XROrigin3D" parent="." unique_id=1312329860 instance=ExtResource("3_h1bx1")]
 
-[node name="ScalableMultiplayerPickableObject" parent="." instance=ExtResource("4_fe485")]
+[node name="ScalableMultiplayerPickableObject" parent="." unique_id=182538906 instance=ExtResource("4_fe485")]
 unique_name_in_owner = true
 
-[node name="MeshInstance3D" type="MeshInstance3D" parent="ScalableMultiplayerPickableObject"]
+[node name="MeshInstance3D" type="MeshInstance3D" parent="ScalableMultiplayerPickableObject" unique_id=894453140]
 mesh = SubResource("BoxMesh_k0x1c")
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="ScalableMultiplayerPickableObject"]
+[node name="CollisionShape3D2" type="CollisionShape3D" parent="ScalableMultiplayerPickableObject" unique_id=143831978]
 shape = SubResource("ConvexPolygonShape3D_y1fng")
 
-[node name="StaticBody3D" type="StaticBody3D" parent="."]
+[node name="StaticBody3D" type="StaticBody3D" parent="." unique_id=1395705202]
 
-[node name="floor" type="MeshInstance3D" parent="StaticBody3D"]
+[node name="floor" type="MeshInstance3D" parent="StaticBody3D" unique_id=1749270615]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -1.03763, 0)
 mesh = SubResource("PlaneMesh_tkmk6")
 skeleton = NodePath("../..")
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="StaticBody3D"]
+[node name="CollisionShape3D" type="CollisionShape3D" parent="StaticBody3D" unique_id=1812779505]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -1.03763, 0)
 shape = SubResource("ConvexPolygonShape3D_h1bx1")
