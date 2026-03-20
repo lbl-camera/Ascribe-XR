@@ -27,11 +27,16 @@ func _enter_tree() -> void:
 
 	if story_ui_viewport:
 		var story_ui = story_ui_viewport.get_scene_instance()
-		if story_ui:
+		if story_ui and "story" in story_ui:
 			if story_text:
 				story_ui.story = story_text
 			else:
 				story_ui.story = PackedStringArray()
+		elif story_ui:
+			push_warning("StoryUI instance found but has no 'story' property: %s" % story_ui.get_class())
+		else:
+			# StoryUI not instantiated yet - this is OK, it might not have a scene set
+			pass
 
 	# If a pipeline is configured, wire it up and run it
 	if pipeline:
