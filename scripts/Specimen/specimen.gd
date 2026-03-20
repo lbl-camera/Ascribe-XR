@@ -26,10 +26,12 @@ func _enter_tree() -> void:
 		ui_instance = specimen_viewport.get_scene_instance()
 
 	if story_ui_viewport:
-		if story_text:
-			story_ui_viewport.get_node("Viewport/StoryUI").story = story_text
-		else:
-			story_ui_viewport.get_node("Viewport/StoryUI").story = PackedStringArray()
+		var story_ui = story_ui_viewport.get_scene_instance()
+		if story_ui:
+			if story_text:
+				story_ui.story = story_text
+			else:
+				story_ui.story = PackedStringArray()
 
 	# If a pipeline is configured, wire it up and run it
 	if pipeline:
