@@ -57,14 +57,20 @@ func _on_ascribe_link_specimens_loaded(specimens: Array) -> void:
 		var id: String = specimen.get("id", "")
 		var display_name: String = specimen.get("display_name", id)
 		var thumbnail_url: String = specimen.get("thumbnail_url", "")
+		var is_dynamic: bool = specimen.get("is_dynamic", false)
 		
 		if id.is_empty():
 			continue
 		
 		remote_specimens[display_name] = specimen
 		
+		# Add visual indicator for dynamic specimens
+		var list_label = display_name
+		if is_dynamic:
+			list_label += " ⚙️"
+		
 		# Add to list with placeholder, then fetch thumbnail
-		var item_index = %ItemList.add_item(display_name, null)
+		var item_index = %ItemList.add_item(list_label, null)
 		%ItemList.set_item_metadata(item_index, {"remote": true, "id": id})
 		
 		# Fetch thumbnail asynchronously
@@ -443,21 +449,21 @@ func _on_procedural_ui_accept(params: Dictionary) -> void:
 		push_error("No function_name in specimen metadata")
 		return
 	
-	# Hide the UI while processing
-	if _procedural_ui_instance:
-		_procedural_ui_instance.visible = false
+	# Show loading state
+	_show_loading_state()
 	
 	# Invoke the processing function (with room_id for multiplayer caching)
 	var room_id = Config.webrtcroomname if Config.webrtcroomname else "ascribe"
 	var result = await _link_client.invoke_processing_function(function_name, params, room_id)
 	
 	# Close the UI
+	_hide_loading_state()
 	if _procedural_ui_instance:
 		_procedural_ui_instance.queue_free()
 		_procedural_ui_instance = null
 	
 	if result.has("error"):
-		push_error("Processing function failed: %s" % result.error)
+		_show_error_message("Processing failed: %s" % result.error)
 		return
 	
 	# Interpret and display the result
@@ -554,6 +560,143 @@ func _display_mesh_result(result: Dictionary, metadata: Dictionary) -> void:
 
 
 func _display_volume_result(result: Dictionary, metadata: Dictionary) -> void:
-	# TODO: Implement volume display from processing result
-	# Will need to decode base64 data, create texture3D, etc.
-	push_warning("Volume display from processing result not yet implemented")
+	# Create VolumetricData and parse result
+	var volume_data = VolumetricData.new()
+	volume_data.set_from_dict(result)
+	
+	if not volume_data.is_valid():
+		_show_error_message("Failed to parse volume data")
+		return
+	
+	# Load volume specimen scene
+	var scene = load("res://specimens/volume_specimen.tscn")
+	if not scene:
+		_show_error_message("Failed to load volume_specimen.tscn")
+		return
+	
+	var instance = scene.instantiate()
+	
+	# Set display name
+	if "display_name" in instance:
+		instance.display_name = metadata.get("display_name", "Generated Volume")
+	
+	# Get the volume texture and apply it
+	var texture = volume_data.get_data()
+	if texture and instance.has_method("_update_texture"):
+		SceneManager.change_3d_scene_instance(instance)
+		# Wait for instance to enter tree, then update texture
+		await instance.tree_entered
+		instance._update_texture(texture)
+	else:
+		_show_error_message("Volume specimen missing _update_texture method")
+		instance.queue_free()
+
+
+# ---------------------------------------------------------------------------
+# UI State Management (Loading & Error)
+# ---------------------------------------------------------------------------
+
+var _loading_panel: Panel = null
+var _error_panel: Panel = null
+
+
+func _show_loading_state() -> void:
+	# Get the SpecimenUIViewport
+	var viewport_3d = $/root/Main/SpecimenUIViewport
+	if not viewport_3d:
+		return
+	
+	var viewport = viewport_3d.get_node_or_null("Viewport")
+	if not viewport:
+		return
+	
+	# Hide form, show loading message
+	if _procedural_ui_instance:
+		_procedural_ui_instance.visible = false
+	
+	# Create loading panel
+	_loading_panel = Panel.new()
+	_loading_panel.anchor_right = 1.0
+	_loading_panel.anchor_bottom = 1.0
+	
+	var vbox = VBoxContainer.new()
+	vbox.anchor_right = 1.0
+	vbox.anchor_bottom = 1.0
+	vbox.alignment = BoxContainer.ALIGNMENT_CENTER
+	_loading_panel.add_child(vbox)
+	
+	var label = Label.new()
+	label.text = "⚙️ Generating..."
+	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	# Make it bigger and bold if possible
+	label.add_theme_font_size_override("font_size", 32)
+	vbox.add_child(label)
+	
+	var spinner_label = Label.new()
+	spinner_label.text = "⏳"
+	spinner_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	spinner_label.add_theme_font_size_override("font_size", 48)
+	vbox.add_child(spinner_label)
+	
+	viewport.add_child(_loading_panel)
+
+
+func _hide_loading_state() -> void:
+	if _loading_panel:
+		_loading_panel.queue_free()
+		_loading_panel = null
+
+
+func _show_error_message(error_text: String) -> void:
+	push_error(error_text)
+	
+	# Get the SpecimenUIViewport
+	var viewport_3d = $/root/Main/SpecimenUIViewport
+	if not viewport_3d:
+		return
+	
+	var viewport = viewport_3d.get_node_or_null("Viewport")
+	if not viewport:
+		return
+	
+	# Clear any existing error
+	if _error_panel:
+		_error_panel.queue_free()
+		_error_panel = null
+	
+	# Create error panel
+	_error_panel = Panel.new()
+	_error_panel.anchor_right = 1.0
+	_error_panel.anchor_bottom = 1.0
+	
+	var vbox = VBoxContainer.new()
+	vbox.anchor_right = 1.0
+	vbox.anchor_bottom = 1.0
+	vbox.alignment = BoxContainer.ALIGNMENT_CENTER
+	_error_panel.add_child(vbox)
+	
+	var icon_label = Label.new()
+	icon_label.text = "❌"
+	icon_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	icon_label.add_theme_font_size_override("font_size", 48)
+	vbox.add_child(icon_label)
+	
+	var error_label = Label.new()
+	error_label.text = "Error:\n" + error_text
+	error_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	error_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	error_label.add_theme_font_size_override("font_size", 24)
+	vbox.add_child(error_label)
+	
+	var close_button = Button.new()
+	close_button.text = "Close"
+	close_button.pressed.connect(_hide_error_message)
+	vbox.add_child(close_button)
+	
+	viewport.add_child(_error_panel)
+
+
+func _hide_error_message() -> void:
+	if _error_panel:
+		_error_panel.queue_free()
+		_error_panel = null
