@@ -447,8 +447,9 @@ func _on_procedural_ui_accept(params: Dictionary) -> void:
 	if _procedural_ui_instance:
 		_procedural_ui_instance.visible = false
 	
-	# Invoke the processing function
-	var result = await _link_client.invoke_processing_function(function_name, params)
+	# Invoke the processing function (with room_id for multiplayer caching)
+	var room_id = Config.webrtcroomname if Config.webrtcroomname else "ascribe"
+	var result = await _link_client.invoke_processing_function(function_name, params, room_id)
 	
 	# Close the UI
 	if _procedural_ui_instance:

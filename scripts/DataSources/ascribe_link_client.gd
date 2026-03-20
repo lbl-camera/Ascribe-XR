@@ -125,7 +125,8 @@ func fetch_specimen_metadata(specimen_id: String) -> Dictionary:
 
 ## Invoke a processing function with parameters and return the result.
 ## Returns a Dictionary with 'type' field ("mesh", "volume", etc.) via await.
-func invoke_processing_function(function_name: String, params: Dictionary) -> Dictionary:
+## room_id is used for multiplayer caching (defaults to "ascribe").
+func invoke_processing_function(function_name: String, params: Dictionary, room_id: String = "ascribe") -> Dictionary:
 	var http = HTTPRequest.new()
 	_parent.add_child(http)
 	
@@ -133,7 +134,8 @@ func invoke_processing_function(function_name: String, params: Dictionary) -> Di
 	var body = JSON.stringify({
 		"function_name": function_name,
 		"args": [],
-		"kwargs": params
+		"kwargs": params,
+		"room_id": room_id
 	})
 	
 	var headers = ["Content-Type: application/json"]
