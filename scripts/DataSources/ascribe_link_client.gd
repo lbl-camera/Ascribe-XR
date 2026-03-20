@@ -92,3 +92,70 @@ func _on_functions_completed(result: int, response_code: int, _headers: PackedSt
 		return
 
 	functions_loaded.emit(parsed)
+
+
+## Fetch full metadata for a specific specimen (includes schema for dynamic specimens).
+## Returns a Dictionary via await on the returned signal awaiter.
+func fetch_specimen_metadata(specimen_id: String) -> Dictionary:
+	var http = HTTPRequest.new()
+	_parent.add_child(http)
+	
+	var url = _base_url + "/api/specimens/" + specimen_id
+	var error = http.request(url)
+	if error != OK:
+		http.queue_free()
+		return {}
+	
+	var response = await http.request_completed
+	http.queue_free()
+	
+	var result: int = response[0]
+	var response_code: int = response[1]
+	var body: PackedByteArray = response[3]
+	
+	if result != HTTPRequest.RESULT_SUCCESS or response_code != 200:
+		return {}
+	
+	var parsed = JSON.parse_string(body.get_string_from_utf8())
+	if parsed == null:
+		return {}
+	
+	return parsed
+
+
+## Invoke a processing function with parameters and return the result.
+## Returns a Dictionary with 'type' field ("mesh", "volume", etc.) via await.
+func invoke_processing_function(function_name: String, params: Dictionary) -> Dictionary:
+	var http = HTTPRequest.new()
+	_parent.add_child(http)
+	
+	var url = _base_url + "/api/processing/invoke"
+	var body = JSON.stringify({
+		"function_name": function_name,
+		"args": [],
+		"kwargs": params
+	})
+	
+	var headers = ["Content-Type: application/json"]
+	var error = http.request(url, headers, HTTPClient.METHOD_POST, body)
+	if error != OK:
+		http.queue_free()
+		return {"error": "Failed to start request"}
+	
+	var response = await http.request_completed
+	http.queue_free()
+	
+	var result: int = response[0]
+	var response_code: int = response[1]
+	var response_body: PackedByteArray = response[3]
+	
+	if result != HTTPRequest.RESULT_SUCCESS:
+		return {"error": "Request failed: result=%d" % result}
+	if response_code != 200:
+		return {"error": "HTTP %d: %s" % [response_code, response_body.get_string_from_utf8()]}
+	
+	var parsed = JSON.parse_string(response_body.get_string_from_utf8())
+	if parsed == null:
+		return {"error": "Invalid JSON in response"}
+	
+	return parsed

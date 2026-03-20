@@ -242,9 +242,17 @@ func _on_item_list_item_clicked_not_dragged(index: Variant) -> void:
 
 
 func _load_remote_specimen(specimen_id: String, display_name: String) -> void:
-	# Get full metadata from remote_specimens
-	var specimen_data = remote_specimens.get(display_name, {})
-	var specimen_type = specimen_data.get("type", "mesh")
+	# Get basic metadata from cached list
+	var specimen_list_item = remote_specimens.get(display_name, {})
+	var is_dynamic = specimen_list_item.get("is_dynamic", false)
+	
+	# If dynamic, fetch full metadata and show procedural UI
+	if is_dynamic:
+		_load_dynamic_specimen(specimen_id, display_name)
+		return
+	
+	# Otherwise, load static specimen directly
+	var specimen_type = specimen_list_item.get("type", "mesh")
 	
 	# Load the appropriate dynamic specimen scene based on type
 	var scene_path: String
@@ -267,7 +275,7 @@ func _load_remote_specimen(specimen_id: String, display_name: String) -> void:
 		
 		# For volume specimens, we need to download and load the data
 		if specimen_type == "volume":
-			_load_remote_volume(instance, data_url_value, display_name, specimen_data)
+			_load_remote_volume(instance, data_url_value, display_name, specimen_list_item)
 			return
 		
 		# For mesh specimens, set the data URL for lazy loading
@@ -283,7 +291,7 @@ func _load_remote_specimen(specimen_id: String, display_name: String) -> void:
 			instance.display_name = display_name
 		
 		# Set story text if available
-		var story = specimen_data.get("story_text", [])
+		var story = specimen_list_item.get("story_text", [])
 		if "remote_story_text" in instance:
 			instance.remote_story_text = story
 		elif "story_text" in instance:
@@ -364,3 +372,187 @@ func _on_remote_volume_loaded(
 	else:
 		push_error("Invalid volume data from server")
 		instance.queue_free()
+
+
+# ---------------------------------------------------------------------------
+# Dynamic Specimen Support (Procedural UI)
+# ---------------------------------------------------------------------------
+
+var _procedural_ui_instance: Panel = null
+var _current_dynamic_specimen_id: String = ""
+var _current_dynamic_metadata: Dictionary = {}
+
+
+func _load_dynamic_specimen(specimen_id: String, display_name: String) -> void:
+	print_debug("Loading dynamic specimen: %s" % specimen_id)
+	
+	# Fetch full metadata (includes schema)
+	var metadata = await _link_client.fetch_specimen_metadata(specimen_id)
+	
+	if metadata.is_empty() or not metadata.has("schema"):
+		push_error("Failed to fetch metadata for dynamic specimen: %s" % specimen_id)
+		return
+	
+	_current_dynamic_specimen_id = specimen_id
+	_current_dynamic_metadata = metadata
+	
+	# Show procedural UI in SpecimenUIViewport
+	_show_procedural_ui(metadata)
+
+
+func _show_procedural_ui(metadata: Dictionary) -> void:
+	# Get the SpecimenUIViewport
+	var viewport_3d = $/root/Main/SpecimenUIViewport
+	if not viewport_3d:
+		push_error("SpecimenUIViewport not found")
+		return
+	
+	# Access the internal Viewport node
+	var viewport = viewport_3d.get_node_or_null("Viewport")
+	if not viewport:
+		push_error("SpecimenUIViewport/Viewport not found")
+		return
+	
+	# Clear existing UI
+	if _procedural_ui_instance:
+		_procedural_ui_instance.queue_free()
+		_procedural_ui_instance = null
+	
+	# Instantiate ProceduralLinkUI
+	var procedural_ui_scene = preload("res://scenes/UI/procedural_link_ui.tscn")
+	_procedural_ui_instance = procedural_ui_scene.instantiate()
+	
+	# Set the schema
+	_procedural_ui_instance.schema = metadata.get("schema", {})
+	
+	# Connect signals
+	_procedural_ui_instance.ui_accept.connect(_on_procedural_ui_accept)
+	_procedural_ui_instance.get_node("VBoxContainer/ButtonContainer/Button").pressed.connect(_on_procedural_ui_cancel)
+	
+	# Add to viewport
+	viewport.add_child(_procedural_ui_instance)
+	
+	print_debug("Procedural UI shown for: %s" % metadata.get("display_name", ""))
+
+
+func _on_procedural_ui_accept(params: Dictionary) -> void:
+	print_debug("Procedural UI accepted with params: %s" % params)
+	
+	var function_name = _current_dynamic_metadata.get("function_name", "")
+	if function_name.is_empty():
+		push_error("No function_name in specimen metadata")
+		return
+	
+	# Hide the UI while processing
+	if _procedural_ui_instance:
+		_procedural_ui_instance.visible = false
+	
+	# Invoke the processing function
+	var result = await _link_client.invoke_processing_function(function_name, params)
+	
+	# Close the UI
+	if _procedural_ui_instance:
+		_procedural_ui_instance.queue_free()
+		_procedural_ui_instance = null
+	
+	if result.has("error"):
+		push_error("Processing function failed: %s" % result.error)
+		return
+	
+	# Interpret and display the result
+	_display_processing_result(result, _current_dynamic_metadata)
+
+
+func _on_procedural_ui_cancel() -> void:
+	print_debug("Procedural UI cancelled")
+	
+	if _procedural_ui_instance:
+		_procedural_ui_instance.queue_free()
+		_procedural_ui_instance = null
+
+
+func _display_processing_result(result: Dictionary, metadata: Dictionary) -> void:
+	var result_type = result.get("type", "")
+	
+	match result_type:
+		"mesh":
+			_display_mesh_result(result, metadata)
+		"volume":
+			_display_volume_result(result, metadata)
+		"point_cloud":
+			push_warning("Point cloud display not yet implemented")
+		"image":
+			push_warning("Image display not yet implemented")
+		_:
+			push_error("Unknown result type: %s" % result_type)
+
+
+func _display_mesh_result(result: Dictionary, metadata: Dictionary) -> void:
+	var vertices = result.get("vertices", [])
+	var indices = result.get("indices", [])
+	var normals = result.get("normals")
+	
+	if vertices.is_empty() or indices.is_empty():
+		push_error("Invalid mesh data: empty vertices or indices")
+		return
+	
+	print_debug("Creating mesh: %d vertices, %d indices" % [vertices.size(), indices.size()])
+	
+	# Create ArrayMesh
+	var arrays = []
+	arrays.resize(Mesh.ARRAY_MAX)
+	
+	# Convert flat vertices array to Vector3 array
+	var vertex_array = PackedVector3Array()
+	for i in range(0, vertices.size(), 3):
+		vertex_array.append(Vector3(vertices[i], vertices[i+1], vertices[i+2]))
+	arrays[Mesh.ARRAY_VERTEX] = vertex_array
+	
+	# Indices
+	var index_array = PackedInt32Array()
+	for idx in indices:
+		index_array.append(idx)
+	arrays[Mesh.ARRAY_INDEX] = index_array
+	
+	# Normals (if provided)
+	if normals and normals.size() == vertices.size():
+		var normal_array = PackedVector3Array()
+		for i in range(0, normals.size(), 3):
+			normal_array.append(Vector3(normals[i], normals[i+1], normals[i+2]))
+		arrays[Mesh.ARRAY_NORMAL] = normal_array
+	
+	var mesh = ArrayMesh.new()
+	mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arrays)
+	
+	# Load dynamic mesh specimen scene
+	var scene = load("res://specimens/mesh_specimen.tscn")
+	if not scene:
+		push_error("Failed to load mesh_specimen.tscn")
+		return
+	
+	var instance = scene.instantiate()
+	
+	# Set the mesh
+	if instance.has_method("set_mesh"):
+		instance.set_mesh(mesh)
+	elif instance is MeshInstance3D:
+		instance.mesh = mesh
+	elif instance.has_node("MeshInstance3D"):
+		instance.get_node("MeshInstance3D").mesh = mesh
+	else:
+		push_error("Mesh specimen doesn't have a way to set mesh")
+		instance.queue_free()
+		return
+	
+	# Set display name
+	if "display_name" in instance:
+		instance.display_name = metadata.get("display_name", "Generated Mesh")
+	
+	# Load the scene
+	SceneManager.change_3d_scene_instance(instance)
+
+
+func _display_volume_result(result: Dictionary, metadata: Dictionary) -> void:
+	# TODO: Implement volume display from processing result
+	# Will need to decode base64 data, create texture3D, etc.
+	push_warning("Volume display from processing result not yet implemented")
