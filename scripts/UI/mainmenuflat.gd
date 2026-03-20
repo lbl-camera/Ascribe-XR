@@ -27,12 +27,16 @@ func _ready():
 	_link_client.setup(self)
 	_link_client.specimens_loaded.connect(_on_ascribe_link_specimens_loaded)
 	_link_client.request_error.connect(_on_ascribe_link_error)
+	
+	# Start loading local specimens immediately (don't wait for server)
+	# If server responds, it will add/override these
+	scan_and_create_buttons()
 
 
 func _process(dt) -> void:
 	if not _scan_started or not %ItemList.item_count:
 		_scan_started = true
-		# Try Ascribe-Link first
+		# Try Ascribe-Link first (with 2s timeout)
 		if not _ascribe_link_attempted:
 			_ascribe_link_attempted = true
 			_link_client.fetch_specimens()
@@ -77,15 +81,15 @@ func _on_ascribe_link_specimens_loaded(specimens: Array) -> void:
 		if not thumbnail_url.is_empty():
 			_fetch_thumbnail(id, display_name, Config.ascribe_link_url + thumbnail_url)
 	
-	# Also load local specimens as fallback options
-	scan_and_create_buttons()
+	# Note: Local specimens are already loading (started in _ready)
+	# No need to call scan_and_create_buttons() again
 
 
 func _on_ascribe_link_error(error: String) -> void:
-	push_warning("Ascribe-Link unavailable: %s. Falling back to local specimens." % error)
+	push_warning("Ascribe-Link unavailable: %s. Using local specimens only." % error)
 	_ascribe_link_connected = false
-	# Fall back to local scene scanning
-	scan_and_create_buttons()
+	# Note: Local specimens are already loading (started in _ready)
+	# No action needed here - just log that server is unavailable
 
 
 func _fetch_thumbnail(specimen_id: String, display_name: String, url: String) -> void:

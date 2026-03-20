@@ -35,6 +35,10 @@ func fetch_specimens() -> void:
 	if _specimens_request == null:
 		request_error.emit("Client not set up")
 		return
+	
+	# Set a shorter timeout (2 seconds) for quick fallback
+	_specimens_request.timeout = 2.0
+	
 	var url = _base_url + "/api/specimens/"
 	var error = _specimens_request.request(url)
 	if error != OK:
