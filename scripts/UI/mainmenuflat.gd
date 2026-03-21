@@ -19,6 +19,8 @@ var _link_client: AscribeLinkClient
 var _thumbnail_requests: Dictionary = {}  # specimen_id -> HTTPRequest
 
 func _ready():
+	print("MainMenuFlat._ready() - Config.ascribe_link_url = ", Config.ascribe_link_url)
+	
 	for i in range(%ItemList.item_count):
 		%ItemList.set_item_disabled(i, true)
 	
@@ -30,6 +32,7 @@ func _ready():
 	
 	# Start loading local specimens immediately (don't wait for server)
 	# If server responds, it will add/override these
+	print("MainMenuFlat: Starting local specimen scan...")
 	scan_and_create_buttons()
 
 
@@ -39,6 +42,7 @@ func _process(dt) -> void:
 		# Try Ascribe-Link first (with 2s timeout)
 		if not _ascribe_link_attempted:
 			_ascribe_link_attempted = true
+			print("MainMenuFlat: Fetching specimens from ", Config.ascribe_link_url)
 			_link_client.fetch_specimens()
 		else:
 			# Fallback already triggered or waiting
