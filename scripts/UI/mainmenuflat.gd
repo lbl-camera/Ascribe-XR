@@ -256,14 +256,23 @@ func _on_item_list_item_clicked_not_dragged(index: Variant) -> void:
 
 
 func _load_remote_specimen(specimen_id: String, display_name: String) -> void:
+	print("=== _load_remote_specimen called ===")
+	print("specimen_id: %s, display_name: %s" % [specimen_id, display_name])
+	
 	# Get basic metadata from cached list
 	var specimen_list_item = remote_specimens.get(display_name, {})
+	print("specimen_list_item: ", specimen_list_item)
+	
 	var is_dynamic = specimen_list_item.get("is_dynamic", false)
+	print("is_dynamic flag: ", is_dynamic)
 	
 	# If dynamic, fetch full metadata and show procedural UI
 	if is_dynamic:
+		print(">>> DYNAMIC SPECIMEN - calling _load_dynamic_specimen")
 		_load_dynamic_specimen(specimen_id, display_name)
 		return
+	
+	print(">>> STATIC SPECIMEN - loading directly")
 	
 	# Otherwise, load static specimen directly
 	var specimen_type = specimen_list_item.get("type", "mesh")
@@ -398,10 +407,15 @@ var _current_dynamic_metadata: Dictionary = {}
 
 
 func _load_dynamic_specimen(specimen_id: String, display_name: String) -> void:
-	print_debug("Loading dynamic specimen: %s" % specimen_id)
+	print("=== LOADING DYNAMIC SPECIMEN ===")
+	print("Specimen ID: %s" % specimen_id)
+	print("Display Name: %s" % display_name)
 	
 	# Fetch full metadata (includes schema)
 	var metadata = await _link_client.fetch_specimen_metadata(specimen_id)
+	
+	print("Metadata fetched. Has schema: ", metadata.has("schema"))
+	print("Schema: ", metadata.get("schema", {}))
 	
 	if metadata.is_empty() or not metadata.has("schema"):
 		push_error("Failed to fetch metadata for dynamic specimen: %s" % specimen_id)
@@ -410,19 +424,25 @@ func _load_dynamic_specimen(specimen_id: String, display_name: String) -> void:
 	_current_dynamic_specimen_id = specimen_id
 	_current_dynamic_metadata = metadata
 	
+	print("Calling _show_procedural_ui...")
 	# Show procedural UI in SpecimenUIViewport
 	_show_procedural_ui(metadata)
+	print("=== END DYNAMIC SPECIMEN LOAD ===")
 
 
 func _show_procedural_ui(metadata: Dictionary) -> void:
+	print("_show_procedural_ui called")
+	
 	# Get the SpecimenUIViewport
 	var viewport_3d = $/root/Main/SpecimenUIViewport
+	print("SpecimenUIViewport found: ", viewport_3d != null)
 	if not viewport_3d:
 		push_error("SpecimenUIViewport not found")
 		return
 	
 	# Access the internal Viewport node
 	var viewport = viewport_3d.get_node_or_null("Viewport")
+	print("Viewport found: ", viewport != null)
 	if not viewport:
 		push_error("SpecimenUIViewport/Viewport not found")
 		return
