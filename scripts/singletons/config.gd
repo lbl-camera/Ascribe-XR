@@ -6,6 +6,7 @@ extends Node
 @export var webrtcroomname = "ascribe"
 
 ## Ascribe-Link HTTP server URL
-@export var ascribe_link_url = "http://localhost:8000"
+## Use 127.0.0.1 instead of localhost to avoid IPv6 issues on Windows
+@export var ascribe_link_url = "http://127.0.0.1:8000"
 
 const CHUNK_SIZE = 20000
