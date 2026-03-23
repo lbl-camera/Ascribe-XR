@@ -4,23 +4,40 @@ signal ui_accept
 
 @onready var submit_button: Button = $VBoxContainer/ButtonContainer/SubmitButton
 @onready var container = $VBoxContainer/MarginContainer/VBoxContainer
+
+var _schema: Dictionary = {}
+var _schema_pending: bool = false
+
 @export var schema: Dictionary: 
 	set(value):
-		schema = value
-		for keyword in schema['properties'].keys():
-		# print(schema['properties'][keyword])
-			var properties_dict: Dictionary = schema['properties'][keyword]
-			# loop through the inner dictionary
-			var new_label = Label.new()
-			new_label.text = keyword
-			container.add_child(new_label)
-			make_ui(properties_dict) 
+		_schema = value
+		if is_node_ready():
+			_build_ui_from_schema()
+		else:
+			_schema_pending = true
+	get:
+		return _schema
 
 var in_range: bool = false
 var in_drop_down: bool = false
+
 # Called when the node enters the scene tree for the first time.
 func _ready() -> void:
 	submit_button.pressed.connect(on_submit_pressed)
+	if _schema_pending:
+		_build_ui_from_schema()
+		_schema_pending = false
+
+
+func _build_ui_from_schema() -> void:
+	if _schema.is_empty() or not _schema.has('properties'):
+		return
+	for keyword in _schema['properties'].keys():
+		var properties_dict: Dictionary = _schema['properties'][keyword]
+		var new_label = Label.new()
+		new_label.text = keyword
+		container.add_child(new_label)
+		make_ui(properties_dict)
 	#Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
 	#schema = {'$schema': 'https://json-schema.org/draft/2020-12/schema', '$id': 'https://example.com/person.schema.json', 'title': 'ui_test_function', 'type': 'object', 'properties': {'radius': {'type': 'number', 'minimum': 1, 'maximum': 10, 'default': 1.0}, 'segments': {'type': 'number', 'minimum': 3, 'maximum': 128, 'default': 32}, 'style': {'enum': ['smooth', 'faceted'], 'type': 'string', 'default': 'smooth'}, 'hollow': {'type': 'boolean', 'default': 'false'}, 'name': {'type': 'string', 'default': 'brain'}, 'quantity': {'type': 'number', 'default': 0}}}
 
