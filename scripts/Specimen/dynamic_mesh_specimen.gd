@@ -219,6 +219,25 @@ func _on_data_url_completed(result: int, response_code: int, headers: PackedStri
 			ui_instance.get_node("LoadingLayer").hide()
 		return
 
+	# Check Content-Type to determine if response is JSON (dynamic specimen)
+	var content_type = _get_content_type_from_headers(headers)
+	if content_type.begins_with("application/json") or content_type.begins_with("text/json"):
+		# JSON response — parse as mesh/volume data
+		print("DynamicMeshSpecimen: Downloaded %d bytes, parsing as JSON" % body.size())
+		var json_string = body.get_string_from_utf8()
+		var json = JSON.new()
+		var parse_result = json.parse(json_string)
+		if parse_result != OK:
+			push_error("DynamicMeshSpecimen: Failed to parse JSON: %s" % json.get_error_message())
+			if ui_instance:
+				ui_instance.get_node("LoadingLayer").hide()
+			return
+		
+		var result_data = json.get_data()
+		_on_http_data(result_data)
+		return
+
+	# Otherwise, treat as binary file (STL, GLB, etc.)
 	# Determine file extension from Content-Disposition header or URL
 	var file_ext = _get_file_extension_from_headers(headers)
 	if file_ext.is_empty():
@@ -243,6 +262,19 @@ func _on_data_url_completed(result: int, response_code: int, headers: PackedStri
 	# Load the file using the existing pipeline from MeshSpecimen
 	_send_after_load = true
 	_load_file(temp_path)
+
+
+func _get_content_type_from_headers(headers: PackedStringArray) -> String:
+	for header in headers:
+		var lower = header.to_lower()
+		if lower.begins_with("content-type:"):
+			# Extract content type, strip params like charset
+			var value = header.substr(14).strip_edges()  # len("content-type: ") = 14
+			var semicolon = value.find(";")
+			if semicolon != -1:
+				value = value.substr(0, semicolon).strip_edges()
+			return value.to_lower()
+	return ""
 
 
 func _get_file_extension_from_headers(headers: PackedStringArray) -> String:

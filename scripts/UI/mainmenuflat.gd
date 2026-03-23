@@ -70,7 +70,7 @@ func _on_ascribe_link_specimens_loaded(specimens: Array) -> void:
 		if id.is_empty():
 			continue
 		
-		remote_specimens[display_name] = specimen
+		remote_specimens[id] = specimen
 		
 		# Add visual indicator for dynamic specimens
 		var list_label = display_name
@@ -259,8 +259,8 @@ func _load_remote_specimen(specimen_id: String, display_name: String) -> void:
 	print("=== _load_remote_specimen called ===")
 	print("specimen_id: %s, display_name: %s" % [specimen_id, display_name])
 	
-	# Get basic metadata from cached list
-	var specimen_list_item = remote_specimens.get(display_name, {})
+	# Get basic metadata from cached list (keyed by specimen_id, not display_name)
+	var specimen_list_item = remote_specimens.get(specimen_id, {})
 	print("specimen_list_item: ", specimen_list_item)
 	
 	var is_dynamic = specimen_list_item.get("is_dynamic", false)
