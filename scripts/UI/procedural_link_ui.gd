@@ -240,6 +240,9 @@ func _create_mesh_specimen(result: Dictionary) -> Node:
 	var mesh_data = MeshData.new()
 	mesh_data.set_from_dict(result)
 	
+	# Flip normals for proper rendering (PyVista uses opposite winding order)
+	mesh_data.flip_normals = true
+	
 	# Load mesh specimen scene
 	var scene = load("res://specimens/mesh_specimen.tscn")
 	if not scene:
