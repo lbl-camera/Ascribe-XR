@@ -166,12 +166,17 @@ func invoke_processing_function(function_name: String, params: Dictionary, room_
 	_parent.add_child(http)
 	
 	var url = _base_url + "/api/processing/invoke"
-	var body = JSON.stringify({
+	var payload = {
 		"function_name": function_name,
 		"args": [],
 		"kwargs": params,
 		"room_id": room_id
-	})
+	}
+	var body = JSON.stringify(payload)
+	
+	print("invoke_processing_function: URL=%s" % url)
+	print("invoke_processing_function: payload=%s" % payload)
+	print("invoke_processing_function: body=%s" % body)
 	
 	var headers = ["Content-Type: application/json"]
 	var error = http.request(url, headers, HTTPClient.METHOD_POST, body)
