@@ -466,7 +466,7 @@ func _show_procedural_ui(metadata: Dictionary) -> void:
 	# Add to viewport
 	viewport.add_child(_procedural_ui_instance)
 	
-	# Hide the main menu so user can see the form
+	# Hide the main menu so user can see and interact with the form
 	SceneManager.hide_mainmenu()
 	
 	print_debug("Procedural UI shown for: %s" % metadata.get("display_name", ""))
@@ -510,7 +510,6 @@ func _on_procedural_ui_cancel() -> void:
 
 
 func _display_processing_result(result: Dictionary, metadata: Dictionary) -> void:
-	print("_display_processing_result called, type=%s" % result.get("type", "unknown"))
 	var result_type = result.get("type", "")
 	
 	match result_type:
@@ -527,7 +526,6 @@ func _display_processing_result(result: Dictionary, metadata: Dictionary) -> voi
 
 
 func _display_mesh_result(result: Dictionary, metadata: Dictionary) -> void:
-	print("_display_mesh_result called")
 	var vertices = result.get("vertices", [])
 	var indices = result.get("indices", [])
 	var normals = result.get("normals")
@@ -586,9 +584,7 @@ func _display_mesh_result(result: Dictionary, metadata: Dictionary) -> void:
 		instance.display_name = metadata.get("display_name", "Generated Mesh")
 	
 	# Load the scene
-	print("Calling SceneManager.change_3d_scene_instance")
 	SceneManager.change_3d_scene_instance(instance)
-	print("SceneManager.change_3d_scene_instance returned")
 
 
 func _display_volume_result(result: Dictionary, metadata: Dictionary) -> void:
