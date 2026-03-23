@@ -556,8 +556,9 @@ func _display_mesh_result(result: Dictionary, metadata: Dictionary) -> void:
 			normal_array.append(Vector3(normals[i], normals[i+1], normals[i+2]))
 		arrays[Mesh.ARRAY_NORMAL] = normal_array
 	
-	var mesh = ArrayMesh.new()
-	mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arrays)
+	# Create MeshData from result
+	var mesh_data = MeshData.new()
+	mesh_data.set_from_dict(result)
 	
 	# Load dynamic mesh specimen scene
 	var scene = load("res://specimens/mesh_specimen.tscn")
@@ -567,15 +568,11 @@ func _display_mesh_result(result: Dictionary, metadata: Dictionary) -> void:
 	
 	var instance = scene.instantiate()
 	
-	# Set the mesh
-	if instance.has_method("set_mesh"):
-		instance.set_mesh(mesh)
-	elif instance is MeshInstance3D:
-		instance.mesh = mesh
-	elif instance.has_node("MeshInstance3D"):
-		instance.get_node("MeshInstance3D").mesh = mesh
+	# Set the mesh data
+	if instance.has_method("set_mesh_data"):
+		instance.set_mesh_data(mesh_data)
 	else:
-		push_error("Mesh specimen doesn't have a way to set mesh")
+		push_error("Mesh specimen doesn't have set_mesh_data method")
 		instance.queue_free()
 		return
 	

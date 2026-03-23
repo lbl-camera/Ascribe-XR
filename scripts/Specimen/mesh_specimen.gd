@@ -92,6 +92,12 @@ func _on_file_dialog_file_selected(path: String) -> void:
 
 # --- Mesh display ---
 
+## Set mesh from a MeshData object. Used by mainmenu for dynamic specimens.
+func set_mesh_data(data: MeshData) -> void:
+	_mesh_data = data
+	_set_mesh_from_data(data)
+
+
 func _set_mesh_from_data(data: MeshData) -> void:
 	print("MeshSpecimen: Building mesh — verts=%d, indices=%d, normals=%d" % [
 		data.vertices.size(), data.indices.size(), data.normals.size()])
