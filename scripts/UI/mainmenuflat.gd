@@ -466,6 +466,9 @@ func _show_procedural_ui(metadata: Dictionary) -> void:
 	# Add to viewport
 	viewport.add_child(_procedural_ui_instance)
 	
+	# Hide the menu content (but keep this node in tree so callbacks work)
+	$MarginContainer.hide()
+	
 	print_debug("Procedural UI shown for: %s" % metadata.get("display_name", ""))
 
 
