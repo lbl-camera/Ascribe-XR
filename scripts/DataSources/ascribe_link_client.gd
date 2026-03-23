@@ -188,7 +188,7 @@ func invoke_processing_function(function_name: String, params: Dictionary, room_
 	
 	if result != HTTPRequest.RESULT_SUCCESS:
 		return {"error": "Request failed: result=%d" % result}
-	if response_code != 200:
+	if response_code < 200 or response_code >= 300:
 		return {"error": "HTTP %d: %s" % [response_code, response_body.get_string_from_utf8()]}
 	
 	var parsed = JSON.parse_string(response_body.get_string_from_utf8())

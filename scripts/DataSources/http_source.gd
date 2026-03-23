@@ -64,7 +64,7 @@ func _on_request_completed(result: int, response_code: int, _headers: PackedStri
 		source_error.emit("HTTP request failed: result=%d" % result)
 		return
 
-	if response_code != 200:
+	if response_code < 200 or response_code >= 300:
 		var error_text = body.get_string_from_utf8()
 		source_error.emit("HTTP %d: %s" % [response_code, error_text])
 		return
