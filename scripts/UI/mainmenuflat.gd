@@ -456,46 +456,22 @@ func _show_procedural_ui(metadata: Dictionary) -> void:
 	var procedural_ui_scene = preload("res://scenes/UI/procedural_link_ui.tscn")
 	_procedural_ui_instance = procedural_ui_scene.instantiate()
 	
-	# Set the schema
+	# Configure the UI to handle everything itself
 	_procedural_ui_instance.schema = metadata.get("schema", {})
+	_procedural_ui_instance.function_name = metadata.get("function_name", "")
+	_procedural_ui_instance.metadata = metadata
+	_procedural_ui_instance.server_url = Config.ascribe_link_url
 	
-	# Connect signals
-	_procedural_ui_instance.ui_accept.connect(_on_procedural_ui_accept)
+	# Connect cancel button
 	_procedural_ui_instance.get_node("VBoxContainer/ButtonContainer/Button").pressed.connect(_on_procedural_ui_cancel)
 	
 	# Add to viewport
 	viewport.add_child(_procedural_ui_instance)
 	
+	# Now hide the main menu — procedural_link_ui handles everything from here
+	SceneManager.hide_mainmenu()
+	
 	print_debug("Procedural UI shown for: %s" % metadata.get("display_name", ""))
-
-
-func _on_procedural_ui_accept(params: Dictionary) -> void:
-	print_debug("Procedural UI accepted with params: %s" % params)
-	
-	var function_name = _current_dynamic_metadata.get("function_name", "")
-	if function_name.is_empty():
-		push_error("No function_name in specimen metadata")
-		return
-	
-	# Show loading state
-	_show_loading_state()
-	
-	# Invoke the processing function (with room_id for multiplayer caching)
-	var room_id = Config.webrtcroomname if Config.webrtcroomname else "ascribe"
-	var result = await _link_client.invoke_processing_function(function_name, params, room_id)
-	
-	# Close the UI
-	_hide_loading_state()
-	if _procedural_ui_instance:
-		_procedural_ui_instance.queue_free()
-		_procedural_ui_instance = null
-	
-	if result.has("error"):
-		_show_error_message("Processing failed: %s" % result.error)
-		return
-	
-	# Interpret and display the result
-	_display_processing_result(result, _current_dynamic_metadata)
 
 
 func _on_procedural_ui_cancel() -> void:
@@ -504,6 +480,9 @@ func _on_procedural_ui_cancel() -> void:
 	if _procedural_ui_instance:
 		_procedural_ui_instance.queue_free()
 		_procedural_ui_instance = null
+	
+	# Show main menu again
+	SceneManager.show_mainmenu()
 
 
 func _display_processing_result(result: Dictionary, metadata: Dictionary) -> void:
