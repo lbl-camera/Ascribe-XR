@@ -11,6 +11,7 @@ var _threaded_loader: ThreadedLoader  # Kept for OBJ polling in _process
 var specimen_base_scale: float = 1
 static var TABLE_SIZE: float = 1
 var _send_after_load: bool = false  # Whether to RPC-sync after loading
+var _mesh_preloaded: bool = false  # True if mesh was set before entering tree (skip file dialog)
 
 
 func _enter_tree():
@@ -25,6 +26,12 @@ func _enter_tree():
 	if ui_instance:
 		ui_instance.get_node("%FileDialog").file_selected.connect(_on_file_dialog_file_selected)
 		ui_instance.get_node("%MaterialList").item_selected.connect(_on_materiallist_item_selected)
+		
+		# If mesh was preloaded (e.g., from dynamic specimen), hide file dialog
+		if _mesh_preloaded:
+			ui_instance.get_node("%FileDialogLayer").hide()
+			ui_instance.get_node("%SettingsLayer").show()
+			ui_instance.get_node("%MaterialMenu").show()
 
 
 func _process(delta: float) -> void:
@@ -95,6 +102,7 @@ func _on_file_dialog_file_selected(path: String) -> void:
 ## Set mesh from a MeshData object. Used by mainmenu for dynamic specimens.
 func set_mesh_data(data: MeshData) -> void:
 	_mesh_data = data
+	_mesh_preloaded = true
 	_set_mesh_from_data(data)
 
 

@@ -466,6 +466,9 @@ func _show_procedural_ui(metadata: Dictionary) -> void:
 	# Add to viewport
 	viewport.add_child(_procedural_ui_instance)
 	
+	# Hide the main menu so user can see and interact with the form
+	SceneManager.hide_mainmenu()
+	
 	print_debug("Procedural UI shown for: %s" % metadata.get("display_name", ""))
 
 
