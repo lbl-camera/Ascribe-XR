@@ -1,12 +1,24 @@
 extends Panel
 
-signal ui_accept
+signal ui_accept  # Legacy signal, kept for compatibility
+signal loading_started
+signal loading_finished
+signal specimen_loaded(instance: Node)
 
 @onready var submit_button: Button = $VBoxContainer/ButtonContainer/SubmitButton
 @onready var container = $VBoxContainer/MarginContainer/VBoxContainer
 
 var _schema: Dictionary = {}
 var _schema_pending: bool = false
+
+# Processing configuration — set these before adding to tree
+var function_name: String = ""
+var metadata: Dictionary = {}
+var server_url: String = "http://localhost:8000"
+
+# Internal state
+var _link_client: AscribeLinkClient
+var _is_processing: bool = false
 
 @export var schema: Dictionary: 
 	set(value):
@@ -27,6 +39,10 @@ func _ready() -> void:
 	if _schema_pending:
 		_build_ui_from_schema()
 		_schema_pending = false
+	
+	# Initialize HTTP client
+	_link_client = AscribeLinkClient.new(server_url)
+	_link_client.setup(self)
 
 
 func _build_ui_from_schema() -> void:
@@ -156,8 +172,121 @@ func extract_parameters() -> Dictionary:
 	return param_dict
 
 func on_submit_pressed():
+	if _is_processing:
+		return
 	
 	var params = extract_parameters()
+	print("ProceduralLinkUI: Submitting params: ", params)
+	
+	# Emit legacy signal for compatibility
 	ui_accept.emit(params)
-	print(params)
+	
+	# If function_name is set, handle the full flow ourselves
+	if not function_name.is_empty():
+		_process_and_load(params)
+
+
+func _process_and_load(params: Dictionary) -> void:
+	_is_processing = true
+	loading_started.emit()
+	
+	# Hide form, show loading indicator
+	$VBoxContainer.hide()
+	
+	# Get room_id from config
+	var room_id = "ascribe"
+	if Config.webrtcroomname:
+		room_id = Config.webrtcroomname
+	
+	# Invoke the processing function
+	var result = await _link_client.invoke_processing_function(function_name, params, room_id)
+	
+	if result.has("error"):
+		push_error("ProceduralLinkUI: Processing failed: %s" % result.error)
+		_is_processing = false
+		loading_finished.emit()
+		# Show form again on error
+		$VBoxContainer.show()
+		return
+	
+	# Create specimen from result
+	var instance = _create_specimen_from_result(result)
+	if instance:
+		specimen_loaded.emit(instance)
+		SceneManager.change_3d_scene_instance(instance)
+	
+	_is_processing = false
+	loading_finished.emit()
+	
+	# Clean up this UI
+	queue_free()
+
+
+func _create_specimen_from_result(result: Dictionary) -> Node:
+	var result_type = result.get("type", "")
+	
+	match result_type:
+		"mesh":
+			return _create_mesh_specimen(result)
+		"volume":
+			return _create_volume_specimen(result)
+		_:
+			push_error("ProceduralLinkUI: Unknown result type: %s" % result_type)
+			return null
+
+
+func _create_mesh_specimen(result: Dictionary) -> Node:
+	# Create MeshData from result
+	var mesh_data = MeshData.new()
+	mesh_data.set_from_dict(result)
+	
+	# Load mesh specimen scene
+	var scene = load("res://specimens/mesh_specimen.tscn")
+	if not scene:
+		push_error("ProceduralLinkUI: Failed to load mesh_specimen.tscn")
+		return null
+	
+	var instance = scene.instantiate()
+	
+	# Set the mesh data
+	if instance.has_method("set_mesh_data"):
+		instance.set_mesh_data(mesh_data)
+	else:
+		push_error("ProceduralLinkUI: Mesh specimen doesn't have set_mesh_data method")
+		instance.queue_free()
+		return null
+	
+	# Set display name
+	if "display_name" in instance:
+		instance.display_name = metadata.get("display_name", "Generated Mesh")
+	
+	return instance
+
+
+func _create_volume_specimen(result: Dictionary) -> Node:
+	# Create VolumetricData from result
+	var volume_data = VolumetricData.new()
+	volume_data.set_from_dict(result)
+	
+	if not volume_data.is_valid():
+		push_error("ProceduralLinkUI: Invalid volume data")
+		return null
+	
+	# Load volume specimen scene
+	var scene = load("res://specimens/volume_specimen.tscn")
+	if not scene:
+		push_error("ProceduralLinkUI: Failed to load volume_specimen.tscn")
+		return null
+	
+	var instance = scene.instantiate()
+	
+	# Set display name
+	if "display_name" in instance:
+		instance.display_name = metadata.get("display_name", "Generated Volume")
+	
+	# Note: Volume texture needs to be applied after instance enters tree
+	# The caller should handle this via the specimen_loaded signal
+	instance.set_meta("_volume_data", volume_data)
+	
+	return instance
 	
