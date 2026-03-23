@@ -321,6 +321,7 @@ func _load_remote_specimen(specimen_id: String, display_name: String) -> void:
 			instance.story_text = story
 		
 		SceneManager.change_3d_scene_instance(instance)
+		hide()
 	else:
 		push_error("Failed to load dynamic specimen scene: %s" % scene_path)
 
@@ -386,6 +387,7 @@ func _on_remote_volume_loaded(
 		var texture = volume_data.get_data()
 		if texture and instance.has_method("_update_texture"):
 			SceneManager.change_3d_scene_instance(instance)
+			hide()
 			# Wait for instance to enter tree, then update texture
 			await instance.tree_entered
 			instance._update_texture(texture)
@@ -580,8 +582,9 @@ func _display_mesh_result(result: Dictionary, metadata: Dictionary) -> void:
 	if "display_name" in instance:
 		instance.display_name = metadata.get("display_name", "Generated Mesh")
 	
-	# Load the scene
+	# Load the scene and hide this menu
 	SceneManager.change_3d_scene_instance(instance)
+	hide()
 
 
 func _display_volume_result(result: Dictionary, metadata: Dictionary) -> void:
@@ -609,6 +612,7 @@ func _display_volume_result(result: Dictionary, metadata: Dictionary) -> void:
 	var texture = volume_data.get_data()
 	if texture and instance.has_method("_update_texture"):
 		SceneManager.change_3d_scene_instance(instance)
+		hide()
 		# Wait for instance to enter tree, then update texture
 		await instance.tree_entered
 		instance._update_texture(texture)
