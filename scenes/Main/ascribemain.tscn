@@ -207,7 +207,7 @@ viewport_size = Vector2(1152, 648)
 shape = SubResource("BoxShape3D_2r3nh")
 
 [node name="SpecimenUIViewport" parent="." unique_id=1596973923 instance=ExtResource("7_54uq5")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.59675, -3.139)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.8527071, -2.3599367)
 screen_size = Vector2(3, 1.68)
 viewport_size = Vector2(1152, 648)
 transparent = 1
