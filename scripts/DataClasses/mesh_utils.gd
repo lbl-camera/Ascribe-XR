@@ -6,7 +6,8 @@ extends RefCounted
 
 ## Build an ArrayMesh from a dictionary with vertices, indices, and normals.
 ## Accepts both flat arrays (PackedFloat32Array) and PackedVector3Array.
-static func build_mesh(data: Dictionary) -> ArrayMesh:
+## If flip_winding is true, reverses triangle winding order (for back-face culling fix).
+static func build_mesh(data: Dictionary, flip_winding: bool = false) -> ArrayMesh:
 	var vertices = data.get("vertices", PackedVector3Array())
 	var indices = data.get("indices", PackedInt32Array())
 	var normals = data.get("normals", PackedVector3Array())
@@ -35,6 +36,13 @@ static func build_mesh(data: Dictionary) -> ArrayMesh:
 	if indices.size() % 3 != 0:
 		push_error("MeshUtils: Index count (%d) is not a multiple of 3" % indices.size())
 		return null
+
+	# Flip winding order if requested (swap indices 1 and 2 of each triangle)
+	if flip_winding:
+		for i in range(0, indices.size(), 3):
+			var tmp = indices[i + 1]
+			indices[i + 1] = indices[i + 2]
+			indices[i + 2] = tmp
 
 	# Validate and clamp indices to be within bounds
 	var max_idx = vertices.size() - 1

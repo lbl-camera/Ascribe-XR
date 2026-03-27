@@ -18,7 +18,7 @@ func is_valid() -> bool:
 ## Returns a built ArrayMesh (cached after first call).
 func get_data() -> ArrayMesh:
 	if _cached_mesh == null and is_valid():
-		_cached_mesh = MeshUtils.build_mesh(to_dict())
+		_cached_mesh = MeshUtils.build_mesh(to_dict(), flip_normals)
 	return _cached_mesh
 
 
