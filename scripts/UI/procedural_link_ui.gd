@@ -319,8 +319,8 @@ func _create_mesh_specimen(result: Dictionary) -> Node:
 	var mesh_data = MeshData.new()
 	mesh_data.set_from_dict(result)
 	
-	# Flip normals for proper rendering (PyVista uses opposite winding order)
-	mesh_data.flip_normals = true
+	# Don't flip winding - marching cubes already has correct winding
+	mesh_data.flip_normals = false
 	
 	# Load mesh specimen scene
 	var scene = load("res://specimens/mesh_specimen.tscn")
