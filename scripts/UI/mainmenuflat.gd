@@ -83,7 +83,7 @@ func _on_ascribe_link_specimens_loaded(specimens: Array) -> void:
 		
 		# Fetch thumbnail asynchronously
 		if not thumbnail_url.is_empty():
-			_fetch_thumbnail(id, display_name, Config.ascribe_link_url + thumbnail_url)
+			_fetch_thumbnail(id, list_label, Config.ascribe_link_url + thumbnail_url)
 	
 	# Note: Local specimens are already loading (started in _ready)
 	# No need to call scan_and_create_buttons() again
