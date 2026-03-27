@@ -117,6 +117,8 @@ func _set_mesh_from_data(data: MeshData) -> void:
 			ui_instance.get_node("LoadingLayer").hide()
 		return
 
+	print("MeshSpecimen: Mesh AABB = ", mesh.get_aabb())
+
 	var mesh_instance = MeshInstance3D.new()
 	mesh_instance.mesh = mesh
 	mesh_instance.transform = Transform3D.IDENTITY
