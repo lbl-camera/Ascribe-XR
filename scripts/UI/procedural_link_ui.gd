@@ -4,9 +4,10 @@ signal ui_accept  # Legacy signal, kept for compatibility
 signal loading_started
 signal loading_finished
 signal specimen_loaded(instance: Node)
+signal slider_changed(slider)
 
-@onready var submit_button: Button = $VBoxContainer/ButtonContainer/SubmitButton
-@onready var container = $VBoxContainer/MarginContainer/VBoxContainer
+@onready var submit_button: Button = $VBoxContainer/MarginContainer/VBoxContainer2/ButtonContainer/SubmitButton
+@onready var container = $VBoxContainer/MarginContainer/VBoxContainer2/VBoxContainer
 
 var _schema: Dictionary = {}
 var _schema_pending: bool = false
@@ -28,14 +29,21 @@ var _is_processing: bool = false
 		else:
 			_schema_pending = true
 	get:
+		print(_schema)
 		return _schema
 
 var in_range: bool = false
 var in_drop_down: bool = false
+var slider_dict: Dictionary = {}
+var slider_spin_box: SpinBox = null
+var slider_h_box: HBoxContainer = null
+var param_controls: Dictionary = {}
 
 # Called when the node enters the scene tree for the first time.
 func _ready() -> void:
 	submit_button.pressed.connect(on_submit_pressed)
+	#Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
+	#schema = {'$schema': 'https://json-schema.org/draft/2020-12/schema', '$id': 'https://example.com/person.schema.json', 'title': 'ui_test_function', 'type': 'object', 'properties': {'radius': {'type': 'number', 'minimum': 1, 'maximum': 10, 'default': 1.0}, 'segments': {'type': 'number', 'minimum': 3, 'maximum': 128, 'default': 32}, 'style': {'enum': ['smooth', 'faceted'], 'type': 'string', 'default': 'smooth'}, 'hollow': {'type': 'boolean', 'default': 'false'}, 'name': {'type': 'string', 'default': 'brain'}, 'quantity': {'type': 'number', 'default': 0}}}
 	if _schema_pending:
 		_build_ui_from_schema()
 		_schema_pending = false
@@ -46,17 +54,34 @@ func _ready() -> void:
 
 
 func _build_ui_from_schema() -> void:
-	if _schema.is_empty() or not _schema.has('properties'):
+	if _schema.is_empty() or not _schema.has("properties"):
 		return
-	for keyword in _schema['properties'].keys():
-		var properties_dict: Dictionary = _schema['properties'][keyword]
+
+	param_controls.clear()
+
+	for keyword in _schema["properties"].keys():
+		var properties_dict: Dictionary = _schema["properties"][keyword]
 		var new_label = Label.new()
 		new_label.text = keyword
-		container.add_child(new_label)
-		make_ui(properties_dict)
+
+		if properties_dict["type"] == "number" and properties_dict.has("minimum"):
+			slider_h_box = HBoxContainer.new()
+			container.add_child(slider_h_box)
+			slider_h_box.add_child(new_label)
+
+			slider_spin_box = SpinBox.new()
+			if properties_dict.has("default"):
+				slider_spin_box.value = properties_dict["default"]
+			slider_h_box.add_child(slider_spin_box)
+
+			# store the spinbox for now; slider will replace it later
+			param_controls[keyword] = slider_spin_box
+		else:
+			container.add_child(new_label)
+
+		make_ui(properties_dict, keyword)
 	#Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
 	#schema = {'$schema': 'https://json-schema.org/draft/2020-12/schema', '$id': 'https://example.com/person.schema.json', 'title': 'ui_test_function', 'type': 'object', 'properties': {'radius': {'type': 'number', 'minimum': 1, 'maximum': 10, 'default': 1.0}, 'segments': {'type': 'number', 'minimum': 3, 'maximum': 128, 'default': 32}, 'style': {'enum': ['smooth', 'faceted'], 'type': 'string', 'default': 'smooth'}, 'hollow': {'type': 'boolean', 'default': 'false'}, 'name': {'type': 'string', 'default': 'brain'}, 'quantity': {'type': 'number', 'default': 0}}}
-
 
 
 
@@ -68,62 +93,80 @@ func setup_drop_down(enum_possibilities: Array) -> OptionButton:
 	return drop_down
 		
 
-func set_property_types(type, default):
-	# print(type)
+func set_property_types(type, default, param_name: String):
 	match type:
 		"boolean":
 			var check_box = CheckBox.new()
 			container.add_child(check_box)
-			# print(default)
-			# if we want it true to start, godot's checkbox has it as false unless specified
 			if default == "true":
 				check_box.button_pressed = true
+			param_controls[param_name] = check_box
+
 		"number":
-			# if we're in a slider part don't bother
 			if in_range:
 				in_range = false
 				return
-			var spinBox = SpinBox.new()
-			container.add_child(spinBox)
-			spinBox.value = default
+			var spin_box = SpinBox.new()
+			container.add_child(spin_box)
+			spin_box.value = default
+			param_controls[param_name] = spin_box
+
 		"string":
 			if !in_drop_down:
 				var line_edit: LineEdit = LineEdit.new()
 				container.add_child(line_edit)
 				line_edit.text = default
+				param_controls[param_name] = line_edit
 			else:
 				in_drop_down = false
 			
-			
-			
-			
 
-func create_slider(slider_values: Array, initial_position):
+func create_slider(slider_values: Array, initial_position, param_name: String):
 	if initial_position is String:
-		if initial_position == 'true':
+		if initial_position == "true":
 			initial_position = 1.0
-		elif initial_position == 'false':
+		elif initial_position == "false":
 			initial_position = 0.0
 		else:
 			return
-	print(initial_position)
+
 	var slider = HSlider.new()
 	slider.ticks_on_borders = true
+
 	var range_container = HBoxContainer.new()
+
 	slider.min_value = slider_values[0]
+	slider_spin_box.min_value = slider_values[0]
+
 	var min_label = Label.new()
 	min_label.text = str(slider.min_value)
+
 	slider.max_value = slider_values[1]
+	slider_spin_box.max_value = slider_values[1]
+
 	var max_label = Label.new()
 	max_label.text = str(slider.max_value)
+
+	var spacer = Control.new()
+	spacer.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+
 	container.add_child(slider)
 	container.add_child(range_container)
+
 	range_container.add_child(min_label)
+	range_container.add_child(spacer)
 	range_container.add_child(max_label)
-	range_container.add_theme_constant_override("separation", 1080)
+
 	slider.value = initial_position
+	slider_spin_box.value = initial_position
+
+	slider_dict[slider] = slider_spin_box
+	param_controls[param_name] = slider
+
+	slider.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	slider.value_changed.connect(on_slider_value_changed.bind(slider))
+	slider_spin_box.value_changed.connect(on_spinbox_value_changed.bind(slider))
 	# range_container.theme
-	
 	
 
 func _get_default_for_type(properties: Dictionary) -> Variant:
@@ -148,7 +191,7 @@ func _get_default_for_type(properties: Dictionary) -> Variant:
 	return ""
 
 
-func make_ui(properties: Dictionary):
+func make_ui(properties: Dictionary, param_name: String):
 	# from here we can loop the attribute of each property, 
 	# we should get enum, type, or something to indicate range, 
 	# and then we can match off that
@@ -161,37 +204,50 @@ func make_ui(properties: Dictionary):
 				var drop_down_menu = setup_drop_down(properties[property_type])
 				drop_down_menu.selected = properties[property_type].find(default_value)
 				container.add_child(drop_down_menu)
+				param_controls[param_name] = drop_down_menu
+
 			"type":
 				if i + 1 < properties.keys().size():
 					if properties.keys()[i + 1] == "minimum":
 						in_range = true
-				set_property_types(properties[property_type], default_value)
+				set_property_types(properties[property_type], default_value, param_name)
 			"minimum":
 				slider_values.append(properties[property_type])
+
 			"maximum":
 				slider_values.append(properties[property_type])
-				create_slider(slider_values, default_value)
+				create_slider(slider_values, default_value, param_name)
 
 func extract_parameters() -> Dictionary:
 	var param_dict: Dictionary = {}
-	var current_param_name = ""
-	for ui_component in container.get_children():
-		if ui_component is Label:
-			current_param_name = ui_component.text
-		elif ui_component is Slider:
-			param_dict[current_param_name] = ui_component.value
-		elif ui_component is CheckBox:
-			if ui_component.button_pressed:
-				param_dict[current_param_name] = true
-			else:
-				param_dict[current_param_name] = false
-		elif ui_component is OptionButton:
-			param_dict[current_param_name] = ui_component.get_item_text(ui_component.selected)
-		elif ui_component is LineEdit:
-			param_dict[current_param_name] = ui_component.text
-		elif ui_component is SpinBox:
-			param_dict[current_param_name] = ui_component.value
+
+	for param_name in param_controls.keys():
+		var control = param_controls[param_name]
+
+		if control is HSlider:
+			param_dict[param_name] = control.value
+		elif control is SpinBox:
+			param_dict[param_name] = control.value
+		elif control is CheckBox:
+			param_dict[param_name] = control.button_pressed
+		elif control is OptionButton:
+			param_dict[param_name] = control.get_item_text(control.selected)
+		elif control is LineEdit:
+			param_dict[param_name] = control.text
+
 	return param_dict
+
+
+func on_slider_value_changed(new_value: float, slider: HSlider) -> void:
+	if slider_dict.has(slider):
+		var spin_box: SpinBox = slider_dict[slider]
+		spin_box.value = new_value
+	
+func on_spinbox_value_changed(new_value: float, slider: HSlider) -> void:
+	if slider_dict.has(slider):
+		slider.value = new_value
+	
+
 
 func on_submit_pressed():
 	if _is_processing:
@@ -200,7 +256,7 @@ func on_submit_pressed():
 	var params = extract_parameters()
 	print("ProceduralLinkUI: Submitting params: ", params)
 	
-	# Emit legacy signal for compatibility
+	 #Emit legacy signal for compatibility
 	ui_accept.emit(params)
 	
 	# If function_name is set, handle the full flow ourselves

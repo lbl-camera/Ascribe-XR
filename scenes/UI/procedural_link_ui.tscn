@@ -22,19 +22,23 @@ grow_vertical = 2
 layout_mode = 2
 size_flags_vertical = 3
 
-[node name="VBoxContainer" type="VBoxContainer" parent="VBoxContainer/MarginContainer" unique_id=339932609]
+[node name="VBoxContainer2" type="VBoxContainer" parent="VBoxContainer/MarginContainer" unique_id=998015335]
 layout_mode = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="VBoxContainer/MarginContainer/VBoxContainer2" unique_id=339932609]
+layout_mode = 2
+size_flags_vertical = 3
 theme_override_constants/separation = 16
 alignment = 1
 
-[node name="ButtonContainer" type="HBoxContainer" parent="VBoxContainer" unique_id=1842052765]
+[node name="ButtonContainer" type="HBoxContainer" parent="VBoxContainer/MarginContainer/VBoxContainer2" unique_id=1842052765]
 layout_mode = 2
 alignment = 1
 
-[node name="Button" type="Button" parent="VBoxContainer/ButtonContainer" unique_id=856813400]
+[node name="Button" type="Button" parent="VBoxContainer/MarginContainer/VBoxContainer2/ButtonContainer" unique_id=856813400]
 layout_mode = 2
 text = "Cancel"
 
-[node name="SubmitButton" type="Button" parent="VBoxContainer/ButtonContainer" unique_id=1914907815]
+[node name="SubmitButton" type="Button" parent="VBoxContainer/MarginContainer/VBoxContainer2/ButtonContainer" unique_id=1914907815]
 layout_mode = 2
 text = "Submit"
