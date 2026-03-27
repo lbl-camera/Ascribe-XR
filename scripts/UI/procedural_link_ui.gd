@@ -64,7 +64,8 @@ func _build_ui_from_schema() -> void:
 		var new_label = Label.new()
 		new_label.text = keyword
 
-		if properties_dict["type"] == "number" and properties_dict.has("minimum"):
+		var prop_type = properties_dict.get("type", "")
+		if prop_type == "number" and properties_dict.has("minimum"):
 			slider_h_box = HBoxContainer.new()
 			container.add_child(slider_h_box)
 			slider_h_box.add_child(new_label)
