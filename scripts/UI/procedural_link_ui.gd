@@ -126,29 +126,51 @@ func create_slider(slider_values: Array, initial_position):
 	
 	
 
+func _get_default_for_type(properties: Dictionary) -> Variant:
+	# Return explicit default if present
+	if properties.has('default'):
+		return properties['default']
+	
+	# Otherwise infer a sensible default based on type
+	var prop_type = properties.get('type', '')
+	match prop_type:
+		"string":
+			return ""
+		"number":
+			return properties.get('minimum', 0.0)
+		"boolean":
+			return false
+	
+	# For enums, default to first option
+	if properties.has('enum') and properties['enum'].size() > 0:
+		return properties['enum'][0]
+	
+	return ""
+
+
 func make_ui(properties: Dictionary):
 	# from here we can loop the attribute of each property, 
 	# we should get enum, type, or something to indicate range, 
 	# and then we can match off that
-	# print(properties['default'])
+	var default_value = _get_default_for_type(properties)
 	var slider_values = []
 	for i in range(properties.keys().size()):
 		var property_type = properties.keys()[i]
 		match property_type:
 			"enum":
 				var drop_down_menu = setup_drop_down(properties[property_type])
-				drop_down_menu.selected = properties[property_type].find(properties['default'])
+				drop_down_menu.selected = properties[property_type].find(default_value)
 				container.add_child(drop_down_menu)
 			"type":
 				if i + 1 < properties.keys().size():
 					if properties.keys()[i + 1] == "minimum":
 						in_range = true
-				set_property_types(properties[property_type], properties['default'])
+				set_property_types(properties[property_type], default_value)
 			"minimum":
 				slider_values.append(properties[property_type])
 			"maximum":
 				slider_values.append(properties[property_type])
-				create_slider(slider_values, properties['default'])
+				create_slider(slider_values, default_value)
 
 func extract_parameters() -> Dictionary:
 	var param_dict: Dictionary = {}
