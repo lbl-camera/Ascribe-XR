@@ -33,6 +33,7 @@ XRToolsRumbleManager="*uid://by853dk86g1qw"
 XrSimulator="*res://addons/xr-simulator/XRSimulator.tscn"
 SceneManager="*res://scripts/singletons/main.gd"
 Config="*uid://dvwptjg7itnl8"
+MenuManager="*res://scripts/singletons/menu_manager.gd"
 
 [editor]
 
