@@ -74,11 +74,25 @@ func setup(control: Control, options: Dictionary = {}) -> void:
 	if not _grabbable:
 		enabled = false  # XRToolsPickable.enabled — prevents pick_up
 
-	# Add the Control to the viewport
+	# Add the Control to the viewport and wire up the Viewport2DIn3D render
+	# pipeline. Normally Viewport2DIn3D expects a PackedScene set via its
+	# `scene` property. Since we inject an already-instantiated Control, we
+	# need to manually:
+	#  1. Add the control to the SubViewport
+	#  2. Tell Viewport2DIn3D about the scene_node
+	#  3. Force a full render refresh so material + albedo texture are wired
 	var viewport: SubViewport = _viewport_2d.get_node("Viewport")
 	if viewport:
 		control.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 		viewport.add_child(control)
+		viewport.render_target_update_mode = SubViewport.UPDATE_ALWAYS
+
+		# Let Viewport2DIn3D know this is the active scene content
+		_viewport_2d.scene_node = control
+
+		# Force full render update to wire albedo texture onto the screen mesh
+		_viewport_2d._dirty = _viewport_2d._DIRTY_ALL
+		_viewport_2d._update_render()
 
 
 ## Play the open (grow) animation.
