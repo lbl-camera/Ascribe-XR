@@ -63,11 +63,17 @@ func prep_for_new_3d_scene():
 		current_3d_scene = null
 
 func change_3d_scene(new_scene: PackedScene) -> void:
+	var specimen: Specimen = new_scene.instantiate()
+	change_3d_scene_instance(specimen)
+
+
+## Load a pre-instantiated specimen (used for remote Ascribe-Link specimens)
+func change_3d_scene_instance(specimen: Specimen) -> void:
+	print("change_3d_scene_instance called")
 	set_spawner_authority.rpc()
 	prep_for_new_3d_scene.rpc()
 
 	$/root/Main/GPUParticles3D.emitting = true
-	var specimen: Specimen = new_scene.instantiate()
 	specimen.hide()
 
 	current_3d_scene = specimen
@@ -80,6 +86,7 @@ func set_spawner_authority():
 
 @rpc("any_peer", "call_local", "reliable")
 func post_change_3d_scene():
+	print("post_change_3d_scene called")
 	var specimen = null
 	if specimen_spawner.get_multiplayer_authority() == multiplayer.get_unique_id():
 		specimens_root.add_child(current_3d_scene)
@@ -114,8 +121,12 @@ func post_change_3d_scene():
 	hide_mainmenu()
 
 func hide_mainmenu() -> void:
+	print("hide_mainmenu called")
 	if $/root/Main.is_ancestor_of(mainmenu):
+		print("removing mainmenu from tree")
 		$/root/Main.remove_child(mainmenu)
+	else:
+		print("mainmenu not in tree (already hidden or not found)")
 
 func show_mainmenu() -> void:
 	if not $/root/Main.is_ancestor_of(mainmenu):

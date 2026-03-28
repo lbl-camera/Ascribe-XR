@@ -1,75 +1,164 @@
-## Dynamic mesh specimen — loads meshes from Python via MQTT.
-## Uses MQTTSource for the data pipeline.
+## Dynamic mesh specimen — loads meshes from Python via Ascribe-Link HTTP API.
+## Uses HTTPSource for the data pipeline and AscribeLinkClient for catalog.
+## Can also load pre-specified specimen data via data_url (set before _enter_tree).
 extends MeshSpecimen
 
-var _mqtt_source: MQTTSource
-var _mqtt_client: Node
+var _http_source: HTTPSource
+var _link_client: AscribeLinkClient
+var _server_url: String
+
+## Array of function info dicts from /api/processing/functions
+var functions: Array = []
+## Array of specimen info dicts from /api/specimens/
 var specimens: Array = []
+
 var mesh_received: bool = false
+
+## URL to directly fetch specimen data (STL, etc.) — set this before adding to tree.
+## When set, the specimen loads this URL immediately instead of showing the menu.
+@export var data_url: String = ""
+
+## Display name for the specimen (set from menu metadata)
+@export var remote_display_name: String = ""
+
+## Story text for the specimen (set from menu metadata)
+@export var remote_story_text: Array = []
+
+
+func set_data_url(url: String) -> void:
+	data_url = url
 
 
 func _enter_tree() -> void:
 	super()
 
-	_mqtt_client = get_tree().get_root().find_child("MQTT", true, false)
-	if _mqtt_client == null:
-		push_error("DynamicMeshSpecimen: MQTT client not found")
-		return
+	# Get server URL from config
+	_server_url = Config.ascribe_link_url
 
-	# Set up MQTT source for processing requests
-	_mqtt_source = MQTTSource.new()
-	_mqtt_source.setup(_mqtt_client)
-	_mqtt_source.data_available.connect(_on_mqtt_data)
-	_mqtt_source.source_error.connect(func(e): push_error("MQTT: " + e))
+	# Initialize HTTP client for catalog operations
+	_link_client = AscribeLinkClient.new(_server_url)
+	_link_client.setup(self)
+	_link_client.functions_loaded.connect(_on_functions_loaded)
+	_link_client.specimens_loaded.connect(_on_specimens_loaded)
+	_link_client.request_error.connect(func(e): push_error("AscribeLink: " + e))
 
-	# Also subscribe to specimen list responses
-	_mqtt_client.subscribe("python/specimen_responses")
-	_mqtt_client.received_message.connect(_on_raw_mqtt_message)
+	# Initialize HTTP source for mesh processing requests
+	_http_source = HTTPSource.new(_server_url)
+	_http_source.setup(self)
+	_http_source.data_available.connect(_on_http_data)
+	_http_source.source_error.connect(func(e): push_error("HTTPSource: " + e))
 
 	if ui_instance:
 		var specimen_list: ItemList = ui_instance.get_node('%SpecimenList')
 		specimen_list.item_selected.connect(_on_specimen_selected)
 		ui_instance.get_node("%FileDialogLayer").hide()
 
-	_request_specimen_list()
+	# If data_url is set, load directly instead of showing menus
+	if data_url and not data_url.is_empty():
+		_load_from_data_url()
+	else:
+		# Fetch both specimens and functions from the server
+		_link_client.fetch_functions()
+		_link_client.fetch_specimens()
 
 
-func _request_specimen_list() -> void:
-	_mqtt_client.publish("godot/specimen_requests", JSON.stringify(null))
+## Set the Ascribe-Link server URL (call before _enter_tree or use set_server_url).
+func set_server_url(url: String) -> void:
+	_server_url = url
+	if _link_client:
+		_link_client = AscribeLinkClient.new(url)
+		_link_client.setup(self)
+		_link_client.functions_loaded.connect(_on_functions_loaded)
+		_link_client.specimens_loaded.connect(_on_specimens_loaded)
+		_link_client.request_error.connect(func(e): push_error("AscribeLink: " + e))
+	if _http_source:
+		_http_source = HTTPSource.new(url)
+		_http_source.setup(self)
+		_http_source.data_available.connect(_on_http_data)
+		_http_source.source_error.connect(func(e): push_error("HTTPSource: " + e))
+
+
+func _on_functions_loaded(funcs: Array) -> void:
+	functions = funcs
+	# Functions are processing functions (sphere, etc.) — populate menu
+	var names: Array = []
+	for f in funcs:
+		names.append(f.get("name", "unknown"))
+	_generate_specimen_menu(names)
+
+
+func _on_specimens_loaded(specs: Array) -> void:
+	specimens = specs
+	# Curated specimens — could add to a separate menu or combine with functions
+	# For now, we prioritize functions (processing) over curated specimens
 
 
 func _on_specimen_selected(index: int) -> void:
 	if ui_instance:
 		ui_instance.get_node("%SpecimenLayer").hide()
 	mesh_received = false
-	_mqtt_source.set_request({
-		"function_name": specimens[index],
+
+	if index >= functions.size():
+		push_error("Invalid function index: %d" % index)
+		return
+
+	var function_name = functions[index].get("name", "")
+	_http_source.set_request({
+		"function_name": function_name,
 		"args": [],
 		"kwargs": {}
 	})
-	_mqtt_source.fetch()
+	_http_source.fetch()
 
 
-func _on_mqtt_data(result_data: Variant) -> void:
+func _on_http_data(result_data: Variant) -> void:
 	if mesh_received:
 		return
 	if multiplayer.get_unique_id() != 1:
 		return
 
 	mesh_received = true
+	
+	# Check for typed response (new format with 'type' field)
+	if result_data is Dictionary and result_data.has("type"):
+		var data_type: String = result_data.get("type", "mesh")
+		match data_type:
+			"mesh":
+				_handle_mesh_response(result_data)
+			"volume":
+				_handle_volume_response(result_data)
+			_:
+				push_error("DynamicMeshSpecimen: Unsupported data type '%s'" % data_type)
+				mesh_received = false
+	else:
+		# Legacy format (direct mesh data without type field)
+		_handle_mesh_response(result_data)
+
+
+func _handle_mesh_response(result_data: Dictionary) -> void:
 	var data = MeshData.new()
 	data.set_from_dict(result_data)
 	_mesh_data = data
 	_set_and_send_mesh(data)
 
 
-## Handle specimen list responses (separate from the MQTTSource pipeline).
-func _on_raw_mqtt_message(topic: String, message: String) -> void:
-	if topic == "python/specimen_responses":
-		var parsed = JSON.parse_string(message)
-		if parsed and parsed.has("names"):
-			specimens = parsed["names"]
-			_generate_specimen_menu(specimens)
+func _handle_volume_response(result_data: Dictionary) -> void:
+	# Volume data received — we need to switch to volume rendering
+	# For now, convert to mesh using marching cubes client-side, or notify user
+	push_warning("DynamicMeshSpecimen: Received volume data — volume rendering not yet supported in this specimen type")
+	
+	# Store the volume data for potential use
+	var volume_data = VolumetricData.new()
+	volume_data.set_from_dict(result_data)
+	
+	if volume_data.is_valid():
+		# Emit signal or handle volume display
+		# For now, we could try to extract an isosurface
+		print("DynamicMeshSpecimen: Volume loaded: %s" % str(volume_data.get_dimensions()))
+		# TODO: Add marching cubes conversion or switch specimen type
+	
+	if ui_instance:
+		ui_instance.get_node("LoadingLayer").hide()
 
 
 func _generate_specimen_menu(specimen_names: Array) -> void:
@@ -79,3 +168,138 @@ func _generate_specimen_menu(specimen_names: Array) -> void:
 	specimen_list.clear()
 	for specimen_name in specimen_names:
 		specimen_list.add_item(specimen_name)
+
+
+# ---------------------------------------------------------------------------
+# Direct Data URL Loading (for curated specimens from main menu)
+# ---------------------------------------------------------------------------
+
+var _data_http_request: HTTPRequest
+
+
+## Load specimen data directly from a URL (e.g., /api/specimens/{id}/data).
+## Downloads the file and processes it using the existing mesh loading pipeline.
+func _load_from_data_url() -> void:
+	if data_url.is_empty():
+		push_error("DynamicMeshSpecimen: data_url is empty")
+		return
+
+	print("DynamicMeshSpecimen: Loading from URL: %s" % data_url)
+
+	if ui_instance:
+		ui_instance.get_node("LoadingLayer").show()
+		ui_instance.get_node("%SpecimenLayer").hide()
+
+	# Create HTTP request for downloading the file
+	_data_http_request = HTTPRequest.new()
+	_data_http_request.request_completed.connect(_on_data_url_completed)
+	add_child(_data_http_request)
+
+	var err = _data_http_request.request(data_url)
+	if err != OK:
+		push_error("DynamicMeshSpecimen: Failed to start data request: %s" % error_string(err))
+		if ui_instance:
+			ui_instance.get_node("LoadingLayer").hide()
+
+
+func _on_data_url_completed(result: int, response_code: int, headers: PackedStringArray, body: PackedByteArray) -> void:
+	if _data_http_request:
+		_data_http_request.queue_free()
+		_data_http_request = null
+
+	if result != HTTPRequest.RESULT_SUCCESS:
+		push_error("DynamicMeshSpecimen: Data request failed: result=%d" % result)
+		if ui_instance:
+			ui_instance.get_node("LoadingLayer").hide()
+		return
+
+	if response_code != 200:
+		push_error("DynamicMeshSpecimen: Data HTTP %d" % response_code)
+		if ui_instance:
+			ui_instance.get_node("LoadingLayer").hide()
+		return
+
+	# Check Content-Type to determine if response is JSON (dynamic specimen)
+	var content_type = _get_content_type_from_headers(headers)
+	if content_type.begins_with("application/json") or content_type.begins_with("text/json"):
+		# JSON response — parse as mesh/volume data
+		print("DynamicMeshSpecimen: Downloaded %d bytes, parsing as JSON" % body.size())
+		var json_string = body.get_string_from_utf8()
+		var json = JSON.new()
+		var parse_result = json.parse(json_string)
+		if parse_result != OK:
+			push_error("DynamicMeshSpecimen: Failed to parse JSON: %s" % json.get_error_message())
+			if ui_instance:
+				ui_instance.get_node("LoadingLayer").hide()
+			return
+		
+		var result_data = json.get_data()
+		_on_http_data(result_data)
+		return
+
+	# Otherwise, treat as binary file (STL, GLB, etc.)
+	# Determine file extension from Content-Disposition header or URL
+	var file_ext = _get_file_extension_from_headers(headers)
+	if file_ext.is_empty():
+		file_ext = _get_file_extension_from_url(data_url)
+	if file_ext.is_empty():
+		file_ext = "stl"  # Default to STL
+
+	# Save to temp file
+	var temp_path = "user://temp_specimen." + file_ext
+	var file = FileAccess.open(temp_path, FileAccess.WRITE)
+	if not file:
+		push_error("DynamicMeshSpecimen: Failed to create temp file")
+		if ui_instance:
+			ui_instance.get_node("LoadingLayer").hide()
+		return
+
+	file.store_buffer(body)
+	file.close()
+
+	print("DynamicMeshSpecimen: Downloaded %d bytes, loading as .%s" % [body.size(), file_ext])
+
+	# Load the file using the existing pipeline from MeshSpecimen
+	_send_after_load = true
+	_load_file(temp_path)
+
+
+func _get_content_type_from_headers(headers: PackedStringArray) -> String:
+	for header in headers:
+		var lower = header.to_lower()
+		if lower.begins_with("content-type:"):
+			# Extract content type, strip params like charset
+			var value = header.substr(14).strip_edges()  # len("content-type: ") = 14
+			var semicolon = value.find(";")
+			if semicolon != -1:
+				value = value.substr(0, semicolon).strip_edges()
+			return value.to_lower()
+	return ""
+
+
+func _get_file_extension_from_headers(headers: PackedStringArray) -> String:
+	for header in headers:
+		var lower = header.to_lower()
+		if lower.begins_with("content-disposition:"):
+			# Look for filename="something.ext"
+			var start = header.find('filename="')
+			if start != -1:
+				start += 10  # len('filename="')
+				var end = header.find('"', start)
+				if end != -1:
+					var filename = header.substr(start, end - start)
+					return filename.get_extension().to_lower()
+	return ""
+
+
+func _get_file_extension_from_url(url: String) -> String:
+	# Remove query params
+	var path = url.split("?")[0]
+	# Get the last path segment
+	var segments = path.split("/")
+	if segments.size() > 0:
+		var filename = segments[-1]
+		var ext = filename.get_extension()
+		if ext:
+			return ext.to_lower()
+	return ""

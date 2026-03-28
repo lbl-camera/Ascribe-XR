@@ -1,6 +1,6 @@
 [gd_scene format=3 uid="uid://dbp3m7l7qf3o7"]
 
-[ext_resource type="Script" uid="uid://cs26pyb0svycm" path="res://scenes/UI/story_ui.gd" id="1_kueut"]
+[ext_resource type="Script" uid="uid://cs26pyb0svycm" path="res://scripts/UI/story_ui.gd" id="1_kueut"]
 
 [node name="StoryUI" type="Control" unique_id=895292596]
 visible = false

@@ -1,0 +1,374 @@
+extends Panel
+
+signal ui_accept  # Legacy signal, kept for compatibility
+signal loading_started
+signal loading_finished
+signal specimen_loaded(instance: Node)
+signal slider_changed(slider)
+
+@onready var submit_button: Button = $VBoxContainer/MarginContainer/VBoxContainer2/ButtonContainer/SubmitButton
+@onready var container = $VBoxContainer/MarginContainer/VBoxContainer2/VBoxContainer
+
+var _schema: Dictionary = {}
+var _schema_pending: bool = false
+
+# Processing configuration — set these before adding to tree
+var function_name: String = ""
+var metadata: Dictionary = {}
+var server_url: String = "http://localhost:8000"
+
+# Internal state
+var _link_client: AscribeLinkClient
+var _is_processing: bool = false
+
+@export var schema: Dictionary: 
+	set(value):
+		_schema = value
+		if is_node_ready():
+			_build_ui_from_schema()
+		else:
+			_schema_pending = true
+	get:
+		print(_schema)
+		return _schema
+
+var in_range: bool = false
+var in_drop_down: bool = false
+var slider_dict: Dictionary = {}
+var slider_spin_box: SpinBox = null
+var slider_h_box: HBoxContainer = null
+var param_controls: Dictionary = {}
+
+# Called when the node enters the scene tree for the first time.
+func _ready() -> void:
+	submit_button.pressed.connect(on_submit_pressed)
+	#Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
+	#schema = {'$schema': 'https://json-schema.org/draft/2020-12/schema', '$id': 'https://example.com/person.schema.json', 'title': 'ui_test_function', 'type': 'object', 'properties': {'radius': {'type': 'number', 'minimum': 1, 'maximum': 10, 'default': 1.0}, 'segments': {'type': 'number', 'minimum': 3, 'maximum': 128, 'default': 32}, 'style': {'enum': ['smooth', 'faceted'], 'type': 'string', 'default': 'smooth'}, 'hollow': {'type': 'boolean', 'default': 'false'}, 'name': {'type': 'string', 'default': 'brain'}, 'quantity': {'type': 'number', 'default': 0}}}
+	if _schema_pending:
+		_build_ui_from_schema()
+		_schema_pending = false
+	
+	# Initialize HTTP client
+	_link_client = AscribeLinkClient.new(server_url)
+	_link_client.setup(self)
+
+
+func _build_ui_from_schema() -> void:
+	if _schema.is_empty() or not _schema.has("properties"):
+		return
+
+	param_controls.clear()
+
+	for keyword in _schema["properties"].keys():
+		var properties_dict: Dictionary = _schema["properties"][keyword]
+		var new_label = Label.new()
+		new_label.text = keyword
+
+		var prop_type = properties_dict.get("type", "")
+		if prop_type == "number" and properties_dict.has("minimum"):
+			slider_h_box = HBoxContainer.new()
+			container.add_child(slider_h_box)
+			slider_h_box.add_child(new_label)
+
+			slider_spin_box = SpinBox.new()
+			if properties_dict.has("default"):
+				slider_spin_box.value = properties_dict["default"]
+			slider_h_box.add_child(slider_spin_box)
+
+			# store the spinbox for now; slider will replace it later
+			param_controls[keyword] = slider_spin_box
+		else:
+			container.add_child(new_label)
+
+		make_ui(properties_dict, keyword)
+	#Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
+	#schema = {'$schema': 'https://json-schema.org/draft/2020-12/schema', '$id': 'https://example.com/person.schema.json', 'title': 'ui_test_function', 'type': 'object', 'properties': {'radius': {'type': 'number', 'minimum': 1, 'maximum': 10, 'default': 1.0}, 'segments': {'type': 'number', 'minimum': 3, 'maximum': 128, 'default': 32}, 'style': {'enum': ['smooth', 'faceted'], 'type': 'string', 'default': 'smooth'}, 'hollow': {'type': 'boolean', 'default': 'false'}, 'name': {'type': 'string', 'default': 'brain'}, 'quantity': {'type': 'number', 'default': 0}}}
+
+
+
+func setup_drop_down(enum_possibilities: Array) -> OptionButton:
+	var drop_down: OptionButton = OptionButton.new()
+	in_drop_down = true
+	for possibility in enum_possibilities:
+		drop_down.add_item(possibility)
+	return drop_down
+		
+
+func set_property_types(type, default, param_name: String):
+	match type:
+		"boolean":
+			var check_box = CheckBox.new()
+			container.add_child(check_box)
+			if default == "true":
+				check_box.button_pressed = true
+			param_controls[param_name] = check_box
+
+		"number":
+			if in_range:
+				in_range = false
+				return
+			var spin_box = SpinBox.new()
+			container.add_child(spin_box)
+			spin_box.value = default
+			param_controls[param_name] = spin_box
+
+		"string":
+			if !in_drop_down:
+				var line_edit: LineEdit = LineEdit.new()
+				container.add_child(line_edit)
+				line_edit.text = default
+				param_controls[param_name] = line_edit
+			else:
+				in_drop_down = false
+			
+
+func create_slider(slider_values: Array, initial_position, param_name: String):
+	if initial_position is String:
+		if initial_position == "true":
+			initial_position = 1.0
+		elif initial_position == "false":
+			initial_position = 0.0
+		else:
+			return
+
+	var slider = HSlider.new()
+	slider.ticks_on_borders = true
+
+	var range_container = HBoxContainer.new()
+
+	slider.min_value = slider_values[0]
+	slider_spin_box.min_value = slider_values[0]
+
+	var min_label = Label.new()
+	min_label.text = str(slider.min_value)
+
+	slider.max_value = slider_values[1]
+	slider_spin_box.max_value = slider_values[1]
+
+	var max_label = Label.new()
+	max_label.text = str(slider.max_value)
+
+	var spacer = Control.new()
+	spacer.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+
+	container.add_child(slider)
+	container.add_child(range_container)
+
+	range_container.add_child(min_label)
+	range_container.add_child(spacer)
+	range_container.add_child(max_label)
+
+	slider.value = initial_position
+	slider_spin_box.value = initial_position
+
+	slider_dict[slider] = slider_spin_box
+	param_controls[param_name] = slider
+
+	slider.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	slider.value_changed.connect(on_slider_value_changed.bind(slider))
+	slider_spin_box.value_changed.connect(on_spinbox_value_changed.bind(slider))
+	# range_container.theme
+	
+
+func _get_default_for_type(properties: Dictionary) -> Variant:
+	# Return explicit default if present
+	if properties.has('default'):
+		return properties['default']
+	
+	# Otherwise infer a sensible default based on type
+	var prop_type = properties.get('type', '')
+	match prop_type:
+		"string":
+			return ""
+		"number":
+			return properties.get('minimum', 0.0)
+		"boolean":
+			return false
+	
+	# For enums, default to first option
+	if properties.has('enum') and properties['enum'].size() > 0:
+		return properties['enum'][0]
+	
+	return ""
+
+
+func make_ui(properties: Dictionary, param_name: String):
+	# from here we can loop the attribute of each property, 
+	# we should get enum, type, or something to indicate range, 
+	# and then we can match off that
+	var default_value = _get_default_for_type(properties)
+	var slider_values = []
+	for i in range(properties.keys().size()):
+		var property_type = properties.keys()[i]
+		match property_type:
+			"enum":
+				var drop_down_menu = setup_drop_down(properties[property_type])
+				drop_down_menu.selected = properties[property_type].find(default_value)
+				container.add_child(drop_down_menu)
+				param_controls[param_name] = drop_down_menu
+
+			"type":
+				if i + 1 < properties.keys().size():
+					if properties.keys()[i + 1] == "minimum":
+						in_range = true
+				set_property_types(properties[property_type], default_value, param_name)
+			"minimum":
+				slider_values.append(properties[property_type])
+
+			"maximum":
+				slider_values.append(properties[property_type])
+				create_slider(slider_values, default_value, param_name)
+
+func extract_parameters() -> Dictionary:
+	var param_dict: Dictionary = {}
+
+	for param_name in param_controls.keys():
+		var control = param_controls[param_name]
+
+		if control is HSlider:
+			param_dict[param_name] = control.value
+		elif control is SpinBox:
+			param_dict[param_name] = control.value
+		elif control is CheckBox:
+			param_dict[param_name] = control.button_pressed
+		elif control is OptionButton:
+			param_dict[param_name] = control.get_item_text(control.selected)
+		elif control is LineEdit:
+			param_dict[param_name] = control.text
+
+	return param_dict
+
+
+func on_slider_value_changed(new_value: float, slider: HSlider) -> void:
+	if slider_dict.has(slider):
+		var spin_box: SpinBox = slider_dict[slider]
+		spin_box.value = new_value
+	
+func on_spinbox_value_changed(new_value: float, slider: HSlider) -> void:
+	if slider_dict.has(slider):
+		slider.value = new_value
+	
+
+
+func on_submit_pressed():
+	if _is_processing:
+		return
+	
+	var params = extract_parameters()
+	print("ProceduralLinkUI: Submitting params: ", params)
+	
+	 #Emit legacy signal for compatibility
+	ui_accept.emit(params)
+	
+	# If function_name is set, handle the full flow ourselves
+	if not function_name.is_empty():
+		_process_and_load(params)
+
+
+func _process_and_load(params: Dictionary) -> void:
+	_is_processing = true
+	loading_started.emit()
+	
+	# Hide form, show loading indicator
+	$VBoxContainer.hide()
+	
+	# Get room_id from config
+	var room_id = "ascribe"
+	if Config.webrtcroomname:
+		room_id = Config.webrtcroomname
+	
+	# Invoke the processing function
+	var result = await _link_client.invoke_processing_function(function_name, params, room_id)
+	
+	if result.has("error"):
+		push_error("ProceduralLinkUI: Processing failed: %s" % result.error)
+		_is_processing = false
+		loading_finished.emit()
+		# Show form again on error
+		$VBoxContainer.show()
+		return
+	
+	# Create specimen from result
+	var instance = _create_specimen_from_result(result)
+	if instance:
+		specimen_loaded.emit(instance)
+		SceneManager.change_3d_scene_instance(instance)
+	
+	_is_processing = false
+	loading_finished.emit()
+	
+	# Clean up this UI
+	queue_free()
+
+
+func _create_specimen_from_result(result: Dictionary) -> Node:
+	var result_type = result.get("type", "")
+	
+	match result_type:
+		"mesh":
+			return _create_mesh_specimen(result)
+		"volume":
+			return _create_volume_specimen(result)
+		_:
+			push_error("ProceduralLinkUI: Unknown result type: %s" % result_type)
+			return null
+
+
+func _create_mesh_specimen(result: Dictionary) -> Node:
+	# Create MeshData from result
+	var mesh_data = MeshData.new()
+	mesh_data.set_from_dict(result)
+	
+	# Don't flip winding - marching cubes already has correct winding
+	mesh_data.flip_normals = false
+	
+	# Load mesh specimen scene
+	var scene = load("res://specimens/mesh_specimen.tscn")
+	if not scene:
+		push_error("ProceduralLinkUI: Failed to load mesh_specimen.tscn")
+		return null
+	
+	var instance = scene.instantiate()
+	
+	# Set the mesh data
+	if instance.has_method("set_mesh_data"):
+		instance.set_mesh_data(mesh_data)
+	else:
+		push_error("ProceduralLinkUI: Mesh specimen doesn't have set_mesh_data method")
+		instance.queue_free()
+		return null
+	
+	# Set display name
+	if "display_name" in instance:
+		instance.display_name = metadata.get("display_name", "Generated Mesh")
+	
+	return instance
+
+
+func _create_volume_specimen(result: Dictionary) -> Node:
+	# Create VolumetricData from result
+	var volume_data = VolumetricData.new()
+	volume_data.set_from_dict(result)
+	
+	if not volume_data.is_valid():
+		push_error("ProceduralLinkUI: Invalid volume data")
+		return null
+	
+	# Load volume specimen scene
+	var scene = load("res://specimens/volume_specimen.tscn")
+	if not scene:
+		push_error("ProceduralLinkUI: Failed to load volume_specimen.tscn")
+		return null
+	
+	var instance = scene.instantiate()
+	
+	# Set display name
+	if "display_name" in instance:
+		instance.display_name = metadata.get("display_name", "Generated Volume")
+	
+	# Note: Volume texture needs to be applied after instance enters tree
+	# The caller should handle this via the specimen_loaded signal
+	instance.set_meta("_volume_data", volume_data)
+	
+	return instance
+	

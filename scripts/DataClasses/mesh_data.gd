@@ -18,13 +18,15 @@ func is_valid() -> bool:
 ## Returns a built ArrayMesh (cached after first call).
 func get_data() -> ArrayMesh:
 	if _cached_mesh == null and is_valid():
-		_cached_mesh = MeshUtils.build_mesh(to_dict())
+		_cached_mesh = MeshUtils.build_mesh(to_dict(), flip_normals)
 	return _cached_mesh
 
 
 ## Set data from a dictionary (as received from network or loaders).
-## Expects {"vertices": [...], "indices": [...], "normals": [...]}
+## Supports both legacy format {"vertices": [...], "indices": [...]}
+## and typed format {"type": "mesh", "vertices": [...], "indices": [...]}
 func set_from_dict(data: Dictionary) -> void:
+	# Handle typed format (ignore 'type' field, it's just for routing)
 	var v = data.get("vertices", PackedFloat32Array())
 	var i = data.get("indices", PackedInt32Array())
 	var n = data.get("normals", PackedFloat32Array())
