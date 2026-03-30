@@ -10,35 +10,31 @@ grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_8ysoh")
 
-[node name="VBoxContainer" type="VBoxContainer" parent="." unique_id=2122562817]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-
-[node name="MarginContainer" type="MarginContainer" parent="VBoxContainer" unique_id=2072880395]
-layout_mode = 2
+[node name="MarginContainer" type="MarginContainer" parent="." unique_id=2072880395]
+layout_mode = 0
+offset_right = 1152.0
+offset_bottom = 648.0
 size_flags_vertical = 3
 
-[node name="VBoxContainer2" type="VBoxContainer" parent="VBoxContainer/MarginContainer" unique_id=998015335]
+[node name="VBoxContainer2" type="VBoxContainer" parent="MarginContainer" unique_id=998015335]
 layout_mode = 2
 
-[node name="VBoxContainer" type="VBoxContainer" parent="VBoxContainer/MarginContainer/VBoxContainer2" unique_id=339932609]
+[node name="ProceduralForm" type="GridContainer" parent="MarginContainer/VBoxContainer2" unique_id=856892534]
+unique_name_in_owner = true
 layout_mode = 2
 size_flags_vertical = 3
-theme_override_constants/separation = 16
-alignment = 1
+columns = 2
 
-[node name="ButtonContainer" type="HBoxContainer" parent="VBoxContainer/MarginContainer/VBoxContainer2" unique_id=1842052765]
+[node name="ButtonContainer" type="HBoxContainer" parent="MarginContainer/VBoxContainer2" unique_id=1842052765]
 layout_mode = 2
 alignment = 1
 
-[node name="Button" type="Button" parent="VBoxContainer/MarginContainer/VBoxContainer2/ButtonContainer" unique_id=856813400]
+[node name="Button" type="Button" parent="MarginContainer/VBoxContainer2/ButtonContainer" unique_id=856813400]
+unique_name_in_owner = true
 layout_mode = 2
 text = "Cancel"
 
-[node name="SubmitButton" type="Button" parent="VBoxContainer/MarginContainer/VBoxContainer2/ButtonContainer" unique_id=1914907815]
+[node name="SubmitButton" type="Button" parent="MarginContainer/VBoxContainer2/ButtonContainer" unique_id=1914907815]
+unique_name_in_owner = true
 layout_mode = 2
 text = "Submit"
