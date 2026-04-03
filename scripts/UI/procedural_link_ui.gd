@@ -42,15 +42,15 @@ var param_controls: Dictionary = {}
 # Called when the node enters the scene tree for the first time.
 func _ready() -> void:
 	submit_button.pressed.connect(on_submit_pressed)
-	#Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
-	#schema = {'$schema': 'https://json-schema.org/draft/2020-12/schema', '$id': 'https://example.com/person.schema.json', 'title': 'ui_test_function', 'type': 'object', 'properties': {'radius': {'type': 'number', 'minimum': 1, 'maximum': 10, 'default': 1.0}, 'segments': {'type': 'number', 'minimum': 3, 'maximum': 128, 'default': 32}, 'style': {'enum': ['smooth', 'faceted'], 'type': 'string', 'default': 'smooth'}, 'hollow': {'type': 'boolean', 'default': 'false'}, 'name': {'type': 'string', 'default': 'brain'}, 'quantity': {'type': 'number', 'default': 0}}}
-	if _schema_pending:
-		_build_ui_from_schema()
-		_schema_pending = false
-	
-	# Initialize HTTP client
-	_link_client = AscribeLinkClient.new(server_url)
-	_link_client.setup(self)
+	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
+	schema = {'$schema': 'https://json-schema.org/draft/2020-12/schema', '$id': 'https://example.com/person.schema.json', 'title': 'ui_test_function', 'type': 'object', 'properties': {'radius': {'type': 'number', 'minimum': 1, 'maximum': 10, 'default': 1.0}, 'segments': {'type': 'number', 'minimum': 3, 'maximum': 128, 'default': 32}, 'style': {'enum': ['smooth', 'faceted'], 'type': 'string', 'default': 'smooth'}, 'hollow': {'type': 'boolean', 'default': 'false'}, 'name': {'type': 'string', 'default': 'brain'}, 'quantity': {'type': 'number', 'default': 0}}}
+	#if _schema_pending:
+		#_build_ui_from_schema()
+		#_schema_pending = false
+	#
+	## Initialize HTTP client
+	#_link_client = AscribeLinkClient.new(server_url)
+	#_link_client.setup(self)
 
 
 func _build_ui_from_schema() -> void:
@@ -62,26 +62,12 @@ func _build_ui_from_schema() -> void:
 	for keyword in _schema["properties"].keys():
 		var properties_dict: Dictionary = _schema["properties"][keyword]
 		var new_label = Label.new()
+		
 		new_label.text = keyword
-
-		var prop_type = properties_dict.get("type", "")
-		# if the property types
-			
-		if prop_type == "number" and properties_dict.has("minimum"):
-			slider_h_box = HBoxContainer.new()
-			container.add_child(slider_h_box)
-			slider_h_box.add_child(new_label)
-
-			slider_spin_box = SpinBox.new()
-			if properties_dict.has("default"):
-				slider_spin_box.value = properties_dict["default"]
-			slider_h_box.add_child(slider_spin_box)
-
-			# store the spinbox for now; slider will replace it later
-			param_controls[keyword] = slider_spin_box
-		else:
-			container.add_child(new_label)
-
+		new_label.text = new_label.text.capitalize()
+		container.add_child(new_label)
+		new_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+		new_label.size_flags_vertical = Control.SIZE_SHRINK_CENTER 
 		make_ui(properties_dict, keyword)
 	#Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
 	#schema = {'$schema': 'https://json-schema.org/draft/2020-12/schema', '$id': 'https://example.com/person.schema.json', 'title': 'ui_test_function', 'type': 'object', 'properties': {'radius': {'type': 'number', 'minimum': 1, 'maximum': 10, 'default': 1.0}, 'segments': {'type': 'number', 'minimum': 3, 'maximum': 128, 'default': 32}, 'style': {'enum': ['smooth', 'faceted'], 'type': 'string', 'default': 'smooth'}, 'hollow': {'type': 'boolean', 'default': 'false'}, 'name': {'type': 'string', 'default': 'brain'}, 'quantity': {'type': 'number', 'default': 0}}}
@@ -90,6 +76,7 @@ func _build_ui_from_schema() -> void:
 
 func setup_drop_down(enum_possibilities: Array) -> OptionButton:
 	var drop_down: OptionButton = OptionButton.new()
+	drop_down.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
 	in_drop_down = true
 	for possibility in enum_possibilities:
 		drop_down.add_item(possibility)
@@ -112,6 +99,7 @@ func set_property_types(type, default, param_name: String):
 			var spin_box = SpinBox.new()
 			container.add_child(spin_box)
 			spin_box.value = default
+			spin_box.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
 			param_controls[param_name] = spin_box
 
 		"string":
@@ -125,6 +113,12 @@ func set_property_types(type, default, param_name: String):
 			
 
 func create_slider(slider_values: Array, initial_position, param_name: String):
+	# grid container for the slider itself, the spinbox, and the range container
+	var slider_grid: GridContainer = GridContainer.new()
+	slider_grid.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	slider_grid.columns = 2
+	slider_grid.add_theme_constant_override("h_separation", 8)
+	slider_grid.add_theme_constant_override("v_separation", 1)
 	if initial_position is String:
 		if initial_position == "true":
 			initial_position = 1.0
@@ -136,26 +130,25 @@ func create_slider(slider_values: Array, initial_position, param_name: String):
 	var slider = HSlider.new()
 	slider.ticks_on_borders = true
 
-	var range_container = HBoxContainer.new()
-
+	# set up slider and spin box
+	slider_spin_box = SpinBox.new()
 	slider.min_value = slider_values[0]
 	slider_spin_box.min_value = slider_values[0]
 
 	var min_label = Label.new()
 	min_label.text = str(slider.min_value)
-
 	slider.max_value = slider_values[1]
 	slider_spin_box.max_value = slider_values[1]
-
+	slider_grid.add_child(slider)
+	slider_grid.add_child(slider_spin_box)
 	var max_label = Label.new()
 	max_label.text = str(slider.max_value)
 
 	var spacer = Control.new()
 	spacer.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 
-	container.add_child(slider)
-	container.add_child(range_container)
-
+	var range_container = HBoxContainer.new()
+	slider_grid.add_child(range_container)
 	range_container.add_child(min_label)
 	range_container.add_child(spacer)
 	range_container.add_child(max_label)
@@ -165,8 +158,9 @@ func create_slider(slider_values: Array, initial_position, param_name: String):
 
 	slider_dict[slider] = slider_spin_box
 	param_controls[param_name] = slider
-
+	
 	slider.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	container.add_child(slider_grid)
 	slider.value_changed.connect(on_slider_value_changed.bind(slider))
 	slider_spin_box.value_changed.connect(on_spinbox_value_changed.bind(slider))
 	# range_container.theme
@@ -210,9 +204,8 @@ func make_ui(properties: Dictionary, param_name: String):
 				param_controls[param_name] = drop_down_menu
 
 			"type":
-				if i + 1 < properties.keys().size():
-					if properties.keys()[i + 1] == "minimum":
-						in_range = true
+				if properties.has("minimum"):
+					in_range = true
 				set_property_types(properties[property_type], default_value, param_name)
 			"minimum":
 				slider_values.append(properties[property_type])

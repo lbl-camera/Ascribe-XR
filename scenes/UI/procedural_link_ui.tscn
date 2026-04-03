@@ -9,6 +9,7 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_8ysoh")
+schema = null
 
 [node name="MarginContainer" type="MarginContainer" parent="." unique_id=2072880395]
 layout_mode = 0
@@ -23,6 +24,8 @@ layout_mode = 2
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_vertical = 3
+theme_override_constants/h_separation = 40
+theme_override_constants/v_separation = 8
 columns = 2
 
 [node name="ButtonContainer" type="HBoxContainer" parent="MarginContainer/VBoxContainer2" unique_id=1842052765]
