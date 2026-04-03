@@ -7,7 +7,7 @@ signal specimen_loaded(instance: Node)
 signal slider_changed(slider)
 
 @onready var submit_button: Button = %SubmitButton
-@onready var container = %ProceduralForm
+@onready var proc_ui_container = %ProceduralForm
 
 var _schema: Dictionary = {}
 var _schema_pending: bool = false
@@ -38,6 +38,7 @@ var slider_dict: Dictionary = {}
 var slider_spin_box: SpinBox = null
 var slider_h_box: HBoxContainer = null
 var param_controls: Dictionary = {}
+var current_container: Container
 
 # Called when the node enters the scene tree for the first time.
 func _ready() -> void:
@@ -60,15 +61,23 @@ func _build_ui_from_schema() -> void:
 	param_controls.clear()
 
 	for keyword in _schema["properties"].keys():
+		
 		var properties_dict: Dictionary = _schema["properties"][keyword]
 		var new_label = Label.new()
-		
+		current_container = HBoxContainer.new()
+		current_container.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		current_container.add_theme_constant_override("separation", 50)
 		new_label.text = keyword
+		new_label.custom_minimum_size.x = 120
 		new_label.text = new_label.text.capitalize()
-		container.add_child(new_label)
 		new_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 		new_label.size_flags_vertical = Control.SIZE_SHRINK_CENTER 
+		current_container.add_child(new_label)
 		make_ui(properties_dict, keyword)
+		proc_ui_container.add_child(current_container)
+		var separator: HSeparator = HSeparator.new()
+		separator.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		proc_ui_container.add_child(separator)
 	#Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
 	#schema = {'$schema': 'https://json-schema.org/draft/2020-12/schema', '$id': 'https://example.com/person.schema.json', 'title': 'ui_test_function', 'type': 'object', 'properties': {'radius': {'type': 'number', 'minimum': 1, 'maximum': 10, 'default': 1.0}, 'segments': {'type': 'number', 'minimum': 3, 'maximum': 128, 'default': 32}, 'style': {'enum': ['smooth', 'faceted'], 'type': 'string', 'default': 'smooth'}, 'hollow': {'type': 'boolean', 'default': 'false'}, 'name': {'type': 'string', 'default': 'brain'}, 'quantity': {'type': 'number', 'default': 0}}}
 
@@ -87,7 +96,7 @@ func set_property_types(type, default, param_name: String):
 	match type:
 		"boolean":
 			var check_box = CheckBox.new()
-			container.add_child(check_box)
+			current_container.add_child(check_box)
 			if default == "true":
 				check_box.button_pressed = true
 			param_controls[param_name] = check_box
@@ -97,7 +106,7 @@ func set_property_types(type, default, param_name: String):
 				in_range = false
 				return
 			var spin_box = SpinBox.new()
-			container.add_child(spin_box)
+			current_container.add_child(spin_box)
 			spin_box.value = default
 			spin_box.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
 			param_controls[param_name] = spin_box
@@ -105,7 +114,8 @@ func set_property_types(type, default, param_name: String):
 		"string":
 			if !in_drop_down:
 				var line_edit: LineEdit = LineEdit.new()
-				container.add_child(line_edit)
+				line_edit.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+				current_container.add_child(line_edit)
 				line_edit.text = default
 				param_controls[param_name] = line_edit
 			else:
@@ -113,12 +123,13 @@ func set_property_types(type, default, param_name: String):
 			
 
 func create_slider(slider_values: Array, initial_position, param_name: String):
-	# grid container for the slider itself, the spinbox, and the range container
-	var slider_grid: GridContainer = GridContainer.new()
-	slider_grid.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	slider_grid.columns = 2
-	slider_grid.add_theme_constant_override("h_separation", 8)
-	slider_grid.add_theme_constant_override("v_separation", 1)
+	var slider_row := HBoxContainer.new()
+	var slider_container := VBoxContainer.new()
+
+	slider_container.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	slider_row.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	slider_row.add_theme_constant_override("separation", 8)
+
 	if initial_position is String:
 		if initial_position == "true":
 			initial_position = 1.0
@@ -128,41 +139,58 @@ func create_slider(slider_values: Array, initial_position, param_name: String):
 			return
 
 	var slider = HSlider.new()
+	slider.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	slider.ticks_on_borders = true
-
-	# set up slider and spin box
-	slider_spin_box = SpinBox.new()
 	slider.min_value = slider_values[0]
-	slider_spin_box.min_value = slider_values[0]
+	slider.max_value = slider_values[1]
+	slider.value = initial_position
+
+	var spin_box = SpinBox.new()
+	spin_box.min_value = slider_values[0]
+	spin_box.max_value = slider_values[1]
+	spin_box.value = initial_position
+	spin_box.custom_minimum_size.x = 80
+
+	slider_row.add_child(slider)
+	slider_row.add_child(spin_box)
+
+	var range_row := HBoxContainer.new()
+	range_row.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	range_row.add_theme_constant_override("separation", 8)
+
+	var slider_range := HBoxContainer.new()
+	slider_range.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 
 	var min_label = Label.new()
 	min_label.text = str(slider.min_value)
-	slider.max_value = slider_values[1]
-	slider_spin_box.max_value = slider_values[1]
-	slider_grid.add_child(slider)
-	slider_grid.add_child(slider_spin_box)
-	var max_label = Label.new()
-	max_label.text = str(slider.max_value)
 
 	var spacer = Control.new()
 	spacer.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 
-	var range_container = HBoxContainer.new()
-	slider_grid.add_child(range_container)
-	range_container.add_child(min_label)
-	range_container.add_child(spacer)
-	range_container.add_child(max_label)
+	var max_label = Label.new()
+	max_label.text = str(slider.max_value)
+	max_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 
-	slider.value = initial_position
-	slider_spin_box.value = initial_position
+	slider_range.add_child(min_label)
+	slider_range.add_child(spacer)
+	slider_range.add_child(max_label)
 
-	slider_dict[slider] = slider_spin_box
+	var spinbox_spacer = Control.new()
+	spinbox_spacer.custom_minimum_size.x = spin_box.custom_minimum_size.x
+
+	range_row.add_child(slider_range)
+	range_row.add_child(spinbox_spacer)
+
+	slider_container.add_child(slider_row)
+	slider_container.add_child(range_row)
+
+	slider_dict[slider] = spin_box
 	param_controls[param_name] = slider
-	
-	slider.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	container.add_child(slider_grid)
+
 	slider.value_changed.connect(on_slider_value_changed.bind(slider))
-	slider_spin_box.value_changed.connect(on_spinbox_value_changed.bind(slider))
+	spin_box.value_changed.connect(on_spinbox_value_changed.bind(slider))
+
+	current_container.add_child(slider_container)
 	# range_container.theme
 	
 
@@ -200,7 +228,7 @@ func make_ui(properties: Dictionary, param_name: String):
 			"enum":
 				var drop_down_menu = setup_drop_down(properties[property_type])
 				drop_down_menu.selected = properties[property_type].find(default_value)
-				container.add_child(drop_down_menu)
+				current_container.add_child(drop_down_menu)
 				param_controls[param_name] = drop_down_menu
 
 			"type":
