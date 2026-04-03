@@ -43,15 +43,15 @@ var current_container: Container
 # Called when the node enters the scene tree for the first time.
 func _ready() -> void:
 	submit_button.pressed.connect(on_submit_pressed)
-	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
-	schema = {'$schema': 'https://json-schema.org/draft/2020-12/schema', '$id': 'https://example.com/person.schema.json', 'title': 'ui_test_function', 'type': 'object', 'properties': {'radius': {'type': 'number', 'minimum': 1, 'maximum': 10, 'default': 1.0}, 'segments': {'type': 'number', 'minimum': 3, 'maximum': 128, 'default': 32}, 'style': {'enum': ['smooth', 'faceted'], 'type': 'string', 'default': 'smooth'}, 'hollow': {'type': 'boolean', 'default': 'false'}, 'name': {'type': 'string', 'default': 'brain'}, 'quantity': {'type': 'number', 'default': 0}}}
-	#if _schema_pending:
-		#_build_ui_from_schema()
-		#_schema_pending = false
-	#
-	## Initialize HTTP client
-	#_link_client = AscribeLinkClient.new(server_url)
-	#_link_client.setup(self)
+	#Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
+	#schema = {'$schema': 'https://json-schema.org/draft/2020-12/schema', '$id': 'https://example.com/person.schema.json', 'title': 'ui_test_function', 'type': 'object', 'properties': {'radius': {'type': 'number', 'minimum': 1, 'maximum': 10, 'default': 1.0}, 'segments': {'type': 'number', 'minimum': 3, 'maximum': 128, 'default': 32}, 'style': {'enum': ['smooth', 'faceted'], 'type': 'string', 'default': 'smooth'}, 'hollow': {'type': 'boolean', 'default': 'false'}, 'name': {'type': 'string', 'default': 'brain'}, 'quantity': {'type': 'number', 'default': 0}}}
+	if _schema_pending:
+		_build_ui_from_schema()
+		_schema_pending = false
+	
+	# Initialize HTTP client
+	_link_client = AscribeLinkClient.new(server_url)
+	_link_client.setup(self)
 
 
 func _build_ui_from_schema() -> void:
