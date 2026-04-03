@@ -66,12 +66,13 @@ func _build_ui_from_schema() -> void:
 		var new_label = Label.new()
 		current_container = HBoxContainer.new()
 		current_container.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		current_container.add_theme_constant_override("separation", 50)
+		current_container.add_theme_constant_override("separation", 12)
+		current_container.alignment = BoxContainer.ALIGNMENT_BEGIN
 		new_label.text = keyword
-		new_label.custom_minimum_size.x = 120
 		new_label.text = new_label.text.capitalize()
-		new_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-		new_label.size_flags_vertical = Control.SIZE_SHRINK_CENTER 
+		new_label.custom_minimum_size.x = 120
+		new_label.vertical_alignment = VERTICAL_ALIGNMENT_TOP
+		new_label.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
 		current_container.add_child(new_label)
 		make_ui(properties_dict, keyword)
 		proc_ui_container.add_child(current_container)
