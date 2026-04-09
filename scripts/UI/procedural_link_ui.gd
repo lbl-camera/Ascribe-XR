@@ -6,8 +6,8 @@ signal loading_finished
 signal specimen_loaded(instance: Node)
 signal slider_changed(slider)
 
-@onready var submit_button: Button = $VBoxContainer/MarginContainer/VBoxContainer2/ButtonContainer/SubmitButton
-@onready var container = $VBoxContainer/MarginContainer/VBoxContainer2/VBoxContainer
+@onready var submit_button: Button = %SubmitButton
+@onready var container = %ProceduralForm
 
 var _schema: Dictionary = {}
 var _schema_pending: bool = false
@@ -270,7 +270,7 @@ func _process_and_load(params: Dictionary) -> void:
 	loading_started.emit()
 	
 	# Hide form, show loading indicator
-	$VBoxContainer.hide()
+	self.hide()
 	
 	# Get room_id from config
 	var room_id = "ascribe"
@@ -285,7 +285,7 @@ func _process_and_load(params: Dictionary) -> void:
 		_is_processing = false
 		loading_finished.emit()
 		# Show form again on error
-		$VBoxContainer.show()
+		self.show()
 		return
 	
 	# Create specimen from result

@@ -1,3 +1,20 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:19a6e9d3c3f2142bc8a6dbafdb38cce574b19f940d414244ab2f22bc00ca45ac
-size 1130
+[gd_scene format=3 uid="uid://da2unp2h8qc18"]
+
+[ext_resource type="PackedScene" uid="uid://5wygpbthgiou" path="res://scenes/Specimen/volumetric_specimen.tscn" id="1_mkves"]
+[ext_resource type="Texture2D" uid="uid://bn67t84yo0dyq" path="res://assets/textures/thumbnails/brainreal.png" id="2_mkves"]
+[ext_resource type="ImageTexture3D" uid="uid://bclifa0lue3g2" path="res://specimen_data/brain.res" id="3_mkves"]
+
+[node name="Specimen2" unique_id=899165972 instance=ExtResource("1_mkves")]
+display_name = "Brain Volume"
+thumbnail = ExtResource("2_mkves")
+story_text = Array[String](["Brain slices from public dataset used in BRATS code competition - IEEE ISBI"])
+
+[node name="ScalableMultiplayerPickableObject" parent="." index="0" unique_id=258651919]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.363629, 0)
+
+[node name="VolumeLayeredShader" parent="ScalableMultiplayerPickableObject" index="1" unique_id=2242875]
+transform = Transform3D(-0.25, -2.18557e-08, 2.18557e-08, -2.18557e-08, 0.25, 0, 2.18557e-08, 1.91069e-15, 0.25, 0, 0, 0)
+texture = ExtResource("3_mkves")
+gamma = 10.0
+opacity = 0.124
+color_scalar = 1.164

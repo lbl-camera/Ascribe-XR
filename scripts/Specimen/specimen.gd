@@ -1,5 +1,5 @@
 ## Base specimen class.
-## Handles UI viewport setup, story text, and optional pipeline integration.
+## Handles UI display via MenuManager, story text, and optional pipeline integration.
 class_name Specimen
 extends Node3D
 
@@ -18,25 +18,28 @@ var ui_instance: Control
 
 
 func _enter_tree() -> void:
-	var specimen_viewport = $/root/Main/SpecimenUIViewport
-	var story_ui_viewport = $/root/Main/StoryUIViewport
+	# Specimen UI via MenuManager
+	if ui:
+		ui_instance = ui.instantiate()
+		MenuManager.show_menu(ui_instance, {
+			"slot": "specimen",
+			"screen_size": Vector2(3, 1.68),
+			"viewport_size": Vector2(1152, 648),
+			"distance": 2.5,
+		})
 
-	if ui and specimen_viewport:
-		specimen_viewport.scene = ui
-		ui_instance = specimen_viewport.get_scene_instance()
-
-	if story_ui_viewport:
-		var story_ui = story_ui_viewport.get_scene_instance()
-		if story_ui and "story" in story_ui:
-			if story_text:
-				story_ui.story = story_text
-			else:
-				story_ui.story = PackedStringArray()
-		elif story_ui:
-			push_warning("StoryUI instance found but has no 'story' property: %s" % story_ui.get_class())
-		else:
-			# StoryUI not instantiated yet - this is OK, it might not have a scene set
-			pass
+	# Story text via MenuManager (separate slot)
+	if story_text and story_text.size() > 0:
+		var story_scene = preload("res://scenes/UI/story_ui.tscn")
+		var story_instance = story_scene.instantiate()
+		story_instance.story = story_text
+		MenuManager.show_menu(story_instance, {
+			"slot": "story",
+			"screen_size": Vector2(3, 1.68),
+			"viewport_size": Vector2(1152, 648),
+			"distance": 1.5,
+			"offset": Vector2(2.5, 0),  # Spawn to the right of the specimen menu
+		})
 
 	# If a pipeline is configured, wire it up and run it
 	if pipeline:
