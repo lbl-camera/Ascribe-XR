@@ -130,9 +130,13 @@ func _position_in_front_of_user(node: Node3D, distance: float, offset: Vector2 =
 
 	node.global_position = spawn_pos
 
-	# Face the menu toward the user (+Z faces camera)
-	var away = spawn_pos + forward
-	node.look_at(away, Vector3.UP)
+	# Face the menu toward the user (+Z faces camera).
+	# Use direction from camera to menu (not just forward) so offset menus
+	# angle inward toward the player.
+	var dir_from_camera = spawn_pos - camera.global_position
+	dir_from_camera.y = 0.0
+	dir_from_camera = dir_from_camera.normalized()
+	node.look_at(spawn_pos + dir_from_camera, Vector3.UP)
 
 
 ## Find the XRCamera3D in the scene tree.
