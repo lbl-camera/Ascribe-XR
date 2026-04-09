@@ -52,8 +52,9 @@ func show_menu(control: Control, options: Dictionary = {}) -> Node3D:
 	# Configure
 	vr_menu.setup(control, options)
 
-	# Position in front of the user
-	_position_in_front_of_user(vr_menu, options.get("distance", 1.5))
+	# Position in front of the user, with optional lateral offset
+	var offset: Vector2 = options.get("offset", Vector2.ZERO)
+	_position_in_front_of_user(vr_menu, options.get("distance", 1.5), offset)
 
 	# Connect close signal
 	vr_menu.closed.connect(_on_menu_closed.bind(vr_menu, slot))
@@ -98,13 +99,15 @@ func has_active_menu(slot: String = "default") -> bool:
 
 
 ## Position a node in front of the XR camera at eye level, facing the user.
-func _position_in_front_of_user(node: Node3D, distance: float) -> void:
+## [param offset] — lateral (x) and vertical (y) offset in camera-relative space.
+##   Positive x = right, positive y = up.
+func _position_in_front_of_user(node: Node3D, distance: float, offset: Vector2 = Vector2.ZERO) -> void:
 	var camera := _get_xr_camera()
 	if not camera:
 		# Fallback: use MenuSpawnMarker if available
 		var marker = get_tree().root.get_node_or_null("Main/MenuSpawnMarker")
 		if marker:
-			node.global_position = marker.global_position
+			node.global_position = marker.global_position + Vector3(offset.x, offset.y, 0)
 			node.look_at(node.global_position + Vector3.FORWARD, Vector3.UP)
 		else:
 			push_warning("MenuManager: No XRCamera3D or MenuSpawnMarker found")
@@ -114,14 +117,16 @@ func _position_in_front_of_user(node: Node3D, distance: float) -> void:
 	var forward = -camera.global_basis.z
 	forward.y = 0.0
 	if forward.length_squared() < 0.001:
-		# Camera looking straight up/down — fall back to global forward
 		forward = Vector3.FORWARD
 	forward = forward.normalized()
 
-	# Spawn position: in front of camera at eye level
+	# Right vector (perpendicular to forward on XZ plane)
+	var right = forward.cross(Vector3.UP).normalized()
+
+	# Spawn position: in front of camera at eye level, with lateral/vertical offset
 	var spawn_pos = camera.global_position + forward * distance
-	# Keep at eye height
-	spawn_pos.y = camera.global_position.y
+	spawn_pos += right * offset.x
+	spawn_pos.y = camera.global_position.y + offset.y
 
 	node.global_position = spawn_pos
 

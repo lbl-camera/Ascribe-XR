@@ -37,6 +37,7 @@ func _enter_tree() -> void:
 			"screen_size": Vector2(3, 1.68),
 			"viewport_size": Vector2(1152, 648),
 			"distance": 2.0,
+			"offset": Vector2(2.0, 0),  # Spawn to the right of the specimen menu
 		})
 
 	# If a pipeline is configured, wire it up and run it
