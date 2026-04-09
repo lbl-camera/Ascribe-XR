@@ -4,7 +4,7 @@ signal ui_accept  # Legacy signal, kept for compatibility
 signal loading_started
 signal loading_finished
 signal specimen_loaded(instance: Node)
-signal slider_changed(slider)
+
 
 @onready var submit_button: Button = %SubmitButton
 @onready var proc_ui_container = %ProceduralForm
@@ -111,13 +111,21 @@ func set_property_types(type, default, param_name: String):
 			spin_box.value = default
 			spin_box.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
 			param_controls[param_name] = spin_box
-
+		"textarea":
+			var multiline := TextEdit.new()
+			multiline.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+			multiline.text = str(default)
+			multiline.custom_minimum_size.y = 80
+			setup_autogrow_text_edit(multiline, 2, 10)
+			current_container.add_child(multiline)
+			param_controls[param_name] = multiline
 		"string":
 			if !in_drop_down:
 				var line_edit: LineEdit = LineEdit.new()
 				line_edit.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 				current_container.add_child(line_edit)
 				line_edit.text = default
+				line_edit.focus_entered.connect(_on_text_section_entered)
 				param_controls[param_name] = line_edit
 			else:
 				in_drop_down = false
@@ -193,8 +201,26 @@ func create_slider(slider_values: Array, initial_position, param_name: String):
 
 	current_container.add_child(slider_container)
 	# range_container.theme
-	
 
+func setup_autogrow_text_edit(text_edit: TextEdit, min_lines: int = 2, max_lines: int = 8) -> void:
+	text_edit.wrap_mode = TextEdit.LINE_WRAPPING_BOUNDARY
+	text_edit.scroll_fit_content_height = true
+	text_edit.text_changed.connect(_on_text_edit_text_changed.bind(text_edit, min_lines, max_lines))
+
+	_update_text_edit_height(text_edit, min_lines, max_lines)
+	
+func _on_text_edit_text_changed(text_edit: TextEdit, min_lines: int, max_lines: int) -> void:
+	_update_text_edit_height(text_edit, min_lines, max_lines)
+
+func _update_text_edit_height(text_edit: TextEdit, min_lines: int, max_lines: int) -> void:
+	var line_count := text_edit.get_total_visible_line_count()
+	line_count = clamp(line_count, min_lines, max_lines)
+
+	var line_height := text_edit.get_line_height()
+	var top_padding := 8
+	var bottom_padding := 8
+
+	text_edit.custom_minimum_size.y = line_count * line_height + top_padding + bottom_padding
 func _get_default_for_type(properties: Dictionary) -> Variant:
 	# Return explicit default if present
 	if properties.has('default'):
@@ -203,6 +229,8 @@ func _get_default_for_type(properties: Dictionary) -> Variant:
 	# Otherwise infer a sensible default based on type
 	var prop_type = properties.get('type', '')
 	match prop_type:
+		"textarea":
+			return ""
 		"string":
 			return ""
 		"number":
@@ -257,7 +285,7 @@ func extract_parameters() -> Dictionary:
 			param_dict[param_name] = control.button_pressed
 		elif control is OptionButton:
 			param_dict[param_name] = control.get_item_text(control.selected)
-		elif control is LineEdit:
+		elif control is LineEdit or control is TextEdit:
 			param_dict[param_name] = control.text
 
 	return param_dict
@@ -272,7 +300,9 @@ func on_spinbox_value_changed(new_value: float, slider: HSlider) -> void:
 	if slider_dict.has(slider):
 		slider.value = new_value
 	
-
+func _on_text_section_entered():
+	print("keyboard")
+	DisplayServer.virtual_keyboard_show("")
 
 func on_submit_pressed():
 	if _is_processing:
