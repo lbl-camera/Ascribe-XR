@@ -37,7 +37,7 @@ func _enter_tree() -> void:
 			"slot": "story",
 			"screen_size": Vector2(3, 1.68),
 			"viewport_size": Vector2(1152, 648),
-			"distance": 2.5,
+			"distance": 1.5,
 			"offset": Vector2(2.5, 0),  # Spawn to the right of the specimen menu
 		})
 
