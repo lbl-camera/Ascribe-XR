@@ -2,19 +2,20 @@ extends Node
 
 ## MenuManager — Global singleton for spawning VR menus.
 ##
-## Usage:
-##   MenuManager.show_menu(my_control)
-##   MenuManager.show_menu(my_control, { "screen_size": Vector2(2.0, 1.2) })
-##   MenuManager.close_menu()
+## Supports multiple concurrent menus via named slots:
+##   MenuManager.show_menu(my_control)                          # uses "default" slot
+##   MenuManager.show_menu(my_control, { "slot": "specimen" })  # named slot
+##   MenuManager.close_menu("specimen")
+##   MenuManager.close_all_menus()
 
-## Emitted when a menu is opened. Passes the VRMenu instance.
-signal menu_opened(vr_menu: Node3D)
+## Emitted when a menu is opened. Passes the VRMenu instance and slot name.
+signal menu_opened(vr_menu: Node3D, slot: String)
 
-## Emitted when a menu is closed. Passes the VRMenu instance.
-signal menu_closed(vr_menu: Node3D)
+## Emitted when a menu is closed. Passes the VRMenu instance and slot name.
+signal menu_closed(vr_menu: Node3D, slot: String)
 
-## The currently active VR menu (null if none).
-var active_menu: Node3D = null
+## Active menus keyed by slot name.
+var _active_menus: Dictionary = {}
 
 ## Preloaded VR menu scene.
 var _vr_menu_scene: PackedScene = preload("res://scenes/UI/vr_menu.tscn")
@@ -24,16 +25,22 @@ var _vr_menu_scene: PackedScene = preload("res://scenes/UI/vr_menu.tscn")
 ##
 ## [param control] - An already-instantiated Control node to display.
 ## [param options] - Optional dictionary:
-##   "screen_size":    Vector2 — physical size in meters (default 2.0 x 1.2)
-##   "viewport_size":  Vector2 — render resolution in pixels (default 1024 x 614)
-##   "distance":       float   — meters from user's head (default 1.5)
-##   "grabbable":      bool    — whether the menu can be grabbed (default true)
-##   "on_close":       Callable — called when the menu is dismissed
-##   "on_accept":      Callable — forwarded to the VRMenu; caller wires as needed
+##   "slot":            String  — named slot (default "default"); re-using a slot closes the previous menu in it
+##   "screen_size":     Vector2 — physical size in meters (default 2.0 x 1.2)
+##   "viewport_size":   Vector2 — render resolution in pixels (default 1024 x 614)
+##   "distance":        float   — meters from user's head (default 1.5)
+##   "grabbable":       bool    — whether the menu can be grabbed (default true)
+##   "preserve_content": bool   — if true, the Control is removed from the viewport before the menu is freed (default false)
+##   "on_close":        Callable — called when the menu is dismissed
+##   "on_accept":       Callable — forwarded to the VRMenu; caller wires as needed
 func show_menu(control: Control, options: Dictionary = {}) -> Node3D:
-	# Close any existing menu immediately
-	if active_menu and is_instance_valid(active_menu):
-		active_menu.close_immediate()
+	var slot: String = options.get("slot", "default")
+
+	# Close any existing menu in this slot immediately
+	var existing = _active_menus.get(slot)
+	if existing and is_instance_valid(existing):
+		existing.close_immediate()
+		_active_menus.erase(slot)
 
 	# Instantiate the VR menu
 	var vr_menu = _vr_menu_scene.instantiate()
@@ -49,7 +56,7 @@ func show_menu(control: Control, options: Dictionary = {}) -> Node3D:
 	_position_in_front_of_user(vr_menu, options.get("distance", 1.5))
 
 	# Connect close signal
-	vr_menu.closed.connect(_on_menu_closed.bind(vr_menu))
+	vr_menu.closed.connect(_on_menu_closed.bind(vr_menu, slot))
 
 	# Wire optional callbacks
 	var on_close = options.get("on_close", Callable())
@@ -60,31 +67,47 @@ func show_menu(control: Control, options: Dictionary = {}) -> Node3D:
 	if on_accept.is_valid():
 		vr_menu.accepted.connect(on_accept)
 
-	active_menu = vr_menu
+	_active_menus[slot] = vr_menu
 
 	# Play the open animation
 	vr_menu.open()
 
-	menu_opened.emit(vr_menu)
+	menu_opened.emit(vr_menu, slot)
 	return vr_menu
 
 
-## Close the currently active menu (with animation).
-func close_menu() -> void:
-	if active_menu and is_instance_valid(active_menu):
-		active_menu.close()
+## Close a menu in the given slot (with animation).
+func close_menu(slot: String = "default") -> void:
+	var vr_menu = _active_menus.get(slot)
+	if vr_menu and is_instance_valid(vr_menu):
+		vr_menu.close()
 
 
-## Returns true if a menu is currently showing.
-func has_active_menu() -> bool:
-	return active_menu != null and is_instance_valid(active_menu)
+## Close all active menus.
+func close_all_menus() -> void:
+	for slot in _active_menus.keys():
+		var vr_menu = _active_menus[slot]
+		if vr_menu and is_instance_valid(vr_menu):
+			vr_menu.close()
+
+
+## Returns true if a menu is showing in the given slot.
+func has_active_menu(slot: String = "default") -> bool:
+	var vr_menu = _active_menus.get(slot)
+	return vr_menu != null and is_instance_valid(vr_menu)
 
 
 ## Position a node in front of the XR camera at eye level, facing the user.
 func _position_in_front_of_user(node: Node3D, distance: float) -> void:
 	var camera := _get_xr_camera()
 	if not camera:
-		push_warning("MenuManager: XRCamera3D not found, placing menu at origin")
+		# Fallback: use MenuSpawnMarker if available
+		var marker = get_tree().root.get_node_or_null("Main/MenuSpawnMarker")
+		if marker:
+			node.global_position = marker.global_position
+			node.look_at(node.global_position + Vector3.FORWARD, Vector3.UP)
+		else:
+			push_warning("MenuManager: No XRCamera3D or MenuSpawnMarker found")
 		return
 
 	# Get camera forward direction (negative Z in camera space), projected onto XZ plane
@@ -102,8 +125,9 @@ func _position_in_front_of_user(node: Node3D, distance: float) -> void:
 
 	node.global_position = spawn_pos
 
-	# Face the menu toward the user
-	node.look_at(camera.global_position, Vector3.UP)
+	# Face the menu toward the user (+Z faces camera)
+	var away = spawn_pos + forward
+	node.look_at(away, Vector3.UP)
 
 
 ## Find the XRCamera3D in the scene tree.
@@ -131,7 +155,7 @@ func _find_node_by_class(node: Node, class_name_str: String) -> Node:
 
 
 ## Handle menu closed signal.
-func _on_menu_closed(vr_menu: Node3D) -> void:
-	if active_menu == vr_menu:
-		active_menu = null
-	menu_closed.emit(vr_menu)
+func _on_menu_closed(vr_menu: Node3D, slot: String) -> void:
+	if _active_menus.get(slot) == vr_menu:
+		_active_menus.erase(slot)
+	menu_closed.emit(vr_menu, slot)
