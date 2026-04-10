@@ -67,6 +67,7 @@ metadata/_custom_type_script = "uid://kuxqh057vr5y"
 [node name="PlayerBody" parent="." unique_id=1538611712 instance=ExtResource("6_keit0")]
 collision_mask = 3
 platform_floor_layers = 2
+head_behavior_mode = 2
 player_calibrate_height = false
 
 [node name="FunctionPointer" parent="." unique_id=1006435028 instance=ExtResource("7_qssuy")]
