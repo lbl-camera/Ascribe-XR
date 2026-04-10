@@ -425,62 +425,51 @@ func _load_dynamic_specimen(specimen_id: String, display_name: String) -> void:
 	_current_dynamic_metadata = metadata
 	
 	print("Calling _show_procedural_ui...")
-	# Show procedural UI in SpecimenUIViewport
+	# Show procedural UI via MenuManager
 	_show_procedural_ui(metadata)
 	print("=== END DYNAMIC SPECIMEN LOAD ===")
 
 
 func _show_procedural_ui(metadata: Dictionary) -> void:
 	print("_show_procedural_ui called")
-	
-	# Get the SpecimenUIViewport
-	var viewport_3d = $/root/Main/SpecimenUIViewport
-	print("SpecimenUIViewport found: ", viewport_3d != null)
-	if not viewport_3d:
-		push_error("SpecimenUIViewport not found")
-		return
-	
-	# Access the internal Viewport node
-	var viewport = viewport_3d.get_node_or_null("Viewport")
-	print("Viewport found: ", viewport != null)
-	if not viewport:
-		push_error("SpecimenUIViewport/Viewport not found")
-		return
-	
+
 	# Clear existing UI
 	if _procedural_ui_instance:
 		_procedural_ui_instance.queue_free()
 		_procedural_ui_instance = null
-	
+
 	# Instantiate ProceduralLinkUI
 	var procedural_ui_scene = preload("res://scenes/UI/procedural_link_ui.tscn")
 	_procedural_ui_instance = procedural_ui_scene.instantiate()
-	
+
 	# Configure the UI to handle everything itself
 	_procedural_ui_instance.schema = metadata.get("schema", {})
 	_procedural_ui_instance.function_name = metadata.get("function_name", "")
 	_procedural_ui_instance.metadata = metadata
 	_procedural_ui_instance.server_url = Config.ascribe_link_url
-	
+
 	# Connect cancel button
-	_procedural_ui_instance.get_node("MarginContainer/VBoxContainer2/ButtonContainer/Button").pressed.connect(_on_procedural_ui_cancel)
-	
-	# Add to viewport
-	viewport.add_child(_procedural_ui_instance)
-	
+	_procedural_ui_instance.get_node("VBoxContainer/MarginContainer/VBoxContainer2/ButtonContainer/Button").pressed.connect(_on_procedural_ui_cancel)
+
+	# Show via MenuManager
+	MenuManager.show_menu(_procedural_ui_instance, {
+		"slot": "specimen",
+		"screen_size": Vector2(3, 1.68),
+		"viewport_size": Vector2(1152, 648),
+	})
+
 	# Now hide the main menu — procedural_link_ui handles everything from here
 	SceneManager.hide_mainmenu()
-	
+
 	print_debug("Procedural UI shown for: %s" % metadata.get("display_name", ""))
 
 
 func _on_procedural_ui_cancel() -> void:
 	print_debug("Procedural UI cancelled")
-	
-	if _procedural_ui_instance:
-		_procedural_ui_instance.queue_free()
-		_procedural_ui_instance = null
-	
+
+	MenuManager.close_menu("specimen")
+	_procedural_ui_instance = null
+
 	# Show main menu again
 	SceneManager.show_mainmenu()
 
@@ -605,77 +594,54 @@ var _error_panel: Panel = null
 
 
 func _show_loading_state() -> void:
-	# Get the SpecimenUIViewport
-	var viewport_3d = $/root/Main/SpecimenUIViewport
-	if not viewport_3d:
-		return
-	
-	var viewport = viewport_3d.get_node_or_null("Viewport")
-	if not viewport:
-		return
-	
-	# Hide form, show loading message
-	if _procedural_ui_instance:
-		_procedural_ui_instance.visible = false
-	
 	# Create loading panel
 	_loading_panel = Panel.new()
-	_loading_panel.anchor_right = 1.0
-	_loading_panel.anchor_bottom = 1.0
-	
+	_loading_panel.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+
 	var vbox = VBoxContainer.new()
-	vbox.anchor_right = 1.0
-	vbox.anchor_bottom = 1.0
+	vbox.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	vbox.alignment = BoxContainer.ALIGNMENT_CENTER
 	_loading_panel.add_child(vbox)
-	
+
 	var label = Label.new()
-	label.text = "⚙️ Generating..."
+	label.text = "Generating..."
 	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	# Make it bigger and bold if possible
 	label.add_theme_font_size_override("font_size", 32)
 	vbox.add_child(label)
-	
+
 	var spinner_label = Label.new()
-	spinner_label.text = "⏳"
+	spinner_label.text = "..."
 	spinner_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	spinner_label.add_theme_font_size_override("font_size", 48)
 	vbox.add_child(spinner_label)
-	
-	viewport.add_child(_loading_panel)
+
+	MenuManager.show_menu(_loading_panel, {
+		"slot": "specimen",
+		"screen_size": Vector2(2, 1.2),
+		"viewport_size": Vector2(800, 480),
+		"grabbable": false,
+	})
 
 
 func _hide_loading_state() -> void:
 	if _loading_panel:
-		_loading_panel.queue_free()
+		MenuManager.close_menu("specimen")
 		_loading_panel = null
 
 
 func _show_error_message(error_text: String) -> void:
 	push_error(error_text)
-	
-	# Get the SpecimenUIViewport
-	var viewport_3d = $/root/Main/SpecimenUIViewport
-	if not viewport_3d:
-		return
-	
-	var viewport = viewport_3d.get_node_or_null("Viewport")
-	if not viewport:
-		return
-	
+
 	# Clear any existing error
 	if _error_panel:
-		_error_panel.queue_free()
 		_error_panel = null
-	
+
 	# Create error panel
 	_error_panel = Panel.new()
-	_error_panel.anchor_right = 1.0
-	_error_panel.anchor_bottom = 1.0
-	
+	_error_panel.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+
 	var vbox = VBoxContainer.new()
-	vbox.anchor_right = 1.0
-	vbox.anchor_bottom = 1.0
+	vbox.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	vbox.alignment = BoxContainer.ALIGNMENT_CENTER
 	_error_panel.add_child(vbox)
 	
@@ -697,10 +663,15 @@ func _show_error_message(error_text: String) -> void:
 	close_button.pressed.connect(_hide_error_message)
 	vbox.add_child(close_button)
 	
-	viewport.add_child(_error_panel)
+	MenuManager.show_menu(_error_panel, {
+		"slot": "specimen",
+		"screen_size": Vector2(2, 1.2),
+		"viewport_size": Vector2(800, 480),
+		"grabbable": false,
+	})
 
 
 func _hide_error_message() -> void:
 	if _error_panel:
-		_error_panel.queue_free()
+		MenuManager.close_menu("specimen")
 		_error_panel = null
