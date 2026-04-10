@@ -449,7 +449,7 @@ func _show_procedural_ui(metadata: Dictionary) -> void:
 	_procedural_ui_instance.server_url = Config.ascribe_link_url
 
 	# Connect cancel button
-	_procedural_ui_instance.get_node("VBoxContainer/MarginContainer/VBoxContainer2/ButtonContainer/Button").pressed.connect(_on_procedural_ui_cancel)
+	_procedural_ui_instance.get_node("MarginContainer/VBoxContainer2/ButtonContainer/Button").pressed.connect(_on_procedural_ui_cancel)
 
 	# Show via MenuManager
 	MenuManager.show_menu(_procedural_ui_instance, {

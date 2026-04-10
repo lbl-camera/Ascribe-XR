@@ -19,9 +19,14 @@ size_flags_vertical = 3
 [node name="VBoxContainer2" type="VBoxContainer" parent="MarginContainer" unique_id=998015335]
 layout_mode = 2
 
-[node name="ProceduralForm" type="VBoxContainer" parent="MarginContainer/VBoxContainer2" unique_id=638409883]
+[node name="ScrollContainer" type="ScrollContainer" parent="MarginContainer/VBoxContainer2" unique_id=1051116865]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="ProceduralForm" type="VBoxContainer" parent="MarginContainer/VBoxContainer2/ScrollContainer" unique_id=638409883]
 unique_name_in_owner = true
 layout_mode = 2
+size_flags_horizontal = 3
 size_flags_vertical = 3
 
 [node name="ButtonContainer" type="HBoxContainer" parent="MarginContainer/VBoxContainer2" unique_id=1842052765]
