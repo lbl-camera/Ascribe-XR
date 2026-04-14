@@ -25,7 +25,7 @@ var _is_processing: bool = false
 	set(value):
 		_schema = value
 		if is_node_ready():
-			_build_ui_from_schema()
+			_build_ui_from_schema.rpc()
 		else:
 			_schema_pending = true
 	get:
@@ -46,14 +46,14 @@ func _ready() -> void:
 	#Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
 	#schema = {'$schema': 'https://json-schema.org/draft/2020-12/schema', '$id': 'https://example.com/person.schema.json', 'title': 'ui_test_function', 'type': 'object', 'properties': {'radius': {'type': 'number', 'minimum': 1, 'maximum': 10, 'default': 1.0}, 'segments': {'type': 'number', 'minimum': 3, 'maximum': 128, 'default': 32}, 'style': {'enum': ['smooth', 'faceted'], 'type': 'string', 'default': 'smooth'}, 'hollow': {'type': 'boolean', 'default': 'false'}, 'name': {'type': 'string', 'default': 'brain'}, 'quantity': {'type': 'number', 'default': 0}}}
 	if _schema_pending:
-		_build_ui_from_schema()
+		_build_ui_from_schema.rpc()
 		_schema_pending = false
 	
 	# Initialize HTTP client
 	_link_client = AscribeLinkClient.new(server_url)
 	_link_client.setup(self)
 
-
+@rpc("any_peer", "call_local", "reliable")
 func _build_ui_from_schema() -> void:
 	if _schema.is_empty() or not _schema.has("properties"):
 		return
@@ -100,6 +100,7 @@ func set_property_types(type, default, param_name: String):
 			current_container.add_child(check_box)
 			if default == "true":
 				check_box.button_pressed = true
+			
 			param_controls[param_name] = check_box
 
 		"number":
@@ -110,6 +111,7 @@ func set_property_types(type, default, param_name: String):
 			current_container.add_child(spin_box)
 			spin_box.value = default
 			spin_box.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
+			spin_box.value_changed.connect(value_changed.rpc.bind(spin_box))
 			param_controls[param_name] = spin_box
 		"textarea":
 			var multiline := TextEdit.new()
@@ -118,6 +120,7 @@ func set_property_types(type, default, param_name: String):
 			multiline.custom_minimum_size.y = 80
 			setup_autogrow_text_edit(multiline, 2, 10)
 			current_container.add_child(multiline)
+			multiline.text_changed.connect(value_changed.rpc.bind(multiline))
 			param_controls[param_name] = multiline
 		"string":
 			if !in_drop_down:
@@ -126,10 +129,26 @@ func set_property_types(type, default, param_name: String):
 				current_container.add_child(line_edit)
 				line_edit.text = default
 				line_edit.focus_entered.connect(_on_text_section_entered)
+				line_edit.text_changed.connect(value_changed.rpc.bind(line_edit))
 				param_controls[param_name] = line_edit
 			else:
 				in_drop_down = false
-			
+
+@rpc("any_peer", "call_local", "reliable")
+func value_changed(control, value):
+	print("value changed")
+	if control is HSlider:
+		control.value = value
+	elif control is SpinBox:
+		control.value = value
+	elif control is CheckBox:
+		control.button_pressed = value
+	elif control is OptionButton:
+		control.selected = value
+	elif control is LineEdit or control is TextEdit:
+		control.text = value
+
+	
 
 func create_slider(slider_values: Array, initial_position, param_name: String):
 	var slider_row := HBoxContainer.new()
@@ -221,6 +240,7 @@ func _update_text_edit_height(text_edit: TextEdit, min_lines: int, max_lines: in
 	var bottom_padding := 8
 
 	text_edit.custom_minimum_size.y = line_count * line_height + top_padding + bottom_padding
+	
 func _get_default_for_type(properties: Dictionary) -> Variant:
 	# Return explicit default if present
 	if properties.has('default'):
@@ -295,10 +315,14 @@ func on_slider_value_changed(new_value: float, slider: HSlider) -> void:
 	if slider_dict.has(slider):
 		var spin_box: SpinBox = slider_dict[slider]
 		spin_box.value = new_value
+		value_changed.rpc(spin_box, new_value)
+	
 	
 func on_spinbox_value_changed(new_value: float, slider: HSlider) -> void:
 	if slider_dict.has(slider):
 		slider.value = new_value
+	value_changed.rpc(slider, new_value)
+	
 	
 func _on_text_section_entered():
 	print("keyboard")

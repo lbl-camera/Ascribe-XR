@@ -426,10 +426,10 @@ func _load_dynamic_specimen(specimen_id: String, display_name: String) -> void:
 	
 	print("Calling _show_procedural_ui...")
 	# Show procedural UI via MenuManager
-	_show_procedural_ui(metadata)
+	_show_procedural_ui.rpc(metadata)
 	print("=== END DYNAMIC SPECIMEN LOAD ===")
 
-
+@rpc("any_peer", "call_local", "reliable")
 func _show_procedural_ui(metadata: Dictionary) -> void:
 	print("_show_procedural_ui called")
 
