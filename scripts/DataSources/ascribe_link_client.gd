@@ -6,6 +6,9 @@ extends RefCounted
 signal specimens_loaded(specimens: Array)
 signal functions_loaded(functions: Array)
 signal request_error(error: String)
+signal job_progress(text: String)
+signal job_complete(result: Dictionary)
+signal job_error(error: String)
 
 var _base_url: String
 var _parent: Node
@@ -92,6 +95,118 @@ func _on_specimens_completed(result: int, response_code: int, _headers: PackedSt
 		return
 
 	specimens_loaded.emit(parsed)
+
+
+## Run a dynamic specimen as a job: POST /start, poll /progress, GET /result.
+## Authority should be the only caller. Results are emitted via signals.
+func run_job(specimen_id: String, params: Dictionary, room_id: String = "ascribe") -> void:
+	if _parent == null:
+		job_error.emit("Client not set up")
+		return
+
+	# --- 1. POST /start ---
+	var start_http := HTTPRequest.new()
+	_parent.add_child(start_http)
+	var start_url := _base_url + "/api/specimens/" + specimen_id + "/start"
+	var start_body := JSON.stringify({"params": params, "room_id": room_id})
+	var err := start_http.request(
+		start_url,
+		["Content-Type: application/json"],
+		HTTPClient.METHOD_POST,
+		start_body,
+	)
+	if err != OK:
+		start_http.queue_free()
+		job_error.emit("Failed to POST /start: %s" % error_string(err))
+		return
+
+	var start_response = await start_http.request_completed
+	start_http.queue_free()
+
+	var start_result: int = start_response[0]
+	var start_code: int = start_response[1]
+	var start_payload: PackedByteArray = start_response[3]
+	if start_result != HTTPRequest.RESULT_SUCCESS or start_code != 200:
+		job_error.emit("POST /start failed: HTTP %d" % start_code)
+		return
+
+	var start_json: Variant = JSON.parse_string(start_payload.get_string_from_utf8())
+	if not (start_json is Dictionary):
+		job_error.emit("Invalid /start response")
+		return
+	var job_id: String = start_json.get("job_id", "")
+	var start_status: String = start_json.get("status", "")
+	if job_id.is_empty():
+		job_error.emit("Missing job_id in /start response")
+		return
+
+	# --- 2. Poll /progress until status is terminal ---
+	if start_status != "done":
+		var last_seq := -1
+		while true:
+			var prog_http := HTTPRequest.new()
+			_parent.add_child(prog_http)
+			var prog_url := "%s/api/jobs/%s/progress?since=%d" % [_base_url, job_id, last_seq]
+			err = prog_http.request(prog_url)
+			if err != OK:
+				prog_http.queue_free()
+				job_error.emit("Failed to GET /progress: %s" % error_string(err))
+				return
+			var prog_response = await prog_http.request_completed
+			prog_http.queue_free()
+
+			var prog_result: int = prog_response[0]
+			var prog_code: int = prog_response[1]
+			var prog_payload: PackedByteArray = prog_response[3]
+			if prog_result != HTTPRequest.RESULT_SUCCESS or prog_code != 200:
+				# One retry path: wait and try again, then give up.
+				await _parent.get_tree().create_timer(0.5).timeout
+				continue
+
+			var prog_json: Variant = JSON.parse_string(prog_payload.get_string_from_utf8())
+			if not (prog_json is Dictionary):
+				job_error.emit("Invalid /progress response")
+				return
+
+			for m in prog_json.get("messages", []):
+				if m is Dictionary:
+					job_progress.emit(str(m.get("text", "")))
+					last_seq = max(last_seq, int(m.get("seq", last_seq)))
+
+			var st: String = prog_json.get("status", "running")
+			if st == "error":
+				job_error.emit(str(prog_json.get("error", "unknown error")))
+				return
+			if st == "done":
+				break
+
+			await _parent.get_tree().create_timer(0.5).timeout
+
+	# --- 3. GET /result ---
+	var result_http := HTTPRequest.new()
+	_parent.add_child(result_http)
+	var result_url := "%s/api/jobs/%s/result" % [_base_url, job_id]
+	err = result_http.request(result_url)
+	if err != OK:
+		result_http.queue_free()
+		job_error.emit("Failed to GET /result: %s" % error_string(err))
+		return
+
+	var result_response = await result_http.request_completed
+	result_http.queue_free()
+
+	var r_result: int = result_response[0]
+	var r_code: int = result_response[1]
+	var r_payload: PackedByteArray = result_response[3]
+	if r_result != HTTPRequest.RESULT_SUCCESS or r_code != 200:
+		job_error.emit("GET /result failed: HTTP %d" % r_code)
+		return
+
+	var result_json: Variant = JSON.parse_string(r_payload.get_string_from_utf8())
+	if not (result_json is Dictionary):
+		job_error.emit("Invalid /result response")
+		return
+	job_complete.emit(result_json)
 
 
 func _get_result_string(result: int) -> String:
