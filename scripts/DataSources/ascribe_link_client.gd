@@ -14,6 +14,7 @@ var _base_url: String
 var _parent: Node
 var _specimens_request: HTTPRequest
 var _functions_request: HTTPRequest
+var _current_job_id: String = ""
 
 
 func _init(base_url: String = "http://localhost:8000") -> void:
@@ -133,13 +134,16 @@ func run_job(specimen_id: String, params: Dictionary, room_id: String = "ascribe
 
 	var start_json: Variant = JSON.parse_string(start_payload.get_string_from_utf8())
 	if not (start_json is Dictionary):
+		_current_job_id = ""
 		job_error.emit("Invalid /start response")
 		return
 	var job_id: String = start_json.get("job_id", "")
 	var start_status: String = start_json.get("status", "")
 	if job_id.is_empty():
+		_current_job_id = ""
 		job_error.emit("Missing job_id in /start response")
 		return
+	_current_job_id = job_id
 
 	# --- 2. Poll /progress until status is terminal ---
 	if start_status != "done":
@@ -153,6 +157,7 @@ func run_job(specimen_id: String, params: Dictionary, room_id: String = "ascribe
 			err = prog_http.request(prog_url)
 			if err != OK:
 				prog_http.queue_free()
+				_current_job_id = ""
 				job_error.emit("Failed to GET /progress: %s" % error_string(err))
 				return
 			var prog_response = await prog_http.request_completed
@@ -164,6 +169,7 @@ func run_job(specimen_id: String, params: Dictionary, room_id: String = "ascribe
 			if prog_result != HTTPRequest.RESULT_SUCCESS or prog_code != 200:
 				consecutive_poll_failures += 1
 				if consecutive_poll_failures >= 3:
+					_current_job_id = ""
 					job_error.emit(
 						"Failed to GET /progress after 3 retries (HTTP %d)" % prog_code
 					)
@@ -174,6 +180,7 @@ func run_job(specimen_id: String, params: Dictionary, room_id: String = "ascribe
 
 			var prog_json: Variant = JSON.parse_string(prog_payload.get_string_from_utf8())
 			if not (prog_json is Dictionary):
+				_current_job_id = ""
 				job_error.emit("Invalid /progress response")
 				return
 
@@ -184,6 +191,7 @@ func run_job(specimen_id: String, params: Dictionary, room_id: String = "ascribe
 
 			var st: String = prog_json.get("status", "running")
 			if st == "error":
+				_current_job_id = ""
 				job_error.emit(str(prog_json.get("error", "unknown error")))
 				return
 			if st == "done":
@@ -199,6 +207,7 @@ func run_job(specimen_id: String, params: Dictionary, room_id: String = "ascribe
 	err = result_http.request(result_url)
 	if err != OK:
 		result_http.queue_free()
+		_current_job_id = ""
 		job_error.emit("Failed to GET /result: %s" % error_string(err))
 		return
 
@@ -209,14 +218,33 @@ func run_job(specimen_id: String, params: Dictionary, room_id: String = "ascribe
 	var r_code: int = result_response[1]
 	var r_payload: PackedByteArray = result_response[3]
 	if r_result != HTTPRequest.RESULT_SUCCESS or r_code != 200:
+		_current_job_id = ""
 		job_error.emit("GET /result failed: HTTP %d" % r_code)
 		return
 
 	var result_json: Variant = JSON.parse_string(r_payload.get_string_from_utf8())
 	if not (result_json is Dictionary):
+		_current_job_id = ""
 		job_error.emit("Invalid /result response")
 		return
+	_current_job_id = ""
 	job_complete.emit(result_json)
+
+
+## Cancel the currently running job by sending DELETE to the server.
+func cancel_current_job() -> void:
+	if _parent == null or _current_job_id.is_empty():
+		return
+	var http := HTTPRequest.new()
+	_parent.add_child(http)
+	http.timeout = 5.0
+	var url := "%s/api/jobs/%s" % [_base_url, _current_job_id]
+	var err := http.request(url, [], HTTPClient.METHOD_DELETE)
+	if err != OK:
+		http.queue_free()
+		return
+	await http.request_completed
+	http.queue_free()
 
 
 func _get_result_string(result: int) -> String:

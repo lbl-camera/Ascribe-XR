@@ -61,6 +61,10 @@ func _enter_tree() -> void:
 		var specimen_list: ItemList = ui_instance.get_node('%SpecimenList')
 		specimen_list.item_selected.connect(_on_specimen_selected)
 		ui_instance.get_node("%FileDialogLayer").hide()
+		# Connect cancel button on LoadingLayer if present
+		var cancel_btn = ui_instance.get_node_or_null("LoadingLayer/CancelButton")
+		if cancel_btn is Button:
+			cancel_btn.pressed.connect(_on_loading_cancel_pressed)
 
 	# If data_url is set, load directly instead of showing menus
 	if data_url and not data_url.is_empty():
@@ -341,6 +345,12 @@ func _on_job_error(error: String) -> void:
 	_append_message("Error: " + error)
 	_rpc_job_error.rpc(error)
 	_active_job_id = ""
+
+
+func _on_loading_cancel_pressed() -> void:
+	if not is_multiplayer_authority():
+		return
+	_link_client.cancel_current_job()
 
 
 func _append_message(text: String) -> void:

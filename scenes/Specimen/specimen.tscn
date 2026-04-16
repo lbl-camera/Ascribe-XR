@@ -1,14 +1,14 @@
-[gd_scene load_steps=3 format=3 uid="uid://bajc3fgqqv584"]
+[gd_scene format=3 uid="uid://bajc3fgqqv584"]
 
-[ext_resource type="Script" uid="uid://8m0u05up11m3" path="res://scripts/specimen.gd" id="1_rjkgn"]
+[ext_resource type="Script" uid="uid://8m0u05up11m3" path="res://scripts/Specimen/specimen.gd" id="1_rjkgn"]
 
 [sub_resource type="SceneReplicationConfig" id="SceneReplicationConfig_oi3b0"]
 properties/0/path = NodePath(".:visible")
 properties/0/spawn = true
 properties/0/replication_mode = 1
 
-[node name="Specimen" type="Node3D"]
+[node name="Specimen" type="Node3D" unique_id=1671547008]
 script = ExtResource("1_rjkgn")
 
-[node name="MultiplayerSynchronizer" type="MultiplayerSynchronizer" parent="."]
+[node name="MultiplayerSynchronizer" type="MultiplayerSynchronizer" parent="." unique_id=1033523653]
 replication_config = SubResource("SceneReplicationConfig_oi3b0")
