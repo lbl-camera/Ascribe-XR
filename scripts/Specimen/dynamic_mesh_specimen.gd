@@ -7,6 +7,11 @@ var _http_source: HTTPSource
 var _link_client: AscribeLinkClient
 var _server_url: String
 
+var _room_id: String = "ascribe"
+var _active_job_id: String = ""
+var _message_log: Array[String] = []
+const MESSAGE_LOG_CAP := 50
+
 ## Array of function info dicts from /api/processing/functions
 var functions: Array = []
 ## Array of specimen info dicts from /api/specimens/
@@ -103,12 +108,7 @@ func _on_specimen_selected(index: int) -> void:
 		return
 
 	var function_name = functions[index].get("name", "")
-	_http_source.set_request({
-		"function_name": function_name,
-		"args": [],
-		"kwargs": {}
-	})
-	_http_source.fetch()
+	_load_dynamic_specimen(function_name, {})
 
 
 func _on_http_data(result_data: Variant) -> void:
@@ -303,3 +303,65 @@ func _get_file_extension_from_url(url: String) -> String:
 		if ext:
 			return ext.to_lower()
 	return ""
+
+
+# ---------------------------------------------------------------------------
+# Job-based Dynamic Specimen Loading (via AscribeLinkClient)
+# ---------------------------------------------------------------------------
+
+
+func _load_dynamic_specimen(specimen_id: String, params: Dictionary) -> void:
+	if not is_multiplayer_authority():
+		return
+	_message_log.clear()
+	_link_client.job_progress.connect(_on_job_progress)
+	_link_client.job_complete.connect(_on_job_complete)
+	_link_client.job_error.connect(_on_job_error)
+	_link_client.run_job(specimen_id, params, _room_id)
+
+
+func _on_job_progress(text: String) -> void:
+	_append_message(text)
+	_rpc_progress.rpc(text)
+
+
+func _on_job_complete(result: Dictionary) -> void:
+	_on_http_data(result)  # existing mesh/volume dispatch
+	_rpc_job_done.rpc()
+
+
+func _on_job_error(error: String) -> void:
+	push_error("Job failed: " + error)
+	_append_message("Error: " + error)
+	_rpc_job_error.rpc(error)
+
+
+func _append_message(text: String) -> void:
+	_message_log.append(text)
+	if _message_log.size() > MESSAGE_LOG_CAP:
+		_message_log = _message_log.slice(_message_log.size() - MESSAGE_LOG_CAP)
+	_render_message(text)
+
+
+func _render_message(text: String) -> void:
+	if ui_instance == null:
+		return
+	var log := ui_instance.get_node_or_null("LoadingLayer/MessageLog")
+	if log is RichTextLabel:
+		log.append_text(text + "\n")
+
+
+@rpc("authority", "call_remote", "reliable")
+func _rpc_progress(text: String) -> void:
+	_append_message(text)
+
+
+@rpc("authority", "call_remote", "reliable")
+func _rpc_job_done() -> void:
+	if ui_instance:
+		ui_instance.get_node("LoadingLayer").hide()
+
+
+@rpc("authority", "call_remote", "reliable")
+func _rpc_job_error(error: String) -> void:
+	_append_message("Error: " + error)
