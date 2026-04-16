@@ -108,6 +108,35 @@ size_flags_horizontal = 3
 size_flags_vertical = 4
 max_value = 1.0
 
+[node name="MessageLog" type="RichTextLabel" parent="LoadingLayer"]
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -420.0
+offset_top = -220.0
+offset_right = -20.0
+offset_bottom = -20.0
+grow_horizontal = 0
+grow_vertical = 0
+bbcode_enabled = false
+scroll_following = true
+
+[node name="DownloadBar" type="ProgressBar" parent="LoadingLayer"]
+visible = false
+anchors_preset = 2
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_left = 20.0
+offset_top = -50.0
+offset_right = 320.0
+offset_bottom = -20.0
+grow_vertical = 0
+min_value = 0.0
+max_value = 1.0
+step = 0.01
+
 [node name="FileDialogLayer" type="CanvasLayer" parent="."]
 unique_name_in_owner = true
 
