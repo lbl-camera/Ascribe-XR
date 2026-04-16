@@ -107,6 +107,7 @@ func run_job(specimen_id: String, params: Dictionary, room_id: String = "ascribe
 	# --- 1. POST /start ---
 	var start_http := HTTPRequest.new()
 	_parent.add_child(start_http)
+	start_http.timeout = 10.0
 	var start_url := _base_url + "/api/specimens/" + specimen_id + "/start"
 	var start_body := JSON.stringify({"params": params, "room_id": room_id})
 	var err := start_http.request(
@@ -143,9 +144,11 @@ func run_job(specimen_id: String, params: Dictionary, room_id: String = "ascribe
 	# --- 2. Poll /progress until status is terminal ---
 	if start_status != "done":
 		var last_seq := -1
+		var consecutive_poll_failures := 0
 		while true:
 			var prog_http := HTTPRequest.new()
 			_parent.add_child(prog_http)
+			prog_http.timeout = 5.0
 			var prog_url := "%s/api/jobs/%s/progress?since=%d" % [_base_url, job_id, last_seq]
 			err = prog_http.request(prog_url)
 			if err != OK:
@@ -159,9 +162,15 @@ func run_job(specimen_id: String, params: Dictionary, room_id: String = "ascribe
 			var prog_code: int = prog_response[1]
 			var prog_payload: PackedByteArray = prog_response[3]
 			if prog_result != HTTPRequest.RESULT_SUCCESS or prog_code != 200:
-				# One retry path: wait and try again, then give up.
+				consecutive_poll_failures += 1
+				if consecutive_poll_failures >= 3:
+					job_error.emit(
+						"Failed to GET /progress after 3 retries (HTTP %d)" % prog_code
+					)
+					return
 				await _parent.get_tree().create_timer(0.5).timeout
 				continue
+			consecutive_poll_failures = 0
 
 			var prog_json: Variant = JSON.parse_string(prog_payload.get_string_from_utf8())
 			if not (prog_json is Dictionary):
@@ -185,6 +194,7 @@ func run_job(specimen_id: String, params: Dictionary, room_id: String = "ascribe
 	# --- 3. GET /result ---
 	var result_http := HTTPRequest.new()
 	_parent.add_child(result_http)
+	result_http.timeout = 10.0
 	var result_url := "%s/api/jobs/%s/result" % [_base_url, job_id]
 	err = result_http.request(result_url)
 	if err != OK:
