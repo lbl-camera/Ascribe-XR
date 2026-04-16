@@ -20,6 +20,7 @@ var server_url: String = "http://localhost:8000"
 # Internal state
 var _link_client: AscribeLinkClient
 var _is_processing: bool = false
+var _progress_label: RichTextLabel = null
 
 @export var schema: Dictionary: 
 	set(value):
@@ -217,7 +218,8 @@ func make_ui(properties: Dictionary, param_name: String):
 
 			"maximum":
 				slider_values.append(properties[property_type])
-				create_slider(slider_values, default_value, param_name)
+	if slider_values:
+		create_slider(slider_values, default_value, param_name)
 
 func extract_parameters() -> Dictionary:
 	var param_dict: Dictionary = {}
@@ -268,37 +270,80 @@ func on_submit_pressed():
 func _process_and_load(params: Dictionary) -> void:
 	_is_processing = true
 	loading_started.emit()
-	
-	# Hide form, show loading indicator
-	self.hide()
-	
+
+	# Replace form contents with a progress display
+	container.hide()
+	submit_button.hide()
+	_show_progress_ui()
+
 	# Get room_id from config
 	var room_id = "ascribe"
 	if Config.webrtcroomname:
 		room_id = Config.webrtcroomname
-	
-	# Invoke the processing function
-	var result = await _link_client.invoke_processing_function(function_name, params, room_id)
-	
-	if result.has("error"):
-		push_error("ProceduralLinkUI: Processing failed: %s" % result.error)
-		_is_processing = false
-		loading_finished.emit()
-		# Show form again on error
-		self.show()
+
+	# Use the job-based API: /start → poll /progress → /result
+	_link_client.job_progress.connect(_on_job_progress)
+	_link_client.job_complete.connect(_on_job_complete)
+	_link_client.job_error.connect(_on_job_error)
+	_link_client.run_job(function_name, params, room_id)
+
+
+func _show_progress_ui() -> void:
+	if _progress_label != null:
 		return
-	
+	_progress_label = RichTextLabel.new()
+	_progress_label.name = "ProgressLog"
+	_progress_label.bbcode_enabled = false
+	_progress_label.scroll_following = true
+	_progress_label.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	_progress_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	# Add to the MarginContainer's VBoxContainer2 so it fills the panel
+	var vbox = get_node_or_null("MarginContainer/VBoxContainer2")
+	if vbox:
+		vbox.add_child(_progress_label)
+	else:
+		add_child(_progress_label)
+
+
+func _on_job_progress(text: String) -> void:
+	if _progress_label:
+		_progress_label.append_text(text + "\n")
+
+
+func _on_job_complete(result: Dictionary) -> void:
+	_disconnect_job_signals()
+
 	# Create specimen from result
 	var instance = _create_specimen_from_result(result)
 	if instance:
 		specimen_loaded.emit(instance)
 		SceneManager.change_3d_scene_instance(instance)
-	
+
 	_is_processing = false
 	loading_finished.emit()
-	
-	# Clean up this UI
 	queue_free()
+
+
+func _on_job_error(error: String) -> void:
+	_disconnect_job_signals()
+	push_error("ProceduralLinkUI: Job failed: %s" % error)
+
+	# Show error in the progress log
+	if _progress_label:
+		_progress_label.append_text("\n[ERROR] " + error + "\n")
+
+	_is_processing = false
+	loading_finished.emit()
+	# Don't queue_free — let user see the error and dismiss manually
+
+
+func _disconnect_job_signals() -> void:
+	if _link_client.job_progress.is_connected(_on_job_progress):
+		_link_client.job_progress.disconnect(_on_job_progress)
+	if _link_client.job_complete.is_connected(_on_job_complete):
+		_link_client.job_complete.disconnect(_on_job_complete)
+	if _link_client.job_error.is_connected(_on_job_error):
+		_link_client.job_error.disconnect(_on_job_error)
 
 
 func _create_specimen_from_result(result: Dictionary) -> Node:
