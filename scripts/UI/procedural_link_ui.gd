@@ -25,7 +25,7 @@ var _is_processing: bool = false
 	set(value):
 		_schema = value
 		if is_node_ready():
-			_build_ui_from_schema.rpc()
+			_build_ui_from_schema()
 		else:
 			_schema_pending = true
 	get:
@@ -34,6 +34,7 @@ var _is_processing: bool = false
 
 var in_range: bool = false
 var in_drop_down: bool = false
+var _is_applying_remote_value: bool = false
 var slider_dict: Dictionary = {}
 var slider_spin_box: SpinBox = null
 var slider_h_box: HBoxContainer = null
@@ -48,7 +49,9 @@ func _ready() -> void:
 	if _schema_pending:
 		_build_ui_from_schema.rpc()
 		_schema_pending = false
-	
+	print("proc ui path: ", get_path())
+	print("multiplayer authority: ", get_multiplayer_authority())
+	print("unique id: ", multiplayer.get_unique_id())
 	# Initialize HTTP client
 	_link_client = AscribeLinkClient.new(server_url)
 	_link_client.setup(self)
@@ -57,7 +60,14 @@ func _ready() -> void:
 func _build_ui_from_schema() -> void:
 	if _schema.is_empty() or not _schema.has("properties"):
 		return
+	# clearing out everything between peers
+	for child in proc_ui_container.get_children():
+		child.queue_free()
 
+	param_controls.clear()
+	slider_dict.clear()
+	in_range = false
+	in_drop_down = false
 	param_controls.clear()
 
 	for keyword in _schema["properties"].keys():
@@ -96,23 +106,30 @@ func setup_drop_down(enum_possibilities: Array) -> OptionButton:
 func set_property_types(type, default, param_name: String):
 	match type:
 		"boolean":
-			var check_box = CheckBox.new()
+			var check_box := CheckBox.new()
 			current_container.add_child(check_box)
-			if default == "true":
-				check_box.button_pressed = true
-			
+			check_box.button_pressed = (default == true or default == "true")
+			check_box.toggled.connect(func(pressed: bool):
+				_send_param_value(param_name, pressed)
+			)
 			param_controls[param_name] = check_box
 
 		"number":
 			if in_range:
 				in_range = false
 				return
-			var spin_box = SpinBox.new()
-			current_container.add_child(spin_box)
+
+			var spin_box := SpinBox.new()
 			spin_box.value = default
 			spin_box.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
-			spin_box.value_changed.connect(value_changed.rpc.bind(spin_box))
+			current_container.add_child(spin_box)
+
+			spin_box.value_changed.connect(func(new_value: float):
+				_send_param_value(param_name, new_value)
+			)
+
 			param_controls[param_name] = spin_box
+
 		"textarea":
 			var multiline := TextEdit.new()
 			multiline.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -120,34 +137,61 @@ func set_property_types(type, default, param_name: String):
 			multiline.custom_minimum_size.y = 80
 			setup_autogrow_text_edit(multiline, 2, 10)
 			current_container.add_child(multiline)
-			multiline.text_changed.connect(value_changed.rpc.bind(multiline))
+
+			multiline.text_changed.connect(func():
+				_send_param_value(param_name, multiline.text)
+			)
+
 			param_controls[param_name] = multiline
+
 		"string":
 			if !in_drop_down:
-				var line_edit: LineEdit = LineEdit.new()
+				var line_edit := LineEdit.new()
 				line_edit.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-				current_container.add_child(line_edit)
-				line_edit.text = default
+				line_edit.text = str(default)
 				line_edit.focus_entered.connect(_on_text_section_entered)
-				line_edit.text_changed.connect(value_changed.rpc.bind(line_edit))
+				current_container.add_child(line_edit)
+
+				line_edit.text_changed.connect(func(new_text: String):
+					_send_param_value(param_name, new_text)
+				)
+
 				param_controls[param_name] = line_edit
 			else:
 				in_drop_down = false
-
+				
 @rpc("any_peer", "call_local", "reliable")
-func value_changed(control, value):
-	print("value changed")
-	if control is HSlider:
-		control.value = value
-	elif control is SpinBox:
-		control.value = value
-	elif control is CheckBox:
-		control.button_pressed = value
-	elif control is OptionButton:
-		control.selected = value
-	elif control is LineEdit or control is TextEdit:
-		control.text = value
+func apply_param_value(param_name: String, value) -> void:
+	if not param_controls.has(param_name):
+		return
+	print("RECEIVED ", multiplayer.get_unique_id(), " ", param_name, " = ", value)
+	_is_applying_remote_value = true
 
+	var control = param_controls[param_name]
+
+	if control is HSlider:
+		control.value = float(value)
+	elif control is SpinBox:
+		control.value = float(value)
+	elif control is CheckBox:
+		control.button_pressed = bool(value)
+	elif control is OptionButton:
+		control.select(int(value))
+	elif control is LineEdit:
+		control.text = str(value)
+	elif control is TextEdit:
+		control.text = str(value)
+
+	_is_applying_remote_value = false
+	
+func _send_param_value(param_name: String, value) -> void:
+	if _is_applying_remote_value:
+		return
+	print("proc ui path: ", get_path())
+	print("multiplayer authority: ", get_multiplayer_authority())
+	print("unique id: ", multiplayer.get_unique_id())
+	print("SENDING ", multiplayer.get_unique_id(), " ", param_name, " = ", value)
+	apply_param_value.rpc(param_name, value)
 	
 
 func create_slider(slider_values: Array, initial_position, param_name: String):
@@ -166,14 +210,14 @@ func create_slider(slider_values: Array, initial_position, param_name: String):
 		else:
 			return
 
-	var slider = HSlider.new()
+	var slider := HSlider.new()
 	slider.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	slider.ticks_on_borders = true
 	slider.min_value = slider_values[0]
 	slider.max_value = slider_values[1]
 	slider.value = initial_position
 
-	var spin_box = SpinBox.new()
+	var spin_box := SpinBox.new()
 	spin_box.min_value = slider_values[0]
 	spin_box.max_value = slider_values[1]
 	spin_box.value = initial_position
@@ -189,13 +233,13 @@ func create_slider(slider_values: Array, initial_position, param_name: String):
 	var slider_range := HBoxContainer.new()
 	slider_range.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 
-	var min_label = Label.new()
+	var min_label := Label.new()
 	min_label.text = str(slider.min_value)
 
-	var spacer = Control.new()
+	var spacer := Control.new()
 	spacer.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 
-	var max_label = Label.new()
+	var max_label := Label.new()
 	max_label.text = str(slider.max_value)
 	max_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 
@@ -203,7 +247,7 @@ func create_slider(slider_values: Array, initial_position, param_name: String):
 	slider_range.add_child(spacer)
 	slider_range.add_child(max_label)
 
-	var spinbox_spacer = Control.new()
+	var spinbox_spacer := Control.new()
 	spinbox_spacer.custom_minimum_size.x = spin_box.custom_minimum_size.x
 
 	range_row.add_child(slider_range)
@@ -215,11 +259,22 @@ func create_slider(slider_values: Array, initial_position, param_name: String):
 	slider_dict[slider] = spin_box
 	param_controls[param_name] = slider
 
-	slider.value_changed.connect(on_slider_value_changed.bind(slider))
-	spin_box.value_changed.connect(on_spinbox_value_changed.bind(slider))
+	slider.value_changed.connect(func(new_value: float):
+		if _is_applying_remote_value:
+			return
+		if slider_dict.has(slider):
+			slider_dict[slider].value = new_value
+		_send_param_value(param_name, new_value)
+	)
+
+	spin_box.value_changed.connect(func(new_value: float):
+		if _is_applying_remote_value:
+			return
+		slider.value = new_value
+		_send_param_value(param_name, new_value)
+	)
 
 	current_container.add_child(slider_container)
-	# range_container.theme
 
 func setup_autogrow_text_edit(text_edit: TextEdit, min_lines: int = 2, max_lines: int = 8) -> void:
 	text_edit.wrap_mode = TextEdit.LINE_WRAPPING_BOUNDARY
@@ -266,30 +321,24 @@ func _get_default_for_type(properties: Dictionary) -> Variant:
 
 
 func make_ui(properties: Dictionary, param_name: String):
-	# from here we can loop the attribute of each property, 
-	# we should get enum, type, or something to indicate range, 
-	# and then we can match off that
 	var default_value = _get_default_for_type(properties)
-	var slider_values = []
-	for i in range(properties.keys().size()):
-		var property_type = properties.keys()[i]
-		match property_type:
-			"enum":
-				var drop_down_menu = setup_drop_down(properties[property_type])
-				drop_down_menu.selected = properties[property_type].find(default_value)
-				current_container.add_child(drop_down_menu)
-				param_controls[param_name] = drop_down_menu
 
-			"type":
-				if properties.has("minimum"):
-					in_range = true
-				set_property_types(properties[property_type], default_value, param_name)
-			"minimum":
-				slider_values.append(properties[property_type])
+	if properties.has("enum"):
+		var drop_down_menu = setup_drop_down(properties["enum"])
+		drop_down_menu.selected = properties["enum"].find(default_value)
+		current_container.add_child(drop_down_menu)
+		drop_down_menu.item_selected.connect(func(index: int):
+			_send_param_value(param_name, index)
+		)
+		param_controls[param_name] = drop_down_menu
+		return
 
-			"maximum":
-				slider_values.append(properties[property_type])
-				create_slider(slider_values, default_value, param_name)
+	if properties.get("type") == "number" and properties.has("minimum") and properties.has("maximum"):
+		create_slider([properties["minimum"], properties["maximum"]], default_value, param_name)
+		return
+
+	if properties.has("type"):
+		set_property_types(properties["type"], default_value, param_name)
 
 func extract_parameters() -> Dictionary:
 	var param_dict: Dictionary = {}
@@ -315,13 +364,13 @@ func on_slider_value_changed(new_value: float, slider: HSlider) -> void:
 	if slider_dict.has(slider):
 		var spin_box: SpinBox = slider_dict[slider]
 		spin_box.value = new_value
-		value_changed.rpc(spin_box, new_value)
+		
 	
 	
 func on_spinbox_value_changed(new_value: float, slider: HSlider) -> void:
 	if slider_dict.has(slider):
 		slider.value = new_value
-	value_changed.rpc(slider, new_value)
+	
 	
 	
 func _on_text_section_entered():
