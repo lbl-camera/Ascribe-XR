@@ -49,6 +49,7 @@ func _enter_tree() -> void:
 	_link_client.job_progress.connect(_on_job_progress)
 	_link_client.job_complete.connect(_on_job_complete)
 	_link_client.job_error.connect(_on_job_error)
+	multiplayer.peer_connected.connect(_on_peer_connected)
 
 	# Initialize HTTP source for mesh processing requests
 	_http_source = HTTPSource.new(_server_url)
@@ -319,6 +320,7 @@ func _get_file_extension_from_url(url: String) -> String:
 func _load_dynamic_specimen(specimen_id: String, params: Dictionary) -> void:
 	if not is_multiplayer_authority():
 		return
+	_active_job_id = specimen_id
 	_message_log.clear()
 	_link_client.run_job(specimen_id, params, _room_id)
 
@@ -331,12 +333,14 @@ func _on_job_progress(text: String) -> void:
 func _on_job_complete(result: Dictionary) -> void:
 	_on_http_data(result)  # existing mesh/volume dispatch
 	_rpc_job_done.rpc()
+	_active_job_id = ""
 
 
 func _on_job_error(error: String) -> void:
 	push_error("Job failed: " + error)
 	_append_message("Error: " + error)
 	_rpc_job_error.rpc(error)
+	_active_job_id = ""
 
 
 func _append_message(text: String) -> void:
@@ -368,3 +372,25 @@ func _rpc_job_done() -> void:
 @rpc("authority", "call_remote", "reliable")
 func _rpc_job_error(error: String) -> void:
 	_append_message("Error: " + error)
+
+
+func _on_peer_connected(peer_id: int) -> void:
+	if not is_multiplayer_authority():
+		return
+	if _active_job_id.is_empty():
+		return
+	_rpc_sync_state.rpc_id(peer_id, _active_job_id, _message_log)
+
+
+@rpc("authority", "call_remote", "reliable")
+func _rpc_sync_state(job_specimen_id: String, backlog: Array) -> void:
+	# Render the backlog so the joiner sees the current state of the load.
+	if ui_instance:
+		ui_instance.get_node("LoadingLayer").show()
+	var log = null
+	if ui_instance:
+		log = ui_instance.get_node_or_null("LoadingLayer/MessageLog")
+	if log is RichTextLabel:
+		log.clear()
+	for text in backlog:
+		_append_message(str(text))
