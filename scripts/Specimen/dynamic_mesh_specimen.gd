@@ -46,6 +46,9 @@ func _enter_tree() -> void:
 	_link_client.functions_loaded.connect(_on_functions_loaded)
 	_link_client.specimens_loaded.connect(_on_specimens_loaded)
 	_link_client.request_error.connect(func(e): push_error("AscribeLink: " + e))
+	_link_client.job_progress.connect(_on_job_progress)
+	_link_client.job_complete.connect(_on_job_complete)
+	_link_client.job_error.connect(_on_job_error)
 
 	# Initialize HTTP source for mesh processing requests
 	_http_source = HTTPSource.new(_server_url)
@@ -76,6 +79,9 @@ func set_server_url(url: String) -> void:
 		_link_client.functions_loaded.connect(_on_functions_loaded)
 		_link_client.specimens_loaded.connect(_on_specimens_loaded)
 		_link_client.request_error.connect(func(e): push_error("AscribeLink: " + e))
+		_link_client.job_progress.connect(_on_job_progress)
+		_link_client.job_complete.connect(_on_job_complete)
+		_link_client.job_error.connect(_on_job_error)
 	if _http_source:
 		_http_source = HTTPSource.new(url)
 		_http_source.setup(self)
@@ -314,9 +320,6 @@ func _load_dynamic_specimen(specimen_id: String, params: Dictionary) -> void:
 	if not is_multiplayer_authority():
 		return
 	_message_log.clear()
-	_link_client.job_progress.connect(_on_job_progress)
-	_link_client.job_complete.connect(_on_job_complete)
-	_link_client.job_error.connect(_on_job_error)
 	_link_client.run_job(specimen_id, params, _room_id)
 
 
