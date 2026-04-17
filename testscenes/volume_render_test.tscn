@@ -1,0 +1,90 @@
+[gd_scene format=3 uid="uid://bjx62xwrk504n"]
+
+[ext_resource type="Script" uid="uid://dici2kxme4ptv" path="res://testscenes/volume_render_test.gd" id="1_vrtest"]
+[ext_resource type="Script" uid="uid://bb2lef7rn0ovi" path="res://addons/volume_layered_shader/scenes/controls/volume_layered_shader.gd" id="2_vol"]
+[ext_resource type="Texture2D" uid="uid://bb8bdgbv3lc4m" path="res://addons/volume_layered_shader/textures/purple_gradient_texture.tres" id="3_grad"]
+
+[sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_sky"]
+sky_horizon_color = Color(0.64625, 0.65575, 0.67075, 1)
+ground_horizon_color = Color(0.64625, 0.65575, 0.67075, 1)
+
+[sub_resource type="Sky" id="Sky_env"]
+sky_material = SubResource("ProceduralSkyMaterial_sky")
+
+[sub_resource type="Environment" id="Environment_env"]
+background_mode = 2
+background_energy_multiplier = 0.75
+sky = SubResource("Sky_env")
+tonemap_mode = 2
+
+[sub_resource type="Animation" id="Animation_afssh"]
+length = 0.001
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("VolumeLayeredShader:gamma")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [1.102]
+}
+
+[sub_resource type="Animation" id="Animation_spin"]
+resource_name = "spin"
+length = 4.0
+loop_mode = 1
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("VolumeLayeredShader:rotation:y")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 4),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [0.0, 6.283185307179586]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("VolumeLayeredShader:gamma")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0, 2, 4),
+"transitions": PackedFloat32Array(1, 1, 1),
+"update": 0,
+"values": [1.0, 10.0, 1.0]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_default"]
+_data = {
+&"RESET": SubResource("Animation_afssh"),
+&"spin": SubResource("Animation_spin")
+}
+
+[node name="VolumeRenderTest" type="Node3D" unique_id=1100509180]
+script = ExtResource("1_vrtest")
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="." unique_id=1730613996]
+environment = SubResource("Environment_env")
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="." unique_id=688635956]
+transform = Transform3D(-0.866025, -0.433013, 0.25, 0, 0.5, 0.866025, -0.5, 0.75, -0.433013, 0, 2, 0)
+
+[node name="Camera3D" type="Camera3D" parent="." unique_id=470537878]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 1.2369545)
+
+[node name="VolumeLayeredShader" type="Node3D" parent="." unique_id=1127078518]
+transform = Transform3D(0.1703483, 0, -0.9853839, 0, 1, 0, 0.9853839, 0, 0.1703483, 0, 0, 0)
+script = ExtResource("2_vol")
+gamma = 1.102
+gradient = ExtResource("3_grad")
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="." unique_id=2082297036]
+libraries/ = SubResource("AnimationLibrary_default")
+autoplay = &"spin"
