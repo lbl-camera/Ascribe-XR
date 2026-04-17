@@ -17,7 +17,12 @@ var _active_procedural_ui: Panel = null
 var _active_specimen_id: String = ""
 var _active_function_name: String = ""
 var _active_room_id: String = ""
+var _active_params: Dictionary = {}
 var _is_submitter: bool = false
+## Held as a member so the job coroutine and its signal connections survive
+## past _run_job returning. AscribeLinkClient is RefCounted, so a local ref
+## would be freed before the HTTP polling loop finishes.
+var _active_job_client: AscribeLinkClient = null
 
 
 func _ready() -> void:
@@ -155,6 +160,7 @@ func request_submit(function_name: String, params: Dictionary) -> void:
 func specimen_job_submitted(function_name: String, params: Dictionary, room_id: String) -> void:
 	_active_function_name = function_name
 	_active_room_id = room_id
+	_active_params = params
 	if _active_procedural_ui and _active_procedural_ui.has_method("enter_loading_state"):
 		_active_procedural_ui.enter_loading_state()
 
@@ -164,12 +170,12 @@ func specimen_job_submitted(function_name: String, params: Dictionary, room_id: 
 
 
 func _run_job(function_name: String, params: Dictionary, room_id: String) -> void:
-	var client := AscribeLinkClient.new(Config.ascribe_link_url)
-	client.setup(self)
-	client.job_progress.connect(_on_submitter_progress)
-	client.job_complete.connect(_on_submitter_complete)
-	client.job_error.connect(_on_submitter_error)
-	client.run_job(function_name, params, room_id)
+	_active_job_client = AscribeLinkClient.new(Config.ascribe_link_url)
+	_active_job_client.setup(self)
+	_active_job_client.job_progress.connect(_on_submitter_progress)
+	_active_job_client.job_complete.connect(_on_submitter_complete)
+	_active_job_client.job_error.connect(_on_submitter_error)
+	_active_job_client.run_job(function_name, params, room_id)
 
 
 func _on_submitter_progress(text: String) -> void:
@@ -181,10 +187,12 @@ func _on_submitter_complete(result: Dictionary) -> void:
 	# cache via the /data endpoint. The submitter just finished computing it,
 	# so the cache is warm for everyone.
 	specimen_job_done.rpc(_active_specimen_id, _active_function_name, _active_room_id)
+	_active_job_client = null
 
 
 func _on_submitter_error(error: String) -> void:
 	specimen_job_error.rpc(error)
+	_active_job_client = null
 
 
 @rpc("any_peer", "call_local", "reliable")
@@ -206,18 +214,16 @@ func specimen_job_error(error: String) -> void:
 
 
 func _fetch_and_load_result(specimen_id: String, function_name: String, room_id: String) -> void:
-	# Use POST /api/specimens/{id}/data with the same room_id to hit the cache.
+	# Use POST /api/specimens/{id}/data with the same params+room_id that the
+	# submitter used — the server's RoomResultCache gives every peer the same
+	# result without recomputing.
 	var metadata := await _fetch_metadata_for_active(specimen_id)
-	var params := {}
-	# The ProceduralLinkUI still has the form values; pull them if present.
-	if _active_procedural_ui and _active_procedural_ui.has_method("get_last_params"):
-		params = _active_procedural_ui.get_last_params()
 
 	var http := HTTPRequest.new()
 	add_child(http)
 	http.timeout = 30.0
 	var url := "%s/api/specimens/%s/data" % [Config.ascribe_link_url, specimen_id]
-	var body := JSON.stringify({"params": params, "room_id": room_id})
+	var body := JSON.stringify({"params": _active_params, "room_id": room_id})
 	var err := http.request(url, ["Content-Type: application/json"], HTTPClient.METHOD_POST, body)
 	if err != OK:
 		push_error("SceneManager: Failed to POST /data: %s" % error_string(err))
@@ -230,7 +236,7 @@ func _fetch_and_load_result(specimen_id: String, function_name: String, room_id:
 	var http_code: int = response[1]
 	var payload: PackedByteArray = response[3]
 	if result_code != HTTPRequest.RESULT_SUCCESS or http_code != 200:
-		push_error("SceneManager: /data failed: HTTP %d" % http_code)
+		push_error("SceneManager: /data failed: HTTP %d, body=%s" % [http_code, payload.get_string_from_utf8().substr(0, 200)])
 		return
 
 	var result_json = JSON.parse_string(payload.get_string_from_utf8())

@@ -21,6 +21,7 @@ var server_url: String = "http://localhost:8000"
 # Internal state
 var _progress_label: RichTextLabel = null
 var _last_params: Dictionary = {}
+var _submitted: bool = false
 
 @export var schema: Dictionary:
 	set(value):
@@ -240,10 +241,13 @@ func on_spinbox_value_changed(new_value: float, slider: HSlider) -> void:
 # ---------------------------------------------------------------------------
 
 func on_submit_pressed() -> void:
+	if _submitted:
+		return
 	if function_name.is_empty():
 		push_error("ProceduralLinkUI: function_name not set")
 		return
 
+	_submitted = true
 	_last_params = extract_parameters()
 	ui_accept.emit(_last_params)
 	SceneManager.request_submit(function_name, _last_params)
@@ -284,9 +288,14 @@ func _show_progress_ui() -> void:
 	_progress_label.scroll_following = true
 	_progress_label.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	_progress_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_progress_label.custom_minimum_size = Vector2(0, 400)
 
 	var vbox = get_node_or_null("MarginContainer/VBoxContainer2")
 	if vbox:
+		# Keep ButtonContainer last so it stays visible at the bottom.
 		vbox.add_child(_progress_label)
+		var button_container := vbox.get_node_or_null("ButtonContainer")
+		if button_container:
+			vbox.move_child(button_container, vbox.get_child_count() - 1)
 	else:
 		add_child(_progress_label)
