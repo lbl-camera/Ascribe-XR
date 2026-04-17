@@ -1,9 +1,10 @@
 extends Panel
 
+## Builds a form from a JSON Schema and defers submission to SceneManager.
+## Submission, progress, and result loading are coordinated across peers by
+## SceneManager RPCs, so each connected client runs the same state machine.
+
 signal ui_accept  # Legacy signal, kept for compatibility
-signal loading_started
-signal loading_finished
-signal specimen_loaded(instance: Node)
 signal slider_changed(slider)
 
 @onready var submit_button: Button = %SubmitButton
@@ -18,11 +19,10 @@ var metadata: Dictionary = {}
 var server_url: String = "http://localhost:8000"
 
 # Internal state
-var _link_client: AscribeLinkClient
-var _is_processing: bool = false
 var _progress_label: RichTextLabel = null
+var _last_params: Dictionary = {}
 
-@export var schema: Dictionary: 
+@export var schema: Dictionary:
 	set(value):
 		_schema = value
 		if is_node_ready():
@@ -30,7 +30,6 @@ var _progress_label: RichTextLabel = null
 		else:
 			_schema_pending = true
 	get:
-		print(_schema)
 		return _schema
 
 var in_range: bool = false
@@ -40,18 +39,12 @@ var slider_spin_box: SpinBox = null
 var slider_h_box: HBoxContainer = null
 var param_controls: Dictionary = {}
 
-# Called when the node enters the scene tree for the first time.
+
 func _ready() -> void:
 	submit_button.pressed.connect(on_submit_pressed)
-	#Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
-	#schema = {'$schema': 'https://json-schema.org/draft/2020-12/schema', '$id': 'https://example.com/person.schema.json', 'title': 'ui_test_function', 'type': 'object', 'properties': {'radius': {'type': 'number', 'minimum': 1, 'maximum': 10, 'default': 1.0}, 'segments': {'type': 'number', 'minimum': 3, 'maximum': 128, 'default': 32}, 'style': {'enum': ['smooth', 'faceted'], 'type': 'string', 'default': 'smooth'}, 'hollow': {'type': 'boolean', 'default': 'false'}, 'name': {'type': 'string', 'default': 'brain'}, 'quantity': {'type': 'number', 'default': 0}}}
 	if _schema_pending:
 		_build_ui_from_schema()
 		_schema_pending = false
-	
-	# Initialize HTTP client
-	_link_client = AscribeLinkClient.new(server_url)
-	_link_client.setup(self)
 
 
 func _build_ui_from_schema() -> void:
@@ -76,15 +69,11 @@ func _build_ui_from_schema() -> void:
 				slider_spin_box.value = properties_dict["default"]
 			slider_h_box.add_child(slider_spin_box)
 
-			# store the spinbox for now; slider will replace it later
 			param_controls[keyword] = slider_spin_box
 		else:
 			container.add_child(new_label)
 
 		make_ui(properties_dict, keyword)
-	#Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
-	#schema = {'$schema': 'https://json-schema.org/draft/2020-12/schema', '$id': 'https://example.com/person.schema.json', 'title': 'ui_test_function', 'type': 'object', 'properties': {'radius': {'type': 'number', 'minimum': 1, 'maximum': 10, 'default': 1.0}, 'segments': {'type': 'number', 'minimum': 3, 'maximum': 128, 'default': 32}, 'style': {'enum': ['smooth', 'faceted'], 'type': 'string', 'default': 'smooth'}, 'hollow': {'type': 'boolean', 'default': 'false'}, 'name': {'type': 'string', 'default': 'brain'}, 'quantity': {'type': 'number', 'default': 0}}}
-
 
 
 func setup_drop_down(enum_possibilities: Array) -> OptionButton:
@@ -93,7 +82,7 @@ func setup_drop_down(enum_possibilities: Array) -> OptionButton:
 	for possibility in enum_possibilities:
 		drop_down.add_item(possibility)
 	return drop_down
-		
+
 
 func set_property_types(type, default, param_name: String):
 	match type:
@@ -121,7 +110,7 @@ func set_property_types(type, default, param_name: String):
 				param_controls[param_name] = line_edit
 			else:
 				in_drop_down = false
-			
+
 
 func create_slider(slider_values: Array, initial_position, param_name: String):
 	if initial_position is String:
@@ -168,15 +157,12 @@ func create_slider(slider_values: Array, initial_position, param_name: String):
 	slider.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	slider.value_changed.connect(on_slider_value_changed.bind(slider))
 	slider_spin_box.value_changed.connect(on_spinbox_value_changed.bind(slider))
-	# range_container.theme
-	
+
 
 func _get_default_for_type(properties: Dictionary) -> Variant:
-	# Return explicit default if present
 	if properties.has('default'):
 		return properties['default']
-	
-	# Otherwise infer a sensible default based on type
+
 	var prop_type = properties.get('type', '')
 	match prop_type:
 		"string":
@@ -185,18 +171,14 @@ func _get_default_for_type(properties: Dictionary) -> Variant:
 			return properties.get('minimum', 0.0)
 		"boolean":
 			return false
-	
-	# For enums, default to first option
+
 	if properties.has('enum') and properties['enum'].size() > 0:
 		return properties['enum'][0]
-	
+
 	return ""
 
 
 func make_ui(properties: Dictionary, param_name: String):
-	# from here we can loop the attribute of each property, 
-	# we should get enum, type, or something to indicate range, 
-	# and then we can match off that
 	var default_value = _get_default_for_type(properties)
 	var slider_values = []
 	for i in range(properties.keys().size()):
@@ -220,6 +202,7 @@ func make_ui(properties: Dictionary, param_name: String):
 				slider_values.append(properties[property_type])
 	if slider_values:
 		create_slider(slider_values, default_value, param_name)
+
 
 func extract_parameters() -> Dictionary:
 	var param_dict: Dictionary = {}
@@ -245,47 +228,51 @@ func on_slider_value_changed(new_value: float, slider: HSlider) -> void:
 	if slider_dict.has(slider):
 		var spin_box: SpinBox = slider_dict[slider]
 		spin_box.value = new_value
-	
+
+
 func on_spinbox_value_changed(new_value: float, slider: HSlider) -> void:
 	if slider_dict.has(slider):
 		slider.value = new_value
-	
 
 
-func on_submit_pressed():
-	if _is_processing:
+# ---------------------------------------------------------------------------
+# Multiplayer submission — SceneManager coordinates the rest.
+# ---------------------------------------------------------------------------
+
+func on_submit_pressed() -> void:
+	if function_name.is_empty():
+		push_error("ProceduralLinkUI: function_name not set")
 		return
-	
-	var params = extract_parameters()
-	print("ProceduralLinkUI: Submitting params: ", params)
-	
-	 #Emit legacy signal for compatibility
-	ui_accept.emit(params)
-	
-	# If function_name is set, handle the full flow ourselves
-	if not function_name.is_empty():
-		_process_and_load(params)
+
+	_last_params = extract_parameters()
+	ui_accept.emit(_last_params)
+	SceneManager.request_submit(function_name, _last_params)
 
 
-func _process_and_load(params: Dictionary) -> void:
-	_is_processing = true
-	loading_started.emit()
-
-	# Replace form contents with a progress display
+## Called via SceneManager RPC once any peer has submitted: hide the form,
+## show a progress panel so every client sees the same loading screen.
+func enter_loading_state() -> void:
 	container.hide()
 	submit_button.hide()
 	_show_progress_ui()
 
-	# Get room_id from config
-	var room_id = "ascribe"
-	if Config.webrtcroomname:
-		room_id = Config.webrtcroomname
 
-	# Use the job-based API: /start → poll /progress → /result
-	_link_client.job_progress.connect(_on_job_progress)
-	_link_client.job_complete.connect(_on_job_complete)
-	_link_client.job_error.connect(_on_job_error)
-	_link_client.run_job(function_name, params, room_id)
+func append_progress(text: String) -> void:
+	if _progress_label == null:
+		_show_progress_ui()
+	_progress_label.append_text(text + "\n")
+
+
+func show_error(error: String) -> void:
+	if _progress_label == null:
+		_show_progress_ui()
+	_progress_label.append_text("\n[ERROR] " + error + "\n")
+
+
+func get_last_params() -> Dictionary:
+	if _last_params.is_empty():
+		_last_params = extract_parameters()
+	return _last_params
 
 
 func _show_progress_ui() -> void:
@@ -297,123 +284,9 @@ func _show_progress_ui() -> void:
 	_progress_label.scroll_following = true
 	_progress_label.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	_progress_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	# Add to the MarginContainer's VBoxContainer2 so it fills the panel
+
 	var vbox = get_node_or_null("MarginContainer/VBoxContainer2")
 	if vbox:
 		vbox.add_child(_progress_label)
 	else:
 		add_child(_progress_label)
-
-
-func _on_job_progress(text: String) -> void:
-	if _progress_label:
-		_progress_label.append_text(text + "\n")
-
-
-func _on_job_complete(result: Dictionary) -> void:
-	_disconnect_job_signals()
-
-	# Create specimen from result
-	var instance = _create_specimen_from_result(result)
-	if instance:
-		specimen_loaded.emit(instance)
-		SceneManager.change_3d_scene_instance(instance)
-
-	_is_processing = false
-	loading_finished.emit()
-	queue_free()
-
-
-func _on_job_error(error: String) -> void:
-	_disconnect_job_signals()
-	push_error("ProceduralLinkUI: Job failed: %s" % error)
-
-	# Show error in the progress log
-	if _progress_label:
-		_progress_label.append_text("\n[ERROR] " + error + "\n")
-
-	_is_processing = false
-	loading_finished.emit()
-	# Don't queue_free — let user see the error and dismiss manually
-
-
-func _disconnect_job_signals() -> void:
-	if _link_client.job_progress.is_connected(_on_job_progress):
-		_link_client.job_progress.disconnect(_on_job_progress)
-	if _link_client.job_complete.is_connected(_on_job_complete):
-		_link_client.job_complete.disconnect(_on_job_complete)
-	if _link_client.job_error.is_connected(_on_job_error):
-		_link_client.job_error.disconnect(_on_job_error)
-
-
-func _create_specimen_from_result(result: Dictionary) -> Node:
-	var result_type = result.get("type", "")
-	
-	match result_type:
-		"mesh":
-			return _create_mesh_specimen(result)
-		"volume":
-			return _create_volume_specimen(result)
-		_:
-			push_error("ProceduralLinkUI: Unknown result type: %s" % result_type)
-			return null
-
-
-func _create_mesh_specimen(result: Dictionary) -> Node:
-	# Create MeshData from result
-	var mesh_data = MeshData.new()
-	mesh_data.set_from_dict(result)
-	
-	# Don't flip winding - marching cubes already has correct winding
-	mesh_data.flip_normals = false
-	
-	# Load mesh specimen scene
-	var scene = load("res://specimens/mesh_specimen.tscn")
-	if not scene:
-		push_error("ProceduralLinkUI: Failed to load mesh_specimen.tscn")
-		return null
-	
-	var instance = scene.instantiate()
-	
-	# Set the mesh data
-	if instance.has_method("set_mesh_data"):
-		instance.set_mesh_data(mesh_data)
-	else:
-		push_error("ProceduralLinkUI: Mesh specimen doesn't have set_mesh_data method")
-		instance.queue_free()
-		return null
-	
-	# Set display name
-	if "display_name" in instance:
-		instance.display_name = metadata.get("display_name", "Generated Mesh")
-	
-	return instance
-
-
-func _create_volume_specimen(result: Dictionary) -> Node:
-	# Create VolumetricData from result
-	var volume_data = VolumetricData.new()
-	volume_data.set_from_dict(result)
-	
-	if not volume_data.is_valid():
-		push_error("ProceduralLinkUI: Invalid volume data")
-		return null
-	
-	# Load volume specimen scene
-	var scene = load("res://specimens/volume_specimen.tscn")
-	if not scene:
-		push_error("ProceduralLinkUI: Failed to load volume_specimen.tscn")
-		return null
-	
-	var instance = scene.instantiate()
-	
-	# Set display name
-	if "display_name" in instance:
-		instance.display_name = metadata.get("display_name", "Generated Volume")
-	
-	# Note: Volume texture needs to be applied after instance enters tree
-	# The caller should handle this via the specimen_loaded signal
-	instance.set_meta("_volume_data", volume_data)
-	
-	return instance
-	

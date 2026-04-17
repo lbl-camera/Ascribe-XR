@@ -29,7 +29,6 @@ offset_bottom = 2000.0
 theme = ExtResource("1_6lio1")
 script = ExtResource("2_sb560")
 scenes_paths = {
-"ASCRIBE-Link Mesh": "res://specimens/dynamic_mesh_specimen.tscn",
 "Brain": "res://specimens/brain.tscn",
 "Brain (Head)": "res://specimens/head.tscn",
 "Brain Volume": "res://specimens/brainvolume.tscn",

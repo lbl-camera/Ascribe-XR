@@ -165,7 +165,7 @@ root_path = NodePath("../Specimens")
 replication_config = SubResource("SceneReplicationConfig_tjbaa")
 
 [node name="SpecimenSpawner" type="MultiplayerSpawner" parent="." unique_id=665263542]
-_spawnable_scenes = PackedStringArray("uid://cx5ms3ytmwp1o", "uid://lb78icrhffqj", "uid://crul1hw0w62d8", "uid://bk56w1twe7qp4", "uid://b5dc3bmfthxq5", "uid://dtsuxanqj41ss", "uid://djplj22paplnw", "uid://cy3c2vv1feuv2", "uid://t1a88rx0ame4", "uid://qe82kq4mc3sf", "uid://df38t5025dpny", "uid://dumwd3vggd4vu", "uid://8y82a7jnx07l", "uid://chmjd077ul8nk", "uid://nsaby1sui3c")
+_spawnable_scenes = PackedStringArray()
 spawn_path = NodePath("../Specimens")
 
 [node name="Fade" parent="." unique_id=2077979272 instance=ExtResource("10_4pnrr")]

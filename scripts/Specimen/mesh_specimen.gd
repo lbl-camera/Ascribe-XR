@@ -5,6 +5,10 @@ class_name MeshSpecimen
 @export_file("*.stl", "*.fbx", "*.obj") var loading_file: String
 @export var flip_normals: bool = false
 
+## URL to fetch specimen data over HTTP (e.g. ascribe-link /api/specimens/{id}/data).
+## Set before adding to tree. Every peer downloads independently.
+@export var data_url: String = ""
+
 var specimen_scene: Node3D
 var _mesh_data: MeshData
 var _threaded_loader: ThreadedLoader  # Kept for OBJ polling in _process
@@ -12,26 +16,28 @@ var specimen_base_scale: float = 1
 static var TABLE_SIZE: float = 1
 var _send_after_load: bool = false  # Whether to RPC-sync after loading
 var _mesh_preloaded: bool = false  # True if mesh was set before entering tree (skip file dialog)
+var _data_http_request: HTTPRequest = null
 
 
 func _enter_tree():
 	super._enter_tree()
 
-	# Embedded/bundled files: every peer loads locally (no RPC needed)
-	if loading_file:
-		if loading_file.begins_with('uid://'):
-			loading_file = ResourceUID.get_id_path(ResourceUID.text_to_id(loading_file))
-		_load_file_local(loading_file)
-
 	if ui_instance:
 		ui_instance.get_node("%FileDialog").file_selected.connect(_on_file_dialog_file_selected)
 		ui_instance.get_node("%MaterialList").item_selected.connect(_on_materiallist_item_selected)
-		
-		# If mesh was preloaded (e.g., from dynamic specimen), hide file dialog
+
 		if _mesh_preloaded:
+			# Mesh set via set_mesh_data() before tree entry — skip file dialog.
 			ui_instance.get_node("%FileDialogLayer").hide()
 			ui_instance.get_node("%SettingsLayer").show()
 			ui_instance.get_node("%MaterialMenu").show()
+
+	if not data_url.is_empty():
+		_load_from_data_url()
+	elif loading_file:
+		if loading_file.begins_with('uid://'):
+			loading_file = ResourceUID.get_id_path(ResourceUID.text_to_id(loading_file))
+		_load_file_local(loading_file)
 
 
 func _process(delta: float) -> void:
@@ -40,6 +46,125 @@ func _process(delta: float) -> void:
 		if _threaded_loader.poll():
 			_threaded_loader.cleanup()
 			_threaded_loader = null
+
+	# Update download progress bar while data_url fetch is in flight
+	if _data_http_request and ui_instance:
+		var progress_bar = ui_instance.get_node_or_null("%ProgressBar")
+		if progress_bar:
+			var body_size = _data_http_request.get_body_size()
+			var downloaded = _data_http_request.get_downloaded_bytes()
+			if body_size > 0:
+				progress_bar.value = float(downloaded) / float(body_size)
+
+
+# --- Remote HTTP loading (ascribe-link /data endpoint) ---
+
+func _load_from_data_url() -> void:
+	if ui_instance:
+		ui_instance.get_node("LoadingLayer").show()
+		ui_instance.get_node("%FileDialogLayer").hide()
+		var progress_bar = ui_instance.get_node_or_null("%ProgressBar")
+		if progress_bar:
+			progress_bar.value = 0.0
+
+	_data_http_request = HTTPRequest.new()
+	_data_http_request.request_completed.connect(_on_data_url_completed)
+	add_child(_data_http_request)
+
+	var err = _data_http_request.request(data_url)
+	if err != OK:
+		push_error("MeshSpecimen: Failed to start data request: %s" % error_string(err))
+		if ui_instance:
+			ui_instance.get_node("LoadingLayer").hide()
+
+
+func _on_data_url_completed(result: int, response_code: int, headers: PackedStringArray, body: PackedByteArray) -> void:
+	if ui_instance:
+		var progress_bar = ui_instance.get_node_or_null("%ProgressBar")
+		if progress_bar:
+			progress_bar.value = 1.0
+
+	if _data_http_request:
+		_data_http_request.queue_free()
+		_data_http_request = null
+
+	if result != HTTPRequest.RESULT_SUCCESS or response_code != 200:
+		push_error("MeshSpecimen: Data request failed: result=%d, code=%d" % [result, response_code])
+		if ui_instance:
+			ui_instance.get_node("LoadingLayer").hide()
+		return
+
+	var content_type = _get_content_type(headers)
+	if content_type.begins_with("application/json") or content_type.begins_with("text/json"):
+		var result_data = JSON.parse_string(body.get_string_from_utf8())
+		if result_data is Dictionary:
+			_load_from_result_dict(result_data)
+		else:
+			push_error("MeshSpecimen: Failed to parse JSON from %s" % data_url)
+			if ui_instance:
+				ui_instance.get_node("LoadingLayer").hide()
+		return
+
+	# Binary: STL/OBJ/GLB — write to temp and feed into the pipeline.
+	var file_ext = _get_file_extension(headers, data_url)
+	var temp_path = "user://temp_specimen." + file_ext
+	var file = FileAccess.open(temp_path, FileAccess.WRITE)
+	if file == null:
+		push_error("MeshSpecimen: Failed to create temp file")
+		if ui_instance:
+			ui_instance.get_node("LoadingLayer").hide()
+		return
+	file.store_buffer(body)
+	file.close()
+	_send_after_load = false
+	_load_file(temp_path)
+
+
+func _load_from_result_dict(data: Dictionary) -> void:
+	var result_type: String = data.get("type", "mesh")
+	if result_type != "mesh":
+		push_warning("MeshSpecimen: Expected mesh result, got '%s'" % result_type)
+		if ui_instance:
+			ui_instance.get_node("LoadingLayer").hide()
+		return
+	var mesh_data := MeshData.new()
+	mesh_data.set_from_dict(data)
+	_mesh_data = mesh_data
+	_set_mesh_from_data(mesh_data)
+
+
+func _get_content_type(headers: PackedStringArray) -> String:
+	for header in headers:
+		var lower = header.to_lower()
+		if lower.begins_with("content-type:"):
+			var value = header.substr(14).strip_edges()
+			var semicolon = value.find(";")
+			if semicolon != -1:
+				value = value.substr(0, semicolon).strip_edges()
+			return value.to_lower()
+	return ""
+
+
+func _get_file_extension(headers: PackedStringArray, url: String) -> String:
+	for header in headers:
+		var lower = header.to_lower()
+		if lower.begins_with("content-disposition:"):
+			var start = header.find('filename="')
+			if start != -1:
+				start += 10
+				var end = header.find('"', start)
+				if end != -1:
+					var filename = header.substr(start, end - start)
+					var ext = filename.get_extension().to_lower()
+					if ext:
+						return ext
+	var path = url.split("?")[0]
+	var segments = path.split("/")
+	if segments.size() > 0:
+		var ext = segments[-1].get_extension().to_lower()
+		if ext:
+			return ext
+	return "stl"
 
 
 ## Load a mesh file locally only (no RPC sync). Used for embedded/bundled files.
