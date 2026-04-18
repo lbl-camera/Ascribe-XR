@@ -214,71 +214,23 @@ func specimen_job_error(error: String) -> void:
 
 
 func _fetch_and_load_result(specimen_id: String, function_name: String, room_id: String) -> void:
-	# Use POST /api/specimens/{id}/data with the same params+room_id that the
-	# submitter used — the server's RoomResultCache gives every peer the same
-	# result without recomputing.
+	# Hand the GET /data URL (with params + room_id) to mesh_specimen so its
+	# own LoadingLayer + ProgressBar show during the download. Every peer hits
+	# the same RoomResultCache key independently, so no recomputation.
 	var metadata := await _fetch_metadata_for_active(specimen_id)
 
-	var http := HTTPRequest.new()
-	add_child(http)
-	http.timeout = 30.0
-	var url := "%s/api/specimens/%s/data" % [Config.ascribe_link_url, specimen_id]
-	var body := JSON.stringify({"params": _active_params, "room_id": room_id})
-	var err := http.request(url, ["Content-Type: application/json"], HTTPClient.METHOD_POST, body)
-	if err != OK:
-		push_error("SceneManager: Failed to POST /data: %s" % error_string(err))
-		http.queue_free()
-		return
-	var response = await http.request_completed
-	http.queue_free()
+	var params_json := JSON.stringify(_active_params)
+	var query := "params=%s&room_id=%s" % [params_json.uri_encode(), room_id.uri_encode()]
+	var data_url := "%s/api/specimens/%s/data?%s" % [Config.ascribe_link_url, specimen_id, query]
 
-	var result_code: int = response[0]
-	var http_code: int = response[1]
-	var payload: PackedByteArray = response[3]
-	if result_code != HTTPRequest.RESULT_SUCCESS or http_code != 200:
-		push_error("SceneManager: /data failed: HTTP %d, body=%s" % [http_code, payload.get_string_from_utf8().substr(0, 200)])
-		return
-
-	var result_json = JSON.parse_string(payload.get_string_from_utf8())
-	if not (result_json is Dictionary):
-		push_error("SceneManager: Invalid /data response")
-		return
-
-	_build_specimen_from_result(result_json, metadata)
-
-
-func _fetch_metadata_for_active(specimen_id: String) -> Dictionary:
-	if _active_procedural_ui and _active_procedural_ui.metadata is Dictionary:
-		return _active_procedural_ui.metadata
-	var client := AscribeLinkClient.new(Config.ascribe_link_url)
-	client.setup(self)
-	return await client.fetch_specimen_metadata(specimen_id)
-
-
-func _build_specimen_from_result(result: Dictionary, metadata: Dictionary) -> void:
-	var result_type: String = result.get("type", "mesh")
-	match result_type:
-		"mesh":
-			_load_mesh_from_result(result, metadata)
-		"volume":
-			push_warning("SceneManager: Volume result type not yet wired through the new flow")
-		_:
-			push_error("SceneManager: Unsupported result type: %s" % result_type)
-
-
-func _load_mesh_from_result(result: Dictionary, metadata: Dictionary) -> void:
 	_reset_world()
-
-	var mesh_data := MeshData.new()
-	mesh_data.set_from_dict(result)
 
 	var packed: PackedScene = load("res://specimens/mesh_specimen.tscn")
 	if packed == null:
 		push_error("SceneManager: Failed to load mesh_specimen.tscn")
 		return
 	var specimen: Specimen = packed.instantiate()
-	if specimen.has_method("set_mesh_data"):
-		specimen.set_mesh_data(mesh_data)
+	specimen.data_url = data_url
 	if "display_name" in specimen:
 		specimen.display_name = metadata.get("display_name", specimen.display_name)
 
@@ -287,6 +239,14 @@ func _load_mesh_from_result(result: Dictionary, metadata: Dictionary) -> void:
 	_position_specimen(specimen)
 	specimen.show()
 	hide_mainmenu()
+
+
+func _fetch_metadata_for_active(specimen_id: String) -> Dictionary:
+	if _active_procedural_ui and _active_procedural_ui.metadata is Dictionary:
+		return _active_procedural_ui.metadata
+	var client := AscribeLinkClient.new(Config.ascribe_link_url)
+	client.setup(self)
+	return await client.fetch_specimen_metadata(specimen_id)
 
 
 func _close_procedural_ui() -> void:

@@ -66,7 +66,16 @@ func _on_ascribe_link_specimens_loaded(specimens: Array) -> void:
 		if is_dynamic:
 			list_label += " ⚙️"
 
-		var item_index = %ItemList.add_item(list_label, null)
+		# Dedup against static items baked into the .tscn (same pattern as create_button).
+		var item_index := -1
+		for i in range(%ItemList.item_count):
+			if %ItemList.get_item_text(i) == list_label:
+				item_index = i
+				break
+		if item_index == -1:
+			item_index = %ItemList.add_item(list_label, null)
+		else:
+			%ItemList.set_item_disabled(item_index, false)
 		%ItemList.set_item_metadata(item_index, {"remote": true, "id": id})
 
 		if not thumbnail_url.is_empty():
