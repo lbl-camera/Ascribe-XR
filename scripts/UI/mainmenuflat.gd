@@ -1,4 +1,4 @@
-@tool
+#@tool
 extends Panel
 
 ## Main menu that displays available specimens.
