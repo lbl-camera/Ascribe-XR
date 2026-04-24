@@ -214,7 +214,7 @@ func specimen_job_error(error: String) -> void:
 
 
 func _fetch_and_load_result(specimen_id: String, function_name: String, room_id: String) -> void:
-	# Hand the GET /data URL (with params + room_id) to mesh_specimen so its
+	# Hand the GET /data URL (with params + room_id) to the right specimen so its
 	# own LoadingLayer + ProgressBar show during the download. Every peer hits
 	# the same RoomResultCache key independently, so no recomputation.
 	var metadata := await _fetch_metadata_for_active(specimen_id)
@@ -225,9 +225,10 @@ func _fetch_and_load_result(specimen_id: String, function_name: String, room_id:
 
 	_reset_world()
 
-	var packed: PackedScene = load("res://specimens/mesh_specimen.tscn")
+	var scene_path := _scene_path_for_type(metadata.get("type", "mesh"))
+	var packed: PackedScene = load(scene_path)
 	if packed == null:
-		push_error("SceneManager: Failed to load mesh_specimen.tscn")
+		push_error("SceneManager: Failed to load %s" % scene_path)
 		return
 	var specimen: Specimen = packed.instantiate()
 	specimen.data_url = data_url
@@ -239,6 +240,14 @@ func _fetch_and_load_result(specimen_id: String, function_name: String, room_id:
 	_position_specimen(specimen)
 	specimen.show()
 	hide_mainmenu()
+
+
+static func _scene_path_for_type(specimen_type: String) -> String:
+	match specimen_type:
+		"volume":
+			return "res://specimens/volume_specimen.tscn"
+		_:
+			return "res://specimens/mesh_specimen.tscn"
 
 
 func _fetch_metadata_for_active(specimen_id: String) -> Dictionary:
