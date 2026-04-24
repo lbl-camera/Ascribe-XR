@@ -69,3 +69,53 @@ func clear() -> void:
 	indices = PackedInt32Array()
 	normals = PackedFloat32Array()
 	_cached_mesh = null
+
+
+## Set data from the binary envelope body.
+##
+## `preamble` is the dict returned by `BinaryEnvelope.parse`.
+## `body` is the full response body (including the 4-byte length prefix and JSON preamble).
+## `offset` is the byte position where the data blocks start (`preamble.offset` from the parser).
+##
+## Block order (per ascribe-link envelope v1): vertices (float32), indices (uint32),
+## normals (float32). Counts of 0 omit the block.
+##
+## Returns true on success, false on error (malformed preamble or body-too-short).
+func set_from_bytes(preamble: Dictionary, body: PackedByteArray, offset: int) -> bool:
+	if preamble.get("type", "") != "mesh":
+		push_error("MeshData.set_from_bytes: preamble.type is not 'mesh'")
+		return false
+
+	var vc: int = int(preamble.get("vertex_count", 0))
+	var ic: int = int(preamble.get("index_count", 0))
+	var nc: int = int(preamble.get("normal_count", 0))
+
+	var vertex_bytes := vc * 3 * 4
+	var index_bytes := ic * 4
+	var normal_bytes := nc * 3 * 4
+	var required := offset + vertex_bytes + index_bytes + normal_bytes
+	if body.size() < required:
+		push_error("MeshData.set_from_bytes: body too short (need %d, got %d)" % [required, body.size()])
+		return false
+
+	var cursor := offset
+	if vc > 0:
+		vertices = body.slice(cursor, cursor + vertex_bytes).to_float32_array()
+	else:
+		vertices = PackedFloat32Array()
+	cursor += vertex_bytes
+
+	if ic > 0:
+		indices = body.slice(cursor, cursor + index_bytes).to_int32_array()
+	else:
+		indices = PackedInt32Array()
+	cursor += index_bytes
+
+	if nc > 0:
+		normals = body.slice(cursor, cursor + normal_bytes).to_float32_array()
+	else:
+		normals = PackedFloat32Array()
+
+	_cached_mesh = null
+	data_ready.emit()
+	return true
