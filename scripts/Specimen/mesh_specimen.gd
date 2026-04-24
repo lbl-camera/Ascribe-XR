@@ -94,7 +94,15 @@ func _on_data_url_completed(result: int, response_code: int, headers: PackedStri
 			ui_instance.get_node("LoadingLayer").hide()
 		return
 
-	var content_type = _get_content_type(headers)
+	var content_type := _get_content_type(headers)
+
+	# New hot path: ascribe-link binary envelope (both mesh and volume share this media type,
+	# but a MeshSpecimen only accepts type=mesh).
+	if content_type == BinaryEnvelope.MEDIA_TYPE:
+		_load_from_envelope(body)
+		return
+
+	# Legacy path: JSON dict from /api/processing/invoke or older servers.
 	if content_type.begins_with("application/json") or content_type.begins_with("text/json"):
 		var result_data = JSON.parse_string(body.get_string_from_utf8())
 		if result_data is Dictionary:
@@ -105,7 +113,7 @@ func _on_data_url_completed(result: int, response_code: int, headers: PackedStri
 				ui_instance.get_node("LoadingLayer").hide()
 		return
 
-	# Binary: STL/OBJ/GLB — write to temp and feed into the pipeline.
+	# Fallback: raw file (STL/OBJ/FBX). Write to temp and feed into the pipeline.
 	var file_ext = _get_file_extension(headers, data_url)
 	var temp_path = "user://temp_specimen." + file_ext
 	var file = FileAccess.open(temp_path, FileAccess.WRITE)
@@ -118,6 +126,33 @@ func _on_data_url_completed(result: int, response_code: int, headers: PackedStri
 	file.close()
 	_send_after_load = false
 	_load_file(temp_path)
+
+
+func _load_from_envelope(body: PackedByteArray) -> void:
+	var parsed := BinaryEnvelope.parse(body)
+	if parsed.has("error"):
+		push_error("MeshSpecimen: envelope parse failed: %s" % parsed["error"])
+		if ui_instance:
+			ui_instance.get_node("LoadingLayer").hide()
+		return
+
+	var preamble: Dictionary = parsed["preamble"]
+	if preamble.get("type", "") != "mesh":
+		push_error("MeshSpecimen: expected envelope type 'mesh', got %s" % preamble.get("type", "<none>"))
+		if ui_instance:
+			ui_instance.get_node("LoadingLayer").hide()
+		return
+
+	var mesh_data := MeshData.new()
+	mesh_data.flip_normals = flip_normals
+	if not mesh_data.set_from_bytes(preamble, body, parsed["offset"]):
+		push_error("MeshSpecimen: MeshData.set_from_bytes failed")
+		if ui_instance:
+			ui_instance.get_node("LoadingLayer").hide()
+		return
+
+	_mesh_data = mesh_data
+	_set_mesh_from_data(mesh_data)
 
 
 func _load_from_result_dict(data: Dictionary) -> void:
