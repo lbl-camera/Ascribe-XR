@@ -103,7 +103,7 @@ User picks "Parametric Gaussian Volume" in VR
   → submitter: AscribeLinkClient.run_job → POST /start → poll /progress → GET /result
   → submitter: specimen_job_done.rpc (all peers)
   → each peer: SceneManager._fetch_and_load_result
-      → read meta.type → instantiate volumetric_specimen.tscn
+      → read meta.type → instantiate volume_specimen.tscn
       → set data_url = "<base>/api/specimens/parametric_gaussian/data?params=...&room_id=..."
       → specimen enters tree, HTTPRequest fires
       → server: RoomResultCache hit → encode_binary_envelope(volume_result) → octet-stream
@@ -178,15 +178,14 @@ Decodes 4-byte LE uint32 length, then UTF-8 JSON preamble, returns the post-prea
 - On completion: `BinaryEnvelope.parse` → verify `preamble.type == "volume"` → `VolumetricData.new().set_from_bytes(preamble, body, offset)` → install `ImageTexture3D` on the `VolumeLayeredShader` mesh instance → enable pickables, swap UI layers.
 - `_enter_tree` logic: if `data_url` set, skip file dialog and start HTTP load.
 
-**`scripts/singletons/main.gd` — `SceneManager`**
-- `_fetch_and_load_result` (dynamic flow, post-job): after metadata fetch, branch on `meta.type`:
-  - `"mesh"` → load `res://specimens/mesh_specimen.tscn`, set `data_url`
-  - `"volume"` → load `res://specimens/volumetric_specimen.tscn`, set `data_url`
+**`scripts/singletons/main.gd` — `SceneManager._fetch_and_load_result`** (dynamic-post-job flow only)
+- Currently hardcodes `res://specimens/mesh_specimen.tscn`. Change to branch on `meta.type`:
+  - `"mesh"` → `res://specimens/mesh_specimen.tscn`
+  - `"volume"` → `res://specimens/volume_specimen.tscn`
+- Set `data_url` on the instantiated scene the same way (existing logic).
 - Everything else (`_reset_world`, `_position_specimen`, `hide_mainmenu`) identical.
-- **New RPC `load_server_specimen(specimen_id, metadata)`** parallel to `load_specimen` — used for server-backed **static** specimens (no procedural UI, no job). Same type-branched instantiation + `data_url` set to `<base>/api/specimens/{id}/data` (no params, no room_id needed). The main menu calls this when the user picks a server-listed specimen that has `is_dynamic == false`.
 
-**`scripts/UI/mainmenuflat.gd`**
-- When a catalog entry is clicked: if `is_dynamic == true`, fetch schema and show the procedural UI (existing flow); if `is_dynamic == false`, call `SceneManager.load_server_specimen.rpc(id, metadata)`. This replaces any code path that currently assumes local-bundled TSCNs for server specimens.
+**Static server-backed specimens require no SceneManager or main-menu changes.** `scripts/UI/mainmenuflat.gd:_load_remote_specimen` already dispatches on `specimen_list_item.type`, already references `res://specimens/volume_specimen.tscn` for the volume branch, and already sets `data_url` in the config passed to `SceneManager.load_specimen.rpc`. The existing path becomes functional for static volumes once `VolumeSpecimen` honors the `data_url` config (change above).
 
 ### No changes
 
@@ -260,8 +259,3 @@ The XR worktree's `Config.ascribe_link_url` points at the local server run from 
 11. E2E — Gaussian volume golden path, then AI Generate volume, then static volume.
 
 Each step is independently testable. Server-side 1–5 can be merged before any client work lands — the client falls back to the existing JSON path via content-type branching (unchanged servers return `application/json`, new servers return `application/x-ascribe-envelope-v1`).
-
-## Open questions for implementation
-
-- **`mainmenuflat.gd` static-specimen routing** — the design assumes a branch on `is_dynamic` that calls either the procedural-UI flow or the new `load_server_specimen` RPC. Need to confirm the current click-handler structure during implementation and refactor if the current flow assumes local-bundled TSCNs only. Doesn't change the contract but may expand scope by a small amount.
-- **Static mesh specimens currently served from server** — if any exist today (i.e., specimens in ascribe-link with `type=mesh` and `.stl`/`.obj` data files), verify the new `load_server_specimen` path works for them too (content-type is `application/octet-stream` with attachment disposition; the existing temp-file pipeline handles this). If none exist today, this is a free generalization.
