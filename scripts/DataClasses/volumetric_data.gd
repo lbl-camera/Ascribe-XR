@@ -37,7 +37,7 @@ func set_texture(tex: Texture3D, dims: Vector3i) -> void:
 
 func set_from_images(images: Array[Image], dims: Vector3i) -> void:
 	var tex := ImageTexture3D.new()
-	tex.create(dims.x, dims.y, dims.z, images[0].get_format(), false, images)
+	tex.create(images[0].get_format(), dims.x, dims.y, dims.z, false, images)
 	_texture = tex
 	_dimensions = dims
 	data_ready.emit()
@@ -98,7 +98,7 @@ func set_from_dict(data: Dictionary) -> void:
 	# Create 3D texture
 	if images.size() > 0:
 		var tex := ImageTexture3D.new()
-		tex.create(width, height, depth, images[0].get_format(), false, images)
+		tex.create(images[0].get_format(), width, height, depth, false, images)
 		_texture = tex
 		print("VolumetricData: Loaded %dx%dx%d volume (%s)" % [width, height, depth, dtype])
 		data_ready.emit()
@@ -219,7 +219,7 @@ func set_from_bytes(preamble: Dictionary, body: PackedByteArray, offset: int) ->
 		images.append(img)
 
 	var tex := ImageTexture3D.new()
-	tex.create(width, height, depth, images[0].get_format(), false, images)
+	tex.create(images[0].get_format(), width, height, depth, false, images)
 	_texture = tex
 	data_ready.emit()
 	return true

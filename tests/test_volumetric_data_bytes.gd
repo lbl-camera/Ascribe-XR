@@ -19,6 +19,12 @@ func test_set_from_bytes_uint8():
 	var tex := data.get_data()
 	assert_that(tex).is_not_null()
 	assert_that(tex is Texture3D).is_true()
+	# Catches arg-order regressions on ImageTexture3D.create — depth=0 or
+	# format=garbage both produce a non-null but broken texture.
+	assert_that(tex.get_format()).is_equal(Image.FORMAT_L8)
+	assert_that(tex.get_width()).is_equal(2)
+	assert_that(tex.get_height()).is_equal(2)
+	assert_that(tex.get_depth()).is_equal(2)
 
 
 func test_set_from_bytes_float32():
@@ -35,6 +41,9 @@ func test_set_from_bytes_float32():
 	assert_that(ok).is_true()
 	# Preamble order is [sz,sy,sx]; Godot Vector3 is [x,y,z] — so spacing should flip.
 	assert_that(data.get_spacing()).is_equal(Vector3(2.0, 2.0, 2.0))
+	var tex := data.get_data()
+	assert_that(tex.get_format()).is_equal(Image.FORMAT_RF)
+	assert_that(tex.get_depth()).is_equal(1)
 
 
 func test_set_from_bytes_wrong_type_rejected():
