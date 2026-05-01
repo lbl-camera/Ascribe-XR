@@ -26,6 +26,7 @@ func _regenerate() -> void:
 	_volume.texture = _make_noise_texture(data_size)
 
 
+
 static func _make_noise_texture(size: Vector3i) -> ImageTexture3D:
 	var noise := FastNoiseLite.new()
 	noise.noise_type = FastNoiseLite.TYPE_SIMPLEX_SMOOTH

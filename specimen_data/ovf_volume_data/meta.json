@@ -1,0 +1,12 @@
+{
+  "shape": {
+    "X": 100,
+    "Y": 100,
+    "Z": 20,
+    "components": 3,
+    "T": 3
+  },
+  "layout": {
+    "field": "X,Y,Z,3,T float32"
+  }
+}

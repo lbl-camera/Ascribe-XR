@@ -1,0 +1,35 @@
+[gd_scene format=4 uid="uid://cfxjp1s0i7dab"]
+
+[ext_resource type="Script" uid="uid://c3ljh8wis42p8" path="res://testscenes/bin_read_test.gd" id="1_bi1gj"]
+[ext_resource type="Shader" uid="uid://516smykyoob2" path="res://addons/volume_layered_shader/shaders/volume_shader.gdshader" id="2_n7edm"]
+
+[sub_resource type="BoxMesh" id="BoxMesh_ujjfb"]
+
+[sub_resource type="FastNoiseLite" id="FastNoiseLite_rjtnw"]
+
+[sub_resource type="NoiseTexture3D" id="NoiseTexture3D_xeiny"]
+noise = SubResource("FastNoiseLite_rjtnw")
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_yiytk"]
+render_priority = 0
+shader = ExtResource("2_n7edm")
+shader_parameter/texture_volume = SubResource("NoiseTexture3D_xeiny")
+shader_parameter/zoom = 2.0
+shader_parameter/layers = 2
+shader_parameter/opacity = 1.0
+shader_parameter/gamma = 1.0
+shader_parameter/color_scalar = 1.0
+shader_parameter/num_exclusion_planes = 0
+shader_parameter/exclusion_planes = PackedVector4Array(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
+
+[node name="BinReadTest" type="Node3D" unique_id=380811769]
+script = ExtResource("1_bi1gj")
+field_file = "res://specimen_data/ovf_volume_data/field_5d.bin"
+metadata_file = "res://specimen_data/ovf_volume_data/meta.json"
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="." unique_id=725402272]
+mesh = SubResource("BoxMesh_ujjfb")
+surface_material_override/0 = SubResource("ShaderMaterial_yiytk")
+
+[node name="Camera3D" type="Camera3D" parent="." unique_id=1450383838]
+transform = Transform3D(0.99991745, 0.0014567677, -0.012770204, 0.0058659157, 0.8323269, 0.55425406, 0.011436405, -0.5542832, 0.8322496, 0, 0.8634268, 1.5800152)

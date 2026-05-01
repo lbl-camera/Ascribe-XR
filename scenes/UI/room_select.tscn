@@ -41,6 +41,13 @@ layout_mode = 2
 theme_override_font_sizes/font_size = 30
 text = "Dark Room"
 
+[node name="Quit" type="Button" parent="MarginContainer/VBoxContainer" unique_id=463684793]
+layout_mode = 2
+size_flags_vertical = 10
+theme_override_font_sizes/font_size = 30
+text = "Quit"
+
 [connection signal="pressed" from="MarginContainer/VBoxContainer/Button" to="." method="_set_room_scene" binds= ["lab"]]
 [connection signal="pressed" from="MarginContainer/VBoxContainer/Button2" to="." method="_set_room_scene" binds= ["passthrough"]]
 [connection signal="pressed" from="MarginContainer/VBoxContainer/Button3" to="." method="_set_room_scene" binds= ["black"]]
+[connection signal="pressed" from="MarginContainer/VBoxContainer/Quit" to="." method="_on_quit_pressed"]
