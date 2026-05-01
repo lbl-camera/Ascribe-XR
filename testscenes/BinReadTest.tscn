@@ -1,24 +1,41 @@
 [gd_scene format=4 uid="uid://cfxjp1s0i7dab"]
 
 [ext_resource type="Script" uid="uid://c3ljh8wis42p8" path="res://testscenes/bin_read_test.gd" id="1_bi1gj"]
-[ext_resource type="Shader" uid="uid://516smykyoob2" path="res://addons/volume_layered_shader/shaders/volume_shader.gdshader" id="2_n7edm"]
+[ext_resource type="Shader" uid="uid://c7mqea0muqhk1" path="res://shaders/5d_volume_shader.gdshader" id="2_bi1gj"]
+
+[sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_cj0me"]
+sky_horizon_color = Color(0.66224277, 0.6717428, 0.6867428, 1)
+ground_horizon_color = Color(0.66224277, 0.6717428, 0.6867428, 1)
+
+[sub_resource type="Sky" id="Sky_bi1gj"]
+sky_material = SubResource("ProceduralSkyMaterial_cj0me")
+
+[sub_resource type="Environment" id="Environment_n7edm"]
+background_mode = 2
+sky = SubResource("Sky_bi1gj")
+tonemap_mode = 2
+glow_enabled = true
 
 [sub_resource type="BoxMesh" id="BoxMesh_ujjfb"]
 
 [sub_resource type="FastNoiseLite" id="FastNoiseLite_rjtnw"]
 
 [sub_resource type="NoiseTexture3D" id="NoiseTexture3D_xeiny"]
+width = 100
+height = 100
+depth = 100
 noise = SubResource("FastNoiseLite_rjtnw")
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_yiytk"]
 render_priority = 0
-shader = ExtResource("2_n7edm")
+shader = ExtResource("2_bi1gj")
 shader_parameter/texture_volume = SubResource("NoiseTexture3D_xeiny")
-shader_parameter/zoom = 2.0
-shader_parameter/layers = 2
-shader_parameter/opacity = 1.0
+shader_parameter/step_size = 0.005
+shader_parameter/density = 0.1
+shader_parameter/opacity = 0.05
 shader_parameter/gamma = 1.0
 shader_parameter/color_scalar = 1.0
+shader_parameter/threshold = 0.05
 shader_parameter/num_exclusion_planes = 0
 shader_parameter/exclusion_planes = PackedVector4Array(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
 
@@ -26,6 +43,15 @@ shader_parameter/exclusion_planes = PackedVector4Array(0, 0, 0, 0, 0, 0, 0, 0, 0
 script = ExtResource("1_bi1gj")
 field_file = "res://specimen_data/ovf_volume_data/field_5d.bin"
 metadata_file = "res://specimen_data/ovf_volume_data/meta.json"
+timestep = 13
+channel_mode = "mx"
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="." unique_id=1789714792]
+transform = Transform3D(-0.8660254, -0.43301278, 0.25, 0, 0.49999997, 0.86602545, -0.50000006, 0.75, -0.43301266, 0, 0, 0)
+shadow_enabled = true
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="." unique_id=226882829]
+environment = SubResource("Environment_n7edm")
 
 [node name="MeshInstance3D" type="MeshInstance3D" parent="." unique_id=725402272]
 mesh = SubResource("BoxMesh_ujjfb")

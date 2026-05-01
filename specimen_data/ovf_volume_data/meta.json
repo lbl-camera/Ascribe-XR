@@ -4,7 +4,7 @@
     "Y": 100,
     "Z": 20,
     "components": 3,
-    "T": 3
+    "T": 301
   },
   "layout": {
     "field": "X,Y,Z,3,T float32"
