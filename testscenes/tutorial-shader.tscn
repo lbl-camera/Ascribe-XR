@@ -1,0 +1,75 @@
+[gd_scene format=4 uid="uid://w6ewkqx284c2"]
+
+[ext_resource type="Shader" uid="uid://djycgmf1fps5p" path="res://testscenes/tutorial-shader.gdshader" id="1_epghv"]
+[ext_resource type="Script" uid="uid://b1pgcug4s8kpk" path="res://testscenes/performance-metrics.gd" id="1_rfk7y"]
+[ext_resource type="Shader" uid="uid://516smykyoob2" path="res://addons/volume_layered_shader/shaders/volume_shader.gdshader" id="2_rfk7y"]
+
+[sub_resource type="Gradient" id="Gradient_rfk7y"]
+
+[sub_resource type="GradientTexture1D" id="GradientTexture1D_g4mhv"]
+gradient = SubResource("Gradient_rfk7y")
+
+[sub_resource type="FastNoiseLite" id="FastNoiseLite_g4mhv"]
+seed = 7
+frequency = 0.1019
+
+[sub_resource type="NoiseTexture3D" id="NoiseTexture3D_btwvt"]
+width = 200
+height = 200
+depth = 200
+noise = SubResource("FastNoiseLite_g4mhv")
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_g4mhv"]
+render_priority = 0
+shader = ExtResource("2_rfk7y")
+shader_parameter/texture_volume = SubResource("NoiseTexture3D_btwvt")
+shader_parameter/gradient = SubResource("GradientTexture1D_g4mhv")
+shader_parameter/zoom = 2.0
+shader_parameter/layers = 2
+shader_parameter/opacity = 0.02
+shader_parameter/gamma = 1.7149999999999999
+shader_parameter/color_scalar = 1.0
+shader_parameter/num_exclusion_planes = 0
+shader_parameter/exclusion_planes = PackedVector4Array(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
+
+[sub_resource type="PlaneMesh" id="PlaneMesh_sbpmp"]
+subdivide_width = 32
+subdivide_depth = 32
+
+[sub_resource type="FastNoiseLite" id="FastNoiseLite_rfk7y"]
+
+[sub_resource type="NoiseTexture2D" id="NoiseTexture2D_g4mhv"]
+noise = SubResource("FastNoiseLite_rfk7y")
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_btwvt"]
+render_priority = 0
+shader = ExtResource("1_epghv")
+shader_parameter/noise = SubResource("NoiseTexture2D_g4mhv")
+shader_parameter/height_scale = 0.5
+
+[sub_resource type="BoxMesh" id="BoxMesh_btwvt"]
+
+[node name="TutorialShader" type="Node3D" unique_id=761670032 node_paths=PackedStringArray("mesh")]
+script = ExtResource("1_rfk7y")
+mesh = NodePath("MeshInstance3D2")
+shader_material = SubResource("ShaderMaterial_g4mhv")
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="." unique_id=2004305423]
+transform = Transform3D(-0.8660254, -0.43301278, 0.25, 0, 0.49999997, 0.86602545, -0.50000006, 0.75, -0.43301266, 0, 0, 0)
+shadow_enabled = true
+
+[node name="OmniLight3D" type="OmniLight3D" parent="." unique_id=275099780]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.7178432, 0)
+visible = false
+omni_range = 0.63776565
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="." unique_id=417967277]
+visible = false
+mesh = SubResource("PlaneMesh_sbpmp")
+surface_material_override/0 = SubResource("ShaderMaterial_btwvt")
+
+[node name="MeshInstance3D2" type="MeshInstance3D" parent="." unique_id=276193640]
+mesh = SubResource("BoxMesh_btwvt")
+
+[node name="Camera3D" type="Camera3D" parent="." unique_id=1598225564]
+transform = Transform3D(1, 0, 0, 0, 0.85147077, 0.5244021, 0, -0.5244021, 0.85147077, 0, 0.96053004, 1.4676163)

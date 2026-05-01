@@ -35,6 +35,10 @@ SceneManager="*res://scripts/singletons/main.gd"
 Config="*uid://dvwptjg7itnl8"
 MenuManager="*res://scripts/singletons/menu_manager.gd"
 
+[display]
+
+window/vsync/vsync_mode=0
+
 [editor]
 
 movie_writer/movie_file="C:/Users/rp/Documents/vr-start/demo.avi"

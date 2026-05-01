@@ -15,6 +15,7 @@ extends Node3D
 
 
 func _ready() -> void:
+	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
 	_volume.visible = volume_visible
 	_regenerate()
 
@@ -23,6 +24,7 @@ func _regenerate() -> void:
 	if not _volume:
 		return
 	_volume.texture = _make_noise_texture(data_size)
+
 
 
 static func _make_noise_texture(size: Vector3i) -> ImageTexture3D:

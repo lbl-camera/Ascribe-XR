@@ -80,7 +80,7 @@ transform = Transform3D(-0.866025, -0.433013, 0.25, 0, 0.5, 0.866025, -0.5, 0.75
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 1.2369545)
 
 [node name="VolumeLayeredShader" type="Node3D" parent="." unique_id=1127078518]
-transform = Transform3D(0.1703483, 0, -0.9853839, 0, 1, 0, 0.9853839, 0, 0.1703483, 0, 0, 0)
+transform = Transform3D(0.17034824, 0, -0.9853839, 0, 1, 0, 0.9853839, 0, 0.17034824, 0, 0, 0)
 script = ExtResource("2_vol")
 gamma = 1.102
 gradient = ExtResource("3_grad")

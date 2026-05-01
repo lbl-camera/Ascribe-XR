@@ -9,3 +9,7 @@ var room_scenes = {
 
 func _set_room_scene(room_name: String) -> void:
 	SceneManager.set_room_scene(room_name)
+
+
+func _on_quit_pressed() -> void:
+	get_tree().quit()
