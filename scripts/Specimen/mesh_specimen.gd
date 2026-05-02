@@ -172,7 +172,7 @@ func _get_content_type(headers: PackedStringArray) -> String:
 	for header in headers:
 		var lower = header.to_lower()
 		if lower.begins_with("content-type:"):
-			var value = header.substr(14).strip_edges()
+			var value = header.substr(13).strip_edges()
 			var semicolon = value.find(";")
 			if semicolon != -1:
 				value = value.substr(0, semicolon).strip_edges()
