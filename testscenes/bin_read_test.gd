@@ -2,11 +2,21 @@ extends Node3D
 
 @export var field_file: String
 @export var metadata_file: String
-@export var timestep: int = 0
+@export var timestep: int = 0:
+	set(value):
+		timestep = value
+		if is_inside_tree() and field.size() > 0:
+			update_texture(timestep)
 
-@export_enum("magnitude", "mx", "my", "mz")
-var channel_mode: String = "magnitude"
+@export_enum("magnitude", "mx", "my", "mz", "vector_rgb")
+var channel_mode: String = "vector_rgb":
+	set(value):
+		channel_mode = value
+		if is_inside_tree() and field.size() > 0:
+			update_texture(timestep)
+		
 
+var material = null
 @onready var mesh: MeshInstance3D = $MeshInstance3D
 
 var X: int
@@ -18,11 +28,12 @@ var T: int
 var field: PackedFloat32Array
 var volume_texture: ImageTexture3D
 
+
 func _ready() -> void:
 	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
 	load_metadata()
 	load_field()
-	update_volume_texture(timestep)
+	update_texture(timestep)
 
 func load_metadata() -> void:
 	var json_as_text := FileAccess.get_file_as_string(metadata_file)
@@ -75,7 +86,13 @@ func get_scalar(x: int, y: int, z: int, t: int) -> float:
 		_:
 			return sqrt(mx * mx + my * my + mz * mz)
 
-func update_volume_texture(t: int) -> void:
+func update_texture(time: int) -> void:
+	if channel_mode == "vector_rgb":
+		update_vector_rgb_texture(time)
+	else:
+		update_scalar_texture(time)
+		
+func update_scalar_texture(t: int) -> void:
 	t = clamp(t, 0, T - 1)
 
 	var values := PackedFloat32Array()
@@ -89,6 +106,7 @@ func update_volume_texture(t: int) -> void:
 			for x in range(X):
 				var v := get_scalar(x, y, z, t)
 				var flat := x + X * (y + Y * z)
+
 				values[flat] = v
 				min_v = min(min_v, v)
 				max_v = max(max_v, v)
@@ -110,14 +128,71 @@ func update_volume_texture(t: int) -> void:
 
 				bytes[x + y * X] = int(clamp(normalized * 255.0, 0.0, 255.0))
 
-		var img := Image.create_from_data(X, Y, false, Image.FORMAT_L8, bytes)
+		var img := Image.create_from_data(
+			X,
+			Y,
+			false,
+			Image.FORMAT_L8,
+			bytes
+		)
 
 		images.append(img)
 
-	volume_texture = ImageTexture3D.new()
-	volume_texture.create(Image.FORMAT_L8, X, Y, Z, false, images)
+	var tex := ImageTexture3D.new()
+	tex.create(Image.FORMAT_L8, X, Y, Z, false, images)
 
 	var mat := mesh.get_active_material(0) as ShaderMaterial
-	mat.set_shader_parameter("texture_volume", volume_texture)
+	mat.set_shader_parameter("texture_volume", tex)
+	mat.set_shader_parameter("texture_mode", 0)
 
-	print("Updated 3D texture for timestep ", t)
+	material = mat
+	volume_texture = tex
+
+	print("Updated scalar texture: ", channel_mode)
+
+func update_vector_rgb_texture(t: int) -> void:
+	t = clamp(t, 0, T - 1)
+
+	var images: Array[Image] = []
+
+	for z in range(Z):
+		var bytes := PackedByteArray()
+		bytes.resize(X * Y * 3)
+
+		for y in range(Y):
+			for x in range(X):
+				var mx := field[idx(x, y, z, 0, t)]
+				var my := field[idx(x, y, z, 1, t)]
+				var mz := field[idx(x, y, z, 2, t)]
+
+				# Map vector components from [-1, 1] to [0, 255]
+				var r := int(clamp((mx * 0.5 + 0.5) * 255.0, 0.0, 255.0))
+				var g := int(clamp((my * 0.5 + 0.5) * 255.0, 0.0, 255.0))
+				var b := int(clamp((mz * 0.5 + 0.5) * 255.0, 0.0, 255.0))
+
+				var p := (x + y * X) * 3
+				bytes[p + 0] = r
+				bytes[p + 1] = g
+				bytes[p + 2] = b
+
+		var img := Image.create_from_data(
+			X,
+			Y,
+			false,
+			Image.FORMAT_RGB8,
+			bytes
+		)
+
+		images.append(img)
+
+	var vector_tex := ImageTexture3D.new()
+	vector_tex.create(Image.FORMAT_RGB8, X, Y, Z, false, images)
+
+	var mat := mesh.get_active_material(0) as ShaderMaterial
+	mat.set_shader_parameter("texture_volume", vector_tex)
+	mat.set_shader_parameter("texture_mode", 1)
+
+	material = mat
+	volume_texture = vector_tex
+
+	print("Updated vector RGB texture")

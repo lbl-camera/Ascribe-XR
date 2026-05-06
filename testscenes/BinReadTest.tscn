@@ -30,12 +30,15 @@ noise = SubResource("FastNoiseLite_rjtnw")
 render_priority = 0
 shader = ExtResource("2_bi1gj")
 shader_parameter/texture_volume = SubResource("NoiseTexture3D_xeiny")
+shader_parameter/texture_mode = 1
 shader_parameter/step_size = 0.005
 shader_parameter/density = 0.1
-shader_parameter/opacity = 0.05
-shader_parameter/gamma = 1.0
+shader_parameter/opacity = 0.42
+shader_parameter/gamma = 1.2349999999999999
 shader_parameter/color_scalar = 1.0
 shader_parameter/threshold = 0.05
+shader_parameter/z_translucent = 0.0
+shader_parameter/orientation_gamma = 1.0
 shader_parameter/num_exclusion_planes = 0
 shader_parameter/exclusion_planes = PackedVector4Array(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
 
@@ -43,8 +46,7 @@ shader_parameter/exclusion_planes = PackedVector4Array(0, 0, 0, 0, 0, 0, 0, 0, 0
 script = ExtResource("1_bi1gj")
 field_file = "res://specimen_data/ovf_volume_data/field_5d.bin"
 metadata_file = "res://specimen_data/ovf_volume_data/meta.json"
-timestep = 13
-channel_mode = "mx"
+timestep = 23
 
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="." unique_id=1789714792]
 transform = Transform3D(-0.8660254, -0.43301278, 0.25, 0, 0.49999997, 0.86602545, -0.50000006, 0.75, -0.43301266, 0, 0, 0)

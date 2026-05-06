@@ -1,18 +1,23 @@
 shader_type spatial;
-render_mode unshaded, cull_front, depth_draw_opaque;
+render_mode unshaded, cull_front, blend_mix;
 
 const int MAX_EXCLUSION_PLANES = 4;
 const int MAX_STEPS = 256;
+const float pi = 3.14159265359;
 
 uniform sampler3D texture_volume : filter_linear, repeat_disable;
-uniform sampler2D gradient : filter_linear, repeat_disable;
-
+uniform int texture_mode = 1;
+// 0 = scalar L8
+// 1 = vector RGB
 uniform float step_size = 0.005;
 uniform float density = 1.0;
 uniform float opacity = 1.0;
 uniform float gamma = 1.0;
 uniform float color_scalar = 1.0;
 uniform float threshold = 0.0;
+
+uniform float z_translucent : hint_range(0.0, 1.0) = 1.0;
+uniform float orientation_gamma : hint_range(0.05, 5.0) = 1.0;
 
 uniform int num_exclusion_planes = 0;
 uniform vec4[MAX_EXCLUSION_PLANES] exclusion_planes;
@@ -22,8 +27,6 @@ varying vec3 local_camera_pos;
 
 void vertex() {
 	local_pos = VERTEX;
-
-	// Camera position in object/local space.
 	local_camera_pos = (inverse(MODEL_MATRIX) * vec4(CAMERA_POSITION_WORLD, 1.0)).xyz;
 }
 
@@ -65,6 +68,24 @@ bool intersect_box(
 	return t_exit >= max(t_entry, 0.0);
 }
 
+vec4 orientation_to_rgba(vec3 dir) {
+	vec3 n = normalize(dir);
+
+	float hue = atan(n.y, n.x) / (2.0 * PI) + 0.5;
+
+	vec3 k = vec3(1.0, 2.0 / 3.0, 1.0 / 3.0);
+	vec3 p = abs(fract(vec3(hue) + k) * 6.0 - 3.0);
+	vec3 hue_rgb = clamp(p - 1.0, 0.0, 1.0);
+
+	float az = pow(abs(n.z), orientation_gamma);
+	vec3 pole_color = n.z >= 0.0 ? vec3(1.0) : vec3(0.0);
+
+	vec3 rgb = mix(hue_rgb, pole_color, az * z_translucent);
+	float alpha = mix(1.0, 0.5 * z_translucent, az);
+
+	return vec4(rgb, alpha);
+}
+
 vec4 raymarch(vec3 ray_origin, vec3 ray_dir, float t_start, float t_end) {
 	vec4 accumulated = vec4(0.0);
 	float total_alpha = 0.0;
@@ -83,7 +104,6 @@ vec4 raymarch(vec3 ray_origin, vec3 ray_dir, float t_start, float t_end) {
 			continue;
 		}
 
-		// Object-space cube is assumed to be -0.5 to +0.5.
 		vec3 uvw = p + vec3(0.5);
 
 		if (any(lessThan(uvw, vec3(0.0))) || any(greaterThan(uvw, vec3(1.0)))) {
@@ -91,22 +111,47 @@ vec4 raymarch(vec3 ray_origin, vec3 ray_dir, float t_start, float t_end) {
 			continue;
 		}
 
-		float value = texture(texture_volume, uvw).r;
+		vec4 tex = texture(texture_volume, uvw);
 
-		if (value < threshold) {
-			t += step_size;
-			continue;
+		vec3 sample_rgb;
+		float sample_alpha;
+
+		if (texture_mode == 0) {
+			// Scalar mode: magnitude/mx/my/mz uploaded as grayscale.
+			float value = tex.r;
+
+			if (value < threshold) {
+				t += step_size;
+				continue;
+			}
+
+			value = pow(value, gamma);
+
+			sample_rgb = vec3(value);
+			sample_alpha = value * opacity * density;
+		} else {
+			// Vector RGB mode: mx,my,mz uploaded into RGB.
+			vec3 packed_rgb = tex.rgb;
+			vec3 dir = packed_rgb * 2.0 - vec3(1.0);
+
+			float strength = length(dir);
+
+			if (strength < threshold) {
+				t += step_size;
+				continue;
+			}
+
+			float normalized_strength = clamp(strength / 1.7320508, 0.0, 1.0);
+			normalized_strength = pow(normalized_strength, gamma);
+
+			vec4 orient_col = orientation_to_rgba(dir);
+
+			sample_rgb = orient_col.rgb;
+			sample_alpha = orient_col.a * normalized_strength * opacity * density;
 		}
 
-		value = pow(value, gamma);
-
-		vec4 sample_col = texture(gradient, vec2(value, 0.5));
-
-		float sample_alpha = sample_col.a * opacity * density;
-
-		// Front-to-back alpha compositing.
 		float remaining = 1.0 - total_alpha;
-		accumulated.rgb += sample_col.rgb * sample_alpha * remaining;
+		accumulated.rgb += sample_rgb * sample_alpha * remaining;
 		total_alpha += sample_alpha * remaining;
 
 		if (total_alpha >= 0.98) {
