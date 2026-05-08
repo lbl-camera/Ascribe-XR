@@ -20,6 +20,8 @@ func _ready():
 	$XROrigin3D/LeftHandController.button_pressed.connect(vr_left_button_pressed)
 
 	$XROrigin3D/PlayerBody.default_physics.move_drag = 45
+	if XrSimulator.enabled:
+		$XROrigin3D/PlayerBody.override_player_height(self, XRToolsUserSettings.player_height)
 	NetworkGateway.set_process_input(false)
 	if Config.webrtcroomname:
 		NetworkGateway.MQTTsignalling.Roomnametext.text = Config.webrtcroomname
