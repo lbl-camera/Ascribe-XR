@@ -40,6 +40,18 @@ func _toggle_network_gateway_menu():
 		})
 
 
+func _toggle_open_specimens_menu():
+	if MenuManager.has_active_menu("open_specimens"):
+		MenuManager.close_menu("open_specimens")
+	else:
+		var panel = preload("res://scenes/UI/open_specimens_menu.tscn").instantiate()
+		MenuManager.show_menu(panel, {
+			"slot": "open_specimens",
+			"screen_size": Vector2(2, 2.5),
+			"viewport_size": Vector2(500, 700),
+		})
+
+
 func vr_right_button_pressed(button: String):
 	print("vr right button pressed ", button)
 	if button == "by_button":
@@ -53,7 +65,7 @@ func vr_right_button_release(button: String):
 func vr_left_button_pressed(button: String):
 	print("vr left button pressd ", button)
 	if button == "ax_button":
-		pass
+		_toggle_open_specimens_menu()
 	if button == "by_button":
 		print("Publishing Right hand XR transforms to mqtt hand/pos")
 
@@ -72,6 +84,9 @@ func _input(event):
 
 		if (event.keycode == KEY_C) and event.pressed:
 			_on_interactable_area_button_button_pressed(null)
+
+		if event.keycode == KEY_O and event.pressed:
+			_toggle_open_specimens_menu()
 
 
 func _physics_process(delta):
