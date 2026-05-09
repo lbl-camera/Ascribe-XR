@@ -13,26 +13,33 @@ var mat: ShaderMaterial
 var _data_http_request: HTTPRequest = null
 
 
+func _enter_tree():
+	super._enter_tree()
+	if not data_url.is_empty():
+		_load_from_data_url()
+
+
 func _ready():
 	volume_layered = get_node("%VolumeLayeredShader")
 	var mesh_inst = volume_layered.get_child(0, true)
 	mat = mesh_inst.get_surface_override_material(0)
 
-	if ui_instance:
-		for slider_name in ['gamma', 'opacity', 'color_scalar', 'max_steps', 'step_size', 'zoom']:
-			var slider = ui_instance.get_node("%" + slider_name + "Slider")
-			slider.value_changed.connect(_update_shader.bind(slider_name))
-			slider.value = volume_layered[slider_name]
-		ui_instance.get_node("%GradientItemList").colormap_selected.connect(_update_shader_colormap)
-		ui_instance.get_node("%FileDialog").file_selected.connect(_on_file_dialog_file_selected)
 
-		if volume_layered.texture:
-			ui_instance.get_node("%FileDialogLayer").hide()
-			ui_instance.get_node("%SettingsLayer").show()
-			_enable_pickables()
+func activate() -> void:
+	super.activate()
+	if not ui_instance:
+		return
+	for slider_name in ['gamma', 'opacity', 'color_scalar', 'max_steps', 'step_size', 'zoom']:
+		var slider = ui_instance.get_node("%" + slider_name + "Slider")
+		slider.value_changed.connect(_update_shader.bind(slider_name))
+		slider.value = volume_layered[slider_name]
+	ui_instance.get_node("%GradientItemList").colormap_selected.connect(_update_shader_colormap)
+	ui_instance.get_node("%FileDialog").file_selected.connect(_on_file_dialog_file_selected)
 
-	if not data_url.is_empty():
-		_load_from_data_url()
+	if volume_layered.texture:
+		ui_instance.get_node("%FileDialogLayer").hide()
+		ui_instance.get_node("%SettingsLayer").show()
+		_enable_pickables()
 
 
 func _enable_pickables() -> void:

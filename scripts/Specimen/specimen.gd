@@ -20,6 +20,8 @@ var _is_active: bool = false
 
 
 func _enter_tree() -> void:
+	# Start disabled — SceneManager will call activate() to enable processing.
+	process_mode = Node.PROCESS_MODE_DISABLED
 	# If a pipeline is configured, wire it up and run it.
 	# Pipelines run regardless of active state so data is ready when we activate.
 	if pipeline:
@@ -68,8 +70,10 @@ func deactivate() -> void:
 	# MenuManager.show_menu reuses slots, so a new active will overwrite these
 	# slots. The explicit close is for the case where this specimen is being
 	# removed without another taking over.
-	MenuManager.close_menu("specimen")
-	MenuManager.close_menu("story")
+	if ui_instance:
+		MenuManager.close_menu("specimen")
+	if _story_instance:
+		MenuManager.close_menu("story")
 	ui_instance = null
 	_story_instance = null
 	process_mode = Node.PROCESS_MODE_DISABLED
