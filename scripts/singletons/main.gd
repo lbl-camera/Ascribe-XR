@@ -91,7 +91,7 @@ func load_specimen(scene_path: String, config: Dictionary) -> void:
 
 	# First-load env transition: only if no specimens were open before.
 	if _open_specimens.is_empty():
-		_enter_specimen_mode_env(specimen)
+		_enter_specimen_mode_env()
 
 	_open_specimens.append(specimen)
 	specimens_root.add_child(specimen)
@@ -111,13 +111,12 @@ func _apply_config(specimen: Node, config: Dictionary) -> void:
 
 ## Apply the env transition that the old _reset_world used to perform on
 ## every load: show the world room, hide the empty-state floor, fire
-## particles, set the room scene appropriate for this specimen's scale mode.
-func _enter_specimen_mode_env(specimen: Specimen) -> void:
+## particles. The room-scene selection is done later by _position_specimen
+## via the new specimen's scale_mode, so this helper is scale-mode-agnostic.
+func _enter_specimen_mode_env() -> void:
 	world_3d.show()
 	$/root/Main/Floor.hide()
 	$/root/Main/GPUParticles3D.emitting = true
-	# Note: set_room_scene is also called by _position_specimen via scale_mode,
-	# so no explicit call needed here.
 
 
 ## Revert env to the empty-list / lobby state when the last specimen is
@@ -137,9 +136,10 @@ func _set_active_local(index: int) -> void:
 	var target := _open_specimens[index]
 	if _active_specimen == target:
 		return
-	if _active_specimen and is_instance_valid(_active_specimen):
-		_active_specimen.deactivate()
+	var prev := _active_specimen
 	_active_specimen = target
+	if prev and is_instance_valid(prev):
+		prev.deactivate()
 	_active_specimen.activate()
 
 
@@ -277,7 +277,7 @@ func _fetch_and_load_result(specimen_id: String, function_name: String, room_id:
 		specimen.display_name = metadata.get("display_name", specimen.display_name)
 
 	if _open_specimens.is_empty():
-		_enter_specimen_mode_env(specimen)
+		_enter_specimen_mode_env()
 
 	_open_specimens.append(specimen)
 	specimens_root.add_child(specimen)
