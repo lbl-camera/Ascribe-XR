@@ -319,10 +319,11 @@ func _fetch_and_load_result(specimen_id: String, function_name: String, room_id:
 	_position_specimen(specimen)
 	specimen.show()
 
-	_set_active_local(_open_specimens.size() - 1)
-	# Procedural UI was already shown via show_procedural_ui; close it now that
-	# the result is loaded.
+	# Close the procedural UI before activating the result specimen — both occupy
+	# the "specimen" MenuManager slot, and slot reuse from a fresh activate would
+	# leave _close_procedural_ui closing the brand-new result UI by mistake.
 	_close_procedural_ui()
+	_set_active_local(_open_specimens.size() - 1)
 	hide_mainmenu()
 	specimens_changed.emit()
 
