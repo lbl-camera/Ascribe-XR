@@ -83,6 +83,7 @@ func load_specimen(scene_path: String, config: Dictionary) -> void:
 	specimens_root.add_child(specimen)
 	_position_specimen(specimen)
 	specimen.show()
+	specimen.activate()
 	hide_mainmenu()
 
 
@@ -239,6 +240,7 @@ func _fetch_and_load_result(specimen_id: String, function_name: String, room_id:
 	specimens_root.add_child(specimen)
 	_position_specimen(specimen)
 	specimen.show()
+	specimen.activate()
 	hide_mainmenu()
 
 
