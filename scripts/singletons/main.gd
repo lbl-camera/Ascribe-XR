@@ -143,6 +143,41 @@ func _set_active_local(index: int) -> void:
 	_active_specimen.activate()
 
 
+@rpc("any_peer", "call_local", "reliable")
+func set_active_specimen(index: int) -> void:
+	if index < 0 or index >= _open_specimens.size():
+		push_warning("SceneManager.set_active_specimen: invalid index %d (size=%d)" % [index, _open_specimens.size()])
+		return
+	_set_active_local(index)
+	specimens_changed.emit()
+
+
+@rpc("any_peer", "call_local", "reliable")
+func remove_specimen(index: int) -> void:
+	if index < 0 or index >= _open_specimens.size():
+		push_warning("SceneManager.remove_specimen: invalid index %d (size=%d)" % [index, _open_specimens.size()])
+		return
+
+	var active_idx := _open_specimens.find(_active_specimen)
+	var new_active_idx := SceneManagerHelpers.next_active_after_remove(_open_specimens.size(), index, active_idx)
+
+	var victim := _open_specimens[index]
+	if victim == _active_specimen:
+		victim.deactivate()
+		_active_specimen = null
+	_open_specimens.remove_at(index)
+	victim.queue_free()
+
+	if new_active_idx == -1:
+		# List is empty — revert env and bring the main menu back.
+		_exit_specimen_mode_env()
+		show_mainmenu()
+	else:
+		_set_active_local(new_active_idx)
+
+	specimens_changed.emit()
+
+
 func _position_specimen(specimen: Specimen) -> void:
 	match specimen.scale_mode:
 		Specimen.ScaleMode.TABLE:
