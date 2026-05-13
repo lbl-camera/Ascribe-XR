@@ -2,8 +2,12 @@ extends Node3D
 
 @onready var NetworkGateway = $NetworkGateway
 
+var _prev_open_specimen_count: int = 0
+
 
 func _ready():
+	SceneManager.specimens_changed.connect(_on_specimens_changed)
+
 	if OS.has_feature("QUEST"):
 		if Config.QUESTstartupprotocol == "webrtc":
 			NetworkGateway.initialstatemqttwebrtc(NetworkGateway.NETWORK_OPTIONS_MQTT_WEBRTC.AS_NECESSARY, Config.webrtcroomname, Config.webrtcbroker)
@@ -40,6 +44,32 @@ func _toggle_network_gateway_menu():
 		})
 
 
+func _toggle_open_specimens_menu():
+	if MenuManager.has_active_menu("open_specimens"):
+		MenuManager.close_menu("open_specimens")
+	else:
+		var panel = preload("res://scenes/UI/open_specimens_menu.tscn").instantiate()
+		MenuManager.show_menu(panel, {
+			"slot": "open_specimens",
+			"screen_size": Vector2(2, 2.5),
+			"viewport_size": Vector2(500, 700),
+		})
+
+
+# Auto-show the open-specimens menu when crossing from <2 to >=2 open specimens,
+# so the user immediately sees the multi-specimen UI without having to summon it.
+# Auto-close when the list returns to empty (mainmenu re-takes the foreground).
+# Don't fight the user otherwise: dismissing the menu manually with O / ax_button
+# leaves it dismissed even as more specimens are opened.
+func _on_specimens_changed():
+	var count: int = SceneManager._open_specimens.size()
+	if count >= 2 and _prev_open_specimen_count < 2 and not MenuManager.has_active_menu("open_specimens"):
+		_toggle_open_specimens_menu()
+	elif count == 0 and MenuManager.has_active_menu("open_specimens"):
+		MenuManager.close_menu("open_specimens")
+	_prev_open_specimen_count = count
+
+
 func vr_right_button_pressed(button: String):
 	print("vr right button pressed ", button)
 	if button == "by_button":
@@ -53,7 +83,7 @@ func vr_right_button_release(button: String):
 func vr_left_button_pressed(button: String):
 	print("vr left button pressd ", button)
 	if button == "ax_button":
-		pass
+		_toggle_open_specimens_menu()
 	if button == "by_button":
 		print("Publishing Right hand XR transforms to mqtt hand/pos")
 
@@ -72,6 +102,9 @@ func _input(event):
 
 		if (event.keycode == KEY_C) and event.pressed:
 			_on_interactable_area_button_button_pressed(null)
+
+		if event.keycode == KEY_O and event.pressed:
+			_toggle_open_specimens_menu()
 
 
 func _physics_process(delta):

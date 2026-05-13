@@ -22,22 +22,26 @@ var _data_http_request: HTTPRequest = null
 func _enter_tree():
 	super._enter_tree()
 
-	if ui_instance:
-		ui_instance.get_node("%FileDialog").file_selected.connect(_on_file_dialog_file_selected)
-		ui_instance.get_node("%MaterialList").item_selected.connect(_on_materiallist_item_selected)
-
-		if _mesh_preloaded:
-			# Mesh set via set_mesh_data() before tree entry — skip file dialog.
-			ui_instance.get_node("%FileDialogLayer").hide()
-			ui_instance.get_node("%SettingsLayer").show()
-			ui_instance.get_node("%MaterialMenu").show()
-
 	if not data_url.is_empty():
 		_load_from_data_url()
 	elif loading_file:
 		if loading_file.begins_with('uid://'):
 			loading_file = ResourceUID.get_id_path(ResourceUID.text_to_id(loading_file))
 		_load_file_local(loading_file)
+
+
+func activate() -> void:
+	super.activate()
+	if not ui_instance:
+		return
+	ui_instance.get_node("%FileDialog").file_selected.connect(_on_file_dialog_file_selected)
+	ui_instance.get_node("%MaterialList").item_selected.connect(_on_materiallist_item_selected)
+
+	if _mesh_preloaded:
+		# Mesh set via set_mesh_data() before tree entry — skip file dialog.
+		ui_instance.get_node("%FileDialogLayer").hide()
+		ui_instance.get_node("%SettingsLayer").show()
+		ui_instance.get_node("%MaterialMenu").show()
 
 
 func _process(delta: float) -> void:
