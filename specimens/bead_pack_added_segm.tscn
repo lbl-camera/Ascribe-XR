@@ -1,0 +1,1822 @@
+[gd_scene format=3 uid="uid://bkte8egxhtm0c"]
+
+[ext_resource type="PackedScene" uid="uid://nsaby1sui3c" path="res://specimens/volume_specimen.tscn" id="1_7gg6q"]
+[ext_resource type="Script" uid="uid://djpb2mc2fralt" path="res://addons/volume_layered_shader/scripts/resources/gpu/zipped_image_archive_rf_Texture3D.gd" id="2_2bj8f"]
+
+[sub_resource type="Image" id="Image_7gg6q"]
+data = {
+"data": PackedByteArray(147, 146, 146, 62, 0, 0, 128, 63, 209, 208, 80, 61, 252, 251, 123, 63),
+"format": "RFloat",
+"height": 2,
+"mipmaps": false,
+"width": 2
+}
+
+[sub_resource type="Image" id="Image_2bj8f"]
+data = {
+"data": PackedByteArray(131, 130, 130, 62, 0, 0, 128, 63, 129, 128, 128, 61, 251, 250, 122, 63),
+"format": "RFloat",
+"height": 2,
+"mipmaps": false,
+"width": 2
+}
+
+[sub_resource type="Image" id="Image_6byau"]
+data = {
+"data": PackedByteArray(155, 154, 154, 62, 255, 254, 126, 63, 225, 224, 96, 61, 254, 253, 125, 63),
+"format": "RFloat",
+"height": 2,
+"mipmaps": false,
+"width": 2
+}
+
+[sub_resource type="Image" id="Image_ad7fu"]
+data = {
+"data": PackedByteArray(167, 166, 166, 62, 0, 0, 128, 63, 241, 240, 112, 61, 197, 196, 196, 62),
+"format": "RFloat",
+"height": 2,
+"mipmaps": false,
+"width": 2
+}
+
+[sub_resource type="Image" id="Image_ngvqk"]
+data = {
+"data": PackedByteArray(161, 160, 160, 62, 0, 0, 128, 63, 241, 240, 112, 61, 199, 198, 198, 62),
+"format": "RFloat",
+"height": 2,
+"mipmaps": false,
+"width": 2
+}
+
+[sub_resource type="Image" id="Image_ga8w4"]
+data = {
+"data": PackedByteArray(155, 154, 154, 62, 0, 0, 128, 63, 185, 184, 184, 61, 254, 253, 125, 63),
+"format": "RFloat",
+"height": 2,
+"mipmaps": false,
+"width": 2
+}
+
+[sub_resource type="Image" id="Image_q12f5"]
+data = {
+"data": PackedByteArray(155, 154, 154, 62, 0, 0, 128, 63, 129, 128, 0, 62, 251, 250, 122, 63),
+"format": "RFloat",
+"height": 2,
+"mipmaps": false,
+"width": 2
+}
+
+[sub_resource type="Image" id="Image_4dfbc"]
+data = {
+"data": PackedByteArray(167, 166, 166, 62, 0, 0, 128, 63, 217, 216, 216, 61, 253, 252, 124, 63),
+"format": "RFloat",
+"height": 2,
+"mipmaps": false,
+"width": 2
+}
+
+[sub_resource type="Image" id="Image_ae7nu"]
+data = {
+"data": PackedByteArray(155, 154, 154, 62, 0, 0, 128, 63, 157, 156, 28, 62, 252, 251, 123, 63),
+"format": "RFloat",
+"height": 2,
+"mipmaps": false,
+"width": 2
+}
+
+[sub_resource type="Image" id="Image_42l6e"]
+data = {
+"data": PackedByteArray(175, 174, 174, 62, 0, 0, 128, 63, 157, 156, 28, 62, 251, 250, 122, 63),
+"format": "RFloat",
+"height": 2,
+"mipmaps": false,
+"width": 2
+}
+
+[sub_resource type="Image" id="Image_3d00q"]
+data = {
+"data": PackedByteArray(169, 168, 168, 62, 0, 0, 128, 63, 165, 164, 36, 62, 250, 249, 121, 63),
+"format": "RFloat",
+"height": 2,
+"mipmaps": false,
+"width": 2
+}
+
+[sub_resource type="Image" id="Image_j58k0"]
+data = {
+"data": PackedByteArray(181, 180, 180, 62, 0, 0, 128, 63, 169, 168, 40, 62, 251, 250, 122, 63),
+"format": "RFloat",
+"height": 2,
+"mipmaps": false,
+"width": 2
+}
+
+[sub_resource type="Image" id="Image_5ehol"]
+data = {
+"data": PackedByteArray(175, 174, 174, 62, 0, 0, 128, 63, 169, 168, 40, 62, 251, 250, 122, 63),
+"format": "RFloat",
+"height": 2,
+"mipmaps": false,
+"width": 2
+}
+
+[sub_resource type="Image" id="Image_ba7o2"]
+data = {
+"data": PackedByteArray(173, 172, 172, 62, 0, 0, 128, 63, 173, 172, 44, 62, 251, 250, 122, 63),
+"format": "RFloat",
+"height": 2,
+"mipmaps": false,
+"width": 2
+}
+
+[sub_resource type="Image" id="Image_k5uio"]
+data = {
+"data": PackedByteArray(153, 152, 152, 62, 0, 0, 128, 63, 237, 236, 108, 62, 253, 252, 124, 63),
+"format": "RFloat",
+"height": 2,
+"mipmaps": false,
+"width": 2
+}
+
+[sub_resource type="Image" id="Image_6q53u"]
+data = {
+"data": PackedByteArray(169, 168, 168, 62, 0, 0, 128, 63, 163, 162, 162, 62, 0, 0, 128, 63),
+"format": "RFloat",
+"height": 2,
+"mipmaps": false,
+"width": 2
+}
+
+[sub_resource type="Image" id="Image_7f0a8"]
+data = {
+"data": PackedByteArray(157, 156, 156, 62, 0, 0, 128, 63, 157, 156, 156, 62, 0, 0, 128, 63),
+"format": "RFloat",
+"height": 2,
+"mipmaps": false,
+"width": 2
+}
+
+[sub_resource type="Image" id="Image_4g8i1"]
+data = {
+"data": PackedByteArray(159, 158, 158, 62, 0, 0, 128, 63, 153, 152, 152, 62, 0, 0, 128, 63),
+"format": "RFloat",
+"height": 2,
+"mipmaps": false,
+"width": 2
+}
+
+[sub_resource type="Image" id="Image_a5e0n"]
+data = {
+"data": PackedByteArray(149, 148, 148, 62, 0, 0, 128, 63, 143, 142, 142, 62, 0, 0, 128, 63),
+"format": "RFloat",
+"height": 2,
+"mipmaps": false,
+"width": 2
+}
+
+[sub_resource type="Image" id="Image_4wp1y"]
+data = {
+"data": PackedByteArray(141, 140, 140, 62, 0, 0, 128, 63, 225, 224, 96, 62, 254, 253, 125, 63),
+"format": "RFloat",
+"height": 2,
+"mipmaps": false,
+"width": 2
+}
+
+[sub_resource type="Image" id="Image_6l2j8"]
+data = {
+"data": PackedByteArray(145, 144, 144, 62, 0, 0, 128, 63, 153, 152, 24, 62, 251, 250, 122, 63),
+"format": "RFloat",
+"height": 2,
+"mipmaps": false,
+"width": 2
+}
+
+[sub_resource type="Image" id="Image_t0akw"]
+data = {
+"data": PackedByteArray(159, 158, 158, 62, 0, 0, 128, 63, 193, 192, 192, 61, 252, 251, 123, 63),
+"format": "RFloat",
+"height": 2,
+"mipmaps": false,
+"width": 2
+}
+
+[sub_resource type="Image" id="Image_dmxsk"]
+data = {
+"data": PackedByteArray(153, 152, 152, 62, 0, 0, 128, 63, 169, 168, 168, 61, 253, 252, 124, 63),
+"format": "RFloat",
+"height": 2,
+"mipmaps": false,
+"width": 2
+}
+
+[sub_resource type="Image" id="Image_w5w7p"]
+data = {
+"data": PackedByteArray(143, 142, 142, 62, 0, 0, 128, 63, 137, 136, 136, 61, 254, 253, 125, 63),
+"format": "RFloat",
+"height": 2,
+"mipmaps": false,
+"width": 2
+}
+
+[sub_resource type="Image" id="Image_s088b"]
+data = {
+"data": PackedByteArray(147, 146, 146, 62, 0, 0, 128, 63, 141, 140, 12, 62, 252, 251, 123, 63),
+"format": "RFloat",
+"height": 2,
+"mipmaps": false,
+"width": 2
+}
+
+[sub_resource type="Image" id="Image_sjfsb"]
+data = {
+"data": PackedByteArray(151, 150, 150, 62, 209, 208, 208, 61, 0, 0, 128, 63, 251, 250, 122, 63),
+"format": "RFloat",
+"height": 2,
+"mipmaps": false,
+"width": 2
+}
+
+[sub_resource type="Image" id="Image_ojkgy"]
+data = {
+"data": PackedByteArray(143, 142, 142, 62, 137, 136, 136, 61, 0, 0, 128, 63, 254, 253, 125, 63),
+"format": "RFloat",
+"height": 2,
+"mipmaps": false,
+"width": 2
+}
+
+[sub_resource type="Image" id="Image_usyav"]
+data = {
+"data": PackedByteArray(155, 154, 154, 62, 129, 128, 0, 61, 0, 0, 128, 63, 253, 252, 124, 63),
+"format": "RFloat",
+"height": 2,
+"mipmaps": false,
+"width": 2
+}
+
+[sub_resource type="Image" id="Image_gibti"]
+data = {
+"data": PackedByteArray(165, 164, 164, 62, 225, 224, 96, 61, 0, 0, 128, 63, 253, 252, 124, 63),
+"format": "RFloat",
+"height": 2,
+"mipmaps": false,
+"width": 2
+}
+
+[sub_resource type="Image" id="Image_km6xa"]
+data = {
+"data": PackedByteArray(155, 154, 154, 62, 0, 0, 0, 0, 0, 0, 128, 63, 255, 254, 126, 63),
+"format": "RFloat",
+"height": 2,
+"mipmaps": false,
+"width": 2
+}
+
+[sub_resource type="Image" id="Image_xetwu"]
+data = {
+"data": PackedByteArray(159, 158, 158, 62, 209, 208, 80, 61, 0, 0, 128, 63, 254, 253, 125, 63),
+"format": "RFloat",
+"height": 2,
+"mipmaps": false,
+"width": 2
+}
+
+[sub_resource type="Image" id="Image_rnafx"]
+data = {
+"data": PackedByteArray(167, 166, 166, 62, 161, 160, 160, 60, 0, 0, 128, 63, 255, 254, 126, 63),
+"format": "RFloat",
+"height": 2,
+"mipmaps": false,
+"width": 2
+}
+
+[sub_resource type="Image" id="Image_x12p1"]
+data = {
+"data": PackedByteArray(163, 162, 162, 62, 0, 0, 0, 0, 0, 0, 128, 63, 255, 254, 126, 63),
+"format": "RFloat",
+"height": 2,
+"mipmaps": false,
+"width": 2
+}
+
+[sub_resource type="Image" id="Image_dyaq5"]
+data = {
+"data": PackedByteArray(165, 164, 164, 62, 129, 128, 128, 60, 0, 0, 128, 63, 254, 253, 125, 63),
+"format": "RFloat",
+"height": 2,
+"mipmaps": false,
+"width": 2
+}
+
+[sub_resource type="Image" id="Image_taop0"]
+data = {
+"data": PackedByteArray(159, 158, 158, 62, 149, 148, 148, 62, 0, 0, 128, 63, 0, 0, 128, 63),
+"format": "RFloat",
+"height": 2,
+"mipmaps": false,
+"width": 2
+}
+
+[sub_resource type="Image" id="Image_wluq2"]
+data = {
+"data": PackedByteArray(169, 168, 168, 62, 0, 0, 128, 63, 0, 0, 128, 63, 255, 254, 126, 63),
+"format": "RFloat",
+"height": 2,
+"mipmaps": false,
+"width": 2
+}
+
+[sub_resource type="Image" id="Image_kso7q"]
+data = {
+"data": PackedByteArray(163, 162, 162, 62, 0, 0, 128, 63, 0, 0, 128, 63, 255, 254, 126, 63),
+"format": "RFloat",
+"height": 2,
+"mipmaps": false,
+"width": 2
+}
+
+[sub_resource type="Image" id="Image_xlf8e"]
+data = {
+"data": PackedByteArray(175, 174, 174, 62, 0, 0, 128, 63, 0, 0, 128, 63, 0, 0, 128, 63),
+"format": "RFloat",
+"height": 2,
+"mipmaps": false,
+"width": 2
+}
+
+[sub_resource type="Image" id="Image_30km0"]
+data = {
+"data": PackedByteArray(171, 170, 170, 62, 0, 0, 128, 63, 0, 0, 128, 63, 0, 0, 128, 63),
+"format": "RFloat",
+"height": 2,
+"mipmaps": false,
+"width": 2
+}
+
+[sub_resource type="Image" id="Image_46m5l"]
+data = {
+"data": PackedByteArray(185, 184, 184, 62, 254, 253, 125, 63, 0, 0, 128, 63, 0, 0, 128, 63),
+"format": "RFloat",
+"height": 2,
+"mipmaps": false,
+"width": 2
+}
+
+[sub_resource type="Image" id="Image_t70vl"]
+data = {
+"data": PackedByteArray(163, 162, 162, 62, 0, 0, 128, 63, 0, 0, 128, 63, 255, 254, 126, 63),
+"format": "RFloat",
+"height": 2,
+"mipmaps": false,
+"width": 2
+}
+
+[sub_resource type="Image" id="Image_2g46l"]
+data = {
+"data": PackedByteArray(197, 196, 196, 62, 255, 254, 126, 63, 255, 254, 126, 63, 0, 0, 128, 63),
+"format": "RFloat",
+"height": 2,
+"mipmaps": false,
+"width": 2
+}
+
+[sub_resource type="Image" id="Image_c33b8"]
+data = {
+"data": PackedByteArray(163, 162, 162, 62, 0, 0, 128, 63, 0, 0, 128, 63, 255, 254, 126, 63),
+"format": "RFloat",
+"height": 2,
+"mipmaps": false,
+"width": 2
+}
+
+[sub_resource type="Image" id="Image_8d58x"]
+data = {
+"data": PackedByteArray(169, 168, 168, 62, 0, 0, 128, 63, 0, 0, 128, 63, 255, 254, 126, 63),
+"format": "RFloat",
+"height": 2,
+"mipmaps": false,
+"width": 2
+}
+
+[sub_resource type="Image" id="Image_0ux1w"]
+data = {
+"data": PackedByteArray(175, 174, 174, 62, 0, 0, 128, 63, 0, 0, 128, 63, 0, 0, 128, 63),
+"format": "RFloat",
+"height": 2,
+"mipmaps": false,
+"width": 2
+}
+
+[sub_resource type="Image" id="Image_b3gwy"]
+data = {
+"data": PackedByteArray(167, 166, 166, 62, 0, 0, 128, 63, 0, 0, 128, 63, 255, 254, 126, 63),
+"format": "RFloat",
+"height": 2,
+"mipmaps": false,
+"width": 2
+}
+
+[sub_resource type="Image" id="Image_f74hq"]
+data = {
+"data": PackedByteArray(165, 164, 164, 62, 254, 253, 125, 63, 181, 180, 180, 62, 0, 0, 128, 63),
+"format": "RFloat",
+"height": 2,
+"mipmaps": false,
+"width": 2
+}
+
+[sub_resource type="Image" id="Image_crple"]
+data = {
+"data": PackedByteArray(173, 172, 172, 62, 0, 0, 128, 63, 153, 152, 24, 62, 251, 250, 122, 63),
+"format": "RFloat",
+"height": 2,
+"mipmaps": false,
+"width": 2
+}
+
+[sub_resource type="Image" id="Image_fd2gr"]
+data = {
+"data": PackedByteArray(0, 0, 128, 63, 0, 0, 128, 63, 193, 192, 64, 61, 0, 0, 128, 63),
+"format": "RFloat",
+"height": 2,
+"mipmaps": false,
+"width": 2
+}
+
+[sub_resource type="Image" id="Image_q2uuj"]
+data = {
+"data": PackedByteArray(0, 0, 128, 63, 0, 0, 128, 63, 241, 240, 112, 61, 0, 0, 128, 63),
+"format": "RFloat",
+"height": 2,
+"mipmaps": false,
+"width": 2
+}
+
+[sub_resource type="Image" id="Image_hvabf"]
+data = {
+"data": PackedByteArray(0, 0, 128, 63, 0, 0, 128, 63, 193, 192, 64, 61, 0, 0, 128, 63),
+"format": "RFloat",
+"height": 2,
+"mipmaps": false,
+"width": 2
+}
+
+[sub_resource type="Image" id="Image_njl12"]
+data = {
+"data": PackedByteArray(0, 0, 128, 63, 254, 253, 125, 63, 193, 192, 192, 61, 0, 0, 128, 63),
+"format": "RFloat",
+"height": 2,
+"mipmaps": false,
+"width": 2
+}
+
+[sub_resource type="Image" id="Image_4eljw"]
+data = {
+"data": PackedByteArray(0, 0, 128, 63, 0, 0, 128, 63, 225, 224, 96, 61, 0, 0, 128, 63),
+"format": "RFloat",
+"height": 2,
+"mipmaps": false,
+"width": 2
+}
+
+[sub_resource type="Image" id="Image_utccu"]
+data = {
+"data": PackedByteArray(0, 0, 128, 63, 0, 0, 128, 63, 241, 240, 112, 61, 0, 0, 128, 63),
+"format": "RFloat",
+"height": 2,
+"mipmaps": false,
+"width": 2
+}
+
+[sub_resource type="Image" id="Image_533cs"]
+data = {
+"data": PackedByteArray(0, 0, 128, 63, 255, 254, 126, 63, 161, 160, 160, 61, 197, 196, 196, 62),
+"format": "RFloat",
+"height": 2,
+"mipmaps": false,
+"width": 2
+}
+
+[sub_resource type="Image" id="Image_h5b3c"]
+data = {
+"data": PackedByteArray(254, 253, 125, 63, 0, 0, 128, 63, 133, 132, 4, 62, 177, 176, 176, 62),
+"format": "RFloat",
+"height": 2,
+"mipmaps": false,
+"width": 2
+}
+
+[sub_resource type="Image" id="Image_8le8l"]
+data = {
+"data": PackedByteArray(0, 0, 128, 63, 0, 0, 128, 63, 177, 176, 176, 61, 173, 172, 172, 62),
+"format": "RFloat",
+"height": 2,
+"mipmaps": false,
+"width": 2
+}
+
+[sub_resource type="Image" id="Image_ggscw"]
+data = {
+"data": PackedByteArray(0, 0, 128, 63, 255, 254, 126, 63, 129, 128, 0, 62, 185, 184, 184, 62),
+"format": "RFloat",
+"height": 2,
+"mipmaps": false,
+"width": 2
+}
+
+[sub_resource type="Image" id="Image_h63pg"]
+data = {
+"data": PackedByteArray(0, 0, 128, 63, 0, 0, 128, 63, 137, 136, 8, 62, 191, 190, 190, 62),
+"format": "RFloat",
+"height": 2,
+"mipmaps": false,
+"width": 2
+}
+
+[sub_resource type="Image" id="Image_wrucl"]
+data = {
+"data": PackedByteArray(203, 202, 202, 62, 0, 0, 128, 63, 165, 164, 36, 62, 253, 252, 124, 63),
+"format": "RFloat",
+"height": 2,
+"mipmaps": false,
+"width": 2
+}
+
+[sub_resource type="Image" id="Image_3n3lb"]
+data = {
+"data": PackedByteArray(195, 194, 194, 62, 0, 0, 128, 63, 149, 148, 20, 62, 253, 252, 124, 63),
+"format": "RFloat",
+"height": 2,
+"mipmaps": false,
+"width": 2
+}
+
+[sub_resource type="Image" id="Image_phrgc"]
+data = {
+"data": PackedByteArray(185, 184, 184, 62, 0, 0, 128, 63, 149, 148, 20, 62, 254, 253, 125, 63),
+"format": "RFloat",
+"height": 2,
+"mipmaps": false,
+"width": 2
+}
+
+[sub_resource type="Image" id="Image_s86w0"]
+data = {
+"data": PackedByteArray(185, 184, 184, 62, 0, 0, 128, 63, 193, 192, 64, 62, 250, 249, 121, 63),
+"format": "RFloat",
+"height": 2,
+"mipmaps": false,
+"width": 2
+}
+
+[sub_resource type="Image" id="Image_djaef"]
+data = {
+"data": PackedByteArray(171, 170, 170, 62, 0, 0, 128, 63, 165, 164, 36, 62, 251, 250, 122, 63),
+"format": "RFloat",
+"height": 2,
+"mipmaps": false,
+"width": 2
+}
+
+[sub_resource type="Image" id="Image_686q5"]
+data = {
+"data": PackedByteArray(183, 182, 182, 62, 0, 0, 128, 63, 129, 128, 0, 62, 253, 252, 124, 63),
+"format": "RFloat",
+"height": 2,
+"mipmaps": false,
+"width": 2
+}
+
+[sub_resource type="Image" id="Image_fe22f"]
+data = {
+"data": PackedByteArray(173, 172, 172, 62, 0, 0, 128, 63, 157, 156, 28, 62, 251, 250, 122, 63),
+"format": "RFloat",
+"height": 2,
+"mipmaps": false,
+"width": 2
+}
+
+[sub_resource type="Image" id="Image_6fwo7"]
+data = {
+"data": PackedByteArray(165, 164, 164, 62, 0, 0, 128, 63, 141, 140, 12, 62, 251, 250, 122, 63),
+"format": "RFloat",
+"height": 2,
+"mipmaps": false,
+"width": 2
+}
+
+[sub_resource type="Image" id="Image_4hp4e"]
+data = {
+"data": PackedByteArray(163, 162, 162, 62, 254, 253, 125, 63, 217, 216, 216, 61, 199, 198, 198, 62),
+"format": "RFloat",
+"height": 2,
+"mipmaps": false,
+"width": 2
+}
+
+[sub_resource type="Image" id="Image_3hgio"]
+data = {
+"data": PackedByteArray(163, 162, 162, 62, 254, 253, 125, 63, 169, 168, 168, 61, 189, 188, 188, 62),
+"format": "RFloat",
+"height": 2,
+"mipmaps": false,
+"width": 2
+}
+
+[sub_resource type="Image" id="Image_tkbum"]
+data = {
+"data": PackedByteArray(173, 172, 172, 62, 201, 200, 72, 62, 241, 240, 240, 61, 187, 186, 186, 62),
+"format": "RFloat",
+"height": 2,
+"mipmaps": false,
+"width": 2
+}
+
+[sub_resource type="Image" id="Image_6favk"]
+data = {
+"data": PackedByteArray(163, 162, 162, 62, 169, 168, 40, 62, 0, 0, 128, 63, 167, 166, 166, 62),
+"format": "RFloat",
+"height": 2,
+"mipmaps": false,
+"width": 2
+}
+
+[sub_resource type="Image" id="Image_6p2wy"]
+data = {
+"data": PackedByteArray(141, 140, 140, 62, 129, 128, 0, 62, 0, 0, 128, 63, 179, 178, 178, 62),
+"format": "RFloat",
+"height": 2,
+"mipmaps": false,
+"width": 2
+}
+
+[sub_resource type="Image" id="Image_tp6u2"]
+data = {
+"data": PackedByteArray(149, 148, 148, 62, 249, 248, 248, 61, 255, 254, 126, 63, 165, 164, 164, 62),
+"format": "RFloat",
+"height": 2,
+"mipmaps": false,
+"width": 2
+}
+
+[sub_resource type="Image" id="Image_14bs0"]
+data = {
+"data": PackedByteArray(163, 162, 162, 62, 153, 152, 152, 61, 254, 253, 125, 63, 185, 184, 184, 62),
+"format": "RFloat",
+"height": 2,
+"mipmaps": false,
+"width": 2
+}
+
+[sub_resource type="Image" id="Image_c7vs7"]
+data = {
+"data": PackedByteArray(151, 150, 150, 62, 145, 144, 144, 61, 254, 253, 125, 63, 193, 192, 192, 62),
+"format": "RFloat",
+"height": 2,
+"mipmaps": false,
+"width": 2
+}
+
+[sub_resource type="Image" id="Image_ahxuc"]
+data = {
+"data": PackedByteArray(151, 150, 150, 62, 161, 160, 160, 61, 255, 254, 126, 63, 193, 192, 192, 62),
+"format": "RFloat",
+"height": 2,
+"mipmaps": false,
+"width": 2
+}
+
+[sub_resource type="Image" id="Image_yb0fi"]
+data = {
+"data": PackedByteArray(155, 154, 154, 62, 193, 192, 192, 60, 255, 254, 126, 63, 193, 192, 192, 62),
+"format": "RFloat",
+"height": 2,
+"mipmaps": false,
+"width": 2
+}
+
+[sub_resource type="Image" id="Image_h63l1"]
+data = {
+"data": PackedByteArray(165, 164, 164, 62, 129, 128, 0, 61, 255, 254, 126, 63, 189, 188, 188, 62),
+"format": "RFloat",
+"height": 2,
+"mipmaps": false,
+"width": 2
+}
+
+[sub_resource type="Image" id="Image_rta3y"]
+data = {
+"data": PackedByteArray(167, 166, 166, 62, 129, 128, 128, 59, 0, 0, 128, 63, 255, 254, 126, 63),
+"format": "RFloat",
+"height": 2,
+"mipmaps": false,
+"width": 2
+}
+
+[sub_resource type="Image" id="Image_n5exm"]
+data = {
+"data": PackedByteArray(175, 174, 174, 62, 129, 128, 0, 60, 0, 0, 128, 63, 0, 0, 128, 63),
+"format": "RFloat",
+"height": 2,
+"mipmaps": false,
+"width": 2
+}
+
+[sub_resource type="Image" id="Image_5kryo"]
+data = {
+"data": PackedByteArray(177, 176, 176, 62, 193, 192, 192, 60, 0, 0, 128, 63, 255, 254, 126, 63),
+"format": "RFloat",
+"height": 2,
+"mipmaps": false,
+"width": 2
+}
+
+[sub_resource type="Image" id="Image_3aklc"]
+data = {
+"data": PackedByteArray(183, 182, 182, 62, 129, 128, 0, 60, 0, 0, 128, 63, 0, 0, 128, 63),
+"format": "RFloat",
+"height": 2,
+"mipmaps": false,
+"width": 2
+}
+
+[sub_resource type="Image" id="Image_lwcl1"]
+data = {
+"data": PackedByteArray(195, 194, 194, 62, 193, 192, 192, 60, 0, 0, 128, 63, 255, 254, 126, 63),
+"format": "RFloat",
+"height": 2,
+"mipmaps": false,
+"width": 2
+}
+
+[sub_resource type="Image" id="Image_8sa8m"]
+data = {
+"data": PackedByteArray(177, 176, 176, 62, 0, 0, 0, 0, 0, 0, 128, 63, 255, 254, 126, 63),
+"format": "RFloat",
+"height": 2,
+"mipmaps": false,
+"width": 2
+}
+
+[sub_resource type="Image" id="Image_whoh0"]
+data = {
+"data": PackedByteArray(173, 172, 172, 62, 129, 128, 0, 61, 0, 0, 128, 63, 255, 254, 126, 63),
+"format": "RFloat",
+"height": 2,
+"mipmaps": false,
+"width": 2
+}
+
+[sub_resource type="Image" id="Image_hq0aj"]
+data = {
+"data": PackedByteArray(183, 182, 182, 62, 129, 128, 0, 61, 0, 0, 128, 63, 255, 254, 126, 63),
+"format": "RFloat",
+"height": 2,
+"mipmaps": false,
+"width": 2
+}
+
+[sub_resource type="Image" id="Image_j3yvg"]
+data = {
+"data": PackedByteArray(165, 164, 164, 62, 169, 168, 168, 61, 0, 0, 128, 63, 252, 251, 123, 63),
+"format": "RFloat",
+"height": 2,
+"mipmaps": false,
+"width": 2
+}
+
+[sub_resource type="Image" id="Image_uqnr6"]
+data = {
+"data": PackedByteArray(181, 180, 180, 62, 189, 188, 60, 62, 0, 0, 128, 63, 250, 249, 121, 63),
+"format": "RFloat",
+"height": 2,
+"mipmaps": false,
+"width": 2
+}
+
+[sub_resource type="Image" id="Image_lx43t"]
+data = {
+"data": PackedByteArray(181, 180, 180, 62, 187, 186, 186, 62, 254, 253, 125, 63, 255, 254, 126, 63),
+"format": "RFloat",
+"height": 2,
+"mipmaps": false,
+"width": 2
+}
+
+[sub_resource type="Image" id="Image_3y1ic"]
+data = {
+"data": PackedByteArray(175, 174, 174, 62, 0, 0, 128, 63, 0, 0, 128, 63, 0, 0, 128, 63),
+"format": "RFloat",
+"height": 2,
+"mipmaps": false,
+"width": 2
+}
+
+[sub_resource type="Image" id="Image_rjtma"]
+data = {
+"data": PackedByteArray(163, 162, 162, 62, 0, 0, 128, 63, 0, 0, 128, 63, 255, 254, 126, 63),
+"format": "RFloat",
+"height": 2,
+"mipmaps": false,
+"width": 2
+}
+
+[sub_resource type="Image" id="Image_xothq"]
+data = {
+"data": PackedByteArray(157, 156, 156, 62, 254, 253, 125, 63, 0, 0, 128, 63, 255, 254, 126, 63),
+"format": "RFloat",
+"height": 2,
+"mipmaps": false,
+"width": 2
+}
+
+[sub_resource type="Image" id="Image_5olbu"]
+data = {
+"data": PackedByteArray(159, 158, 158, 62, 255, 254, 126, 63, 0, 0, 128, 63, 255, 254, 126, 63),
+"format": "RFloat",
+"height": 2,
+"mipmaps": false,
+"width": 2
+}
+
+[sub_resource type="Image" id="Image_gwi2f"]
+data = {
+"data": PackedByteArray(167, 166, 166, 62, 0, 0, 128, 63, 0, 0, 128, 63, 255, 254, 126, 63),
+"format": "RFloat",
+"height": 2,
+"mipmaps": false,
+"width": 2
+}
+
+[sub_resource type="Image" id="Image_5bxe1"]
+data = {
+"data": PackedByteArray(155, 154, 154, 62, 254, 253, 125, 63, 0, 0, 128, 63, 255, 254, 126, 63),
+"format": "RFloat",
+"height": 2,
+"mipmaps": false,
+"width": 2
+}
+
+[sub_resource type="Image" id="Image_0yvhv"]
+data = {
+"data": PackedByteArray(159, 158, 158, 62, 255, 254, 126, 63, 0, 0, 128, 63, 255, 254, 126, 63),
+"format": "RFloat",
+"height": 2,
+"mipmaps": false,
+"width": 2
+}
+
+[sub_resource type="Image" id="Image_hevr8"]
+data = {
+"data": PackedByteArray(155, 154, 154, 62, 254, 253, 125, 63, 0, 0, 128, 63, 255, 254, 126, 63),
+"format": "RFloat",
+"height": 2,
+"mipmaps": false,
+"width": 2
+}
+
+[sub_resource type="Image" id="Image_5urck"]
+data = {
+"data": PackedByteArray(157, 156, 156, 62, 254, 253, 125, 63, 0, 0, 128, 63, 255, 254, 126, 63),
+"format": "RFloat",
+"height": 2,
+"mipmaps": false,
+"width": 2
+}
+
+[sub_resource type="Image" id="Image_nssyf"]
+data = {
+"data": PackedByteArray(137, 136, 136, 62, 255, 254, 126, 63, 0, 0, 128, 63, 0, 0, 128, 63),
+"format": "RFloat",
+"height": 2,
+"mipmaps": false,
+"width": 2
+}
+
+[sub_resource type="Image" id="Image_6xtv5"]
+data = {
+"data": PackedByteArray(145, 144, 144, 62, 145, 144, 144, 62, 0, 0, 128, 63, 0, 0, 128, 63),
+"format": "RFloat",
+"height": 2,
+"mipmaps": false,
+"width": 2
+}
+
+[sub_resource type="Image" id="Image_yxsyf"]
+data = {
+"data": PackedByteArray(149, 148, 148, 62, 161, 160, 160, 61, 0, 0, 128, 63, 254, 253, 125, 63),
+"format": "RFloat",
+"height": 2,
+"mipmaps": false,
+"width": 2
+}
+
+[sub_resource type="Image" id="Image_a8l36"]
+data = {
+"data": PackedByteArray(155, 154, 154, 62, 0, 0, 0, 0, 0, 0, 128, 63, 255, 254, 126, 63),
+"format": "RFloat",
+"height": 2,
+"mipmaps": false,
+"width": 2
+}
+
+[sub_resource type="Image" id="Image_7bv5n"]
+data = {
+"data": PackedByteArray(157, 156, 156, 62, 0, 0, 0, 0, 0, 0, 128, 63, 254, 253, 125, 63),
+"format": "RFloat",
+"height": 2,
+"mipmaps": false,
+"width": 2
+}
+
+[sub_resource type="Image" id="Image_yukji"]
+data = {
+"data": PackedByteArray(149, 148, 148, 62, 193, 192, 64, 61, 0, 0, 128, 63, 252, 251, 123, 63),
+"format": "RFloat",
+"height": 2,
+"mipmaps": false,
+"width": 2
+}
+
+[sub_resource type="Image" id="Image_8tkvb"]
+data = {
+"data": PackedByteArray(143, 142, 142, 62, 173, 172, 44, 62, 0, 0, 128, 63, 252, 251, 123, 63),
+"format": "RFloat",
+"height": 2,
+"mipmaps": false,
+"width": 2
+}
+
+[sub_resource type="Image" id="Image_pfu6u"]
+data = {
+"data": PackedByteArray(163, 162, 162, 62, 163, 162, 162, 62, 0, 0, 128, 63, 0, 0, 128, 63),
+"format": "RFloat",
+"height": 2,
+"mipmaps": false,
+"width": 2
+}
+
+[sub_resource type="Image" id="Image_1tfa7"]
+data = {
+"data": PackedByteArray(169, 168, 168, 62, 0, 0, 128, 63, 0, 0, 128, 63, 255, 254, 126, 63),
+"format": "RFloat",
+"height": 2,
+"mipmaps": false,
+"width": 2
+}
+
+[sub_resource type="Image" id="Image_unpvt"]
+data = {
+"data": PackedByteArray(161, 160, 160, 62, 0, 0, 128, 63, 0, 0, 128, 63, 255, 254, 126, 63),
+"format": "RFloat",
+"height": 2,
+"mipmaps": false,
+"width": 2
+}
+
+[sub_resource type="Image" id="Image_uuo8t"]
+data = {
+"data": PackedByteArray(171, 170, 170, 62, 0, 0, 128, 63, 0, 0, 128, 63, 0, 0, 128, 63),
+"format": "RFloat",
+"height": 2,
+"mipmaps": false,
+"width": 2
+}
+
+[sub_resource type="Image" id="Image_4gdrh"]
+data = {
+"data": PackedByteArray(167, 166, 166, 62, 0, 0, 128, 63, 0, 0, 128, 63, 203, 202, 202, 62),
+"format": "RFloat",
+"height": 2,
+"mipmaps": false,
+"width": 2
+}
+
+[sub_resource type="Image" id="Image_ygbf8"]
+data = {
+"data": PackedByteArray(185, 184, 184, 62, 255, 254, 126, 63, 0, 0, 128, 63, 0, 0, 128, 63),
+"format": "RFloat",
+"height": 2,
+"mipmaps": false,
+"width": 2
+}
+
+[sub_resource type="Image" id="Image_8r1uk"]
+data = {
+"data": PackedByteArray(169, 168, 168, 62, 0, 0, 128, 63, 0, 0, 128, 63, 255, 254, 126, 63),
+"format": "RFloat",
+"height": 2,
+"mipmaps": false,
+"width": 2
+}
+
+[sub_resource type="Image" id="Image_hskro"]
+data = {
+"data": PackedByteArray(159, 158, 158, 62, 255, 254, 126, 63, 0, 0, 128, 63, 255, 254, 126, 63),
+"format": "RFloat",
+"height": 2,
+"mipmaps": false,
+"width": 2
+}
+
+[sub_resource type="Image" id="Image_lo1w4"]
+data = {
+"data": PackedByteArray(175, 174, 174, 62, 0, 0, 128, 63, 0, 0, 128, 63, 0, 0, 128, 63),
+"format": "RFloat",
+"height": 2,
+"mipmaps": false,
+"width": 2
+}
+
+[sub_resource type="Image" id="Image_nn163"]
+data = {
+"data": PackedByteArray(169, 168, 168, 62, 0, 0, 128, 63, 0, 0, 128, 63, 255, 254, 126, 63),
+"format": "RFloat",
+"height": 2,
+"mipmaps": false,
+"width": 2
+}
+
+[sub_resource type="Image" id="Image_yl568"]
+data = {
+"data": PackedByteArray(177, 176, 176, 62, 0, 0, 128, 63, 0, 0, 128, 63, 0, 0, 128, 63),
+"format": "RFloat",
+"height": 2,
+"mipmaps": false,
+"width": 2
+}
+
+[sub_resource type="Image" id="Image_rdghw"]
+data = {
+"data": PackedByteArray(159, 158, 158, 62, 255, 254, 126, 63, 0, 0, 128, 63, 255, 254, 126, 63),
+"format": "RFloat",
+"height": 2,
+"mipmaps": false,
+"width": 2
+}
+
+[sub_resource type="Image" id="Image_kad24"]
+data = {
+"data": PackedByteArray(155, 154, 154, 62, 254, 253, 125, 63, 0, 0, 128, 63, 255, 254, 126, 63),
+"format": "RFloat",
+"height": 2,
+"mipmaps": false,
+"width": 2
+}
+
+[sub_resource type="Image" id="Image_gduac"]
+data = {
+"data": PackedByteArray(159, 158, 158, 62, 255, 254, 126, 63, 0, 0, 128, 63, 255, 254, 126, 63),
+"format": "RFloat",
+"height": 2,
+"mipmaps": false,
+"width": 2
+}
+
+[sub_resource type="Image" id="Image_eorx2"]
+data = {
+"data": PackedByteArray(153, 152, 152, 62, 149, 148, 148, 62, 0, 0, 128, 63, 0, 0, 128, 63),
+"format": "RFloat",
+"height": 2,
+"mipmaps": false,
+"width": 2
+}
+
+[sub_resource type="Image" id="Image_l7a8j"]
+data = {
+"data": PackedByteArray(147, 146, 146, 62, 197, 196, 68, 62, 0, 0, 128, 63, 253, 252, 124, 63),
+"format": "RFloat",
+"height": 2,
+"mipmaps": false,
+"width": 2
+}
+
+[sub_resource type="Image" id="Image_rnt2o"]
+data = {
+"data": PackedByteArray(143, 142, 142, 62, 189, 188, 60, 62, 0, 0, 128, 63, 254, 253, 125, 63),
+"format": "RFloat",
+"height": 2,
+"mipmaps": false,
+"width": 2
+}
+
+[sub_resource type="Image" id="Image_ffvxl"]
+data = {
+"data": PackedByteArray(141, 140, 140, 62, 173, 172, 44, 62, 0, 0, 128, 63, 252, 251, 123, 63),
+"format": "RFloat",
+"height": 2,
+"mipmaps": false,
+"width": 2
+}
+
+[sub_resource type="Image" id="Image_4gbli"]
+data = {
+"data": PackedByteArray(141, 140, 140, 62, 229, 228, 100, 62, 0, 0, 128, 63, 255, 254, 126, 63),
+"format": "RFloat",
+"height": 2,
+"mipmaps": false,
+"width": 2
+}
+
+[sub_resource type="Image" id="Image_341ve"]
+data = {
+"data": PackedByteArray(149, 148, 148, 62, 149, 148, 148, 62, 0, 0, 128, 63, 0, 0, 128, 63),
+"format": "RFloat",
+"height": 2,
+"mipmaps": false,
+"width": 2
+}
+
+[sub_resource type="Image" id="Image_bl6cy"]
+data = {
+"data": PackedByteArray(157, 156, 156, 62, 177, 176, 176, 62, 253, 252, 124, 63, 0, 0, 128, 63),
+"format": "RFloat",
+"height": 2,
+"mipmaps": false,
+"width": 2
+}
+
+[sub_resource type="Image" id="Image_sym11"]
+data = {
+"data": PackedByteArray(169, 168, 168, 62, 175, 174, 174, 62, 254, 253, 125, 63, 0, 0, 128, 63),
+"format": "RFloat",
+"height": 2,
+"mipmaps": false,
+"width": 2
+}
+
+[sub_resource type="Image" id="Image_lbo1n"]
+data = {
+"data": PackedByteArray(149, 148, 148, 62, 254, 253, 125, 63, 0, 0, 128, 63, 255, 254, 126, 63),
+"format": "RFloat",
+"height": 2,
+"mipmaps": false,
+"width": 2
+}
+
+[sub_resource type="Image" id="Image_7giue"]
+data = {
+"data": PackedByteArray(155, 154, 154, 62, 254, 253, 125, 63, 0, 0, 128, 63, 255, 254, 126, 63),
+"format": "RFloat",
+"height": 2,
+"mipmaps": false,
+"width": 2
+}
+
+[sub_resource type="Image" id="Image_1r261"]
+data = {
+"data": PackedByteArray(153, 152, 152, 62, 153, 152, 152, 62, 0, 0, 128, 63, 0, 0, 128, 63),
+"format": "RFloat",
+"height": 2,
+"mipmaps": false,
+"width": 2
+}
+
+[sub_resource type="Image" id="Image_x4aei"]
+data = {
+"data": PackedByteArray(147, 146, 146, 62, 135, 134, 134, 62, 0, 0, 128, 63, 0, 0, 128, 63),
+"format": "RFloat",
+"height": 2,
+"mipmaps": false,
+"width": 2
+}
+
+[sub_resource type="Image" id="Image_sglx4"]
+data = {
+"data": PackedByteArray(0, 0, 128, 63, 131, 130, 130, 62, 254, 253, 125, 63, 0, 0, 128, 63),
+"format": "RFloat",
+"height": 2,
+"mipmaps": false,
+"width": 2
+}
+
+[sub_resource type="Image" id="Image_enrrg"]
+data = {
+"data": PackedByteArray(0, 0, 128, 63, 153, 152, 24, 62, 0, 0, 128, 63, 0, 0, 128, 63),
+"format": "RFloat",
+"height": 2,
+"mipmaps": false,
+"width": 2
+}
+
+[sub_resource type="Image" id="Image_wxamb"]
+data = {
+"data": PackedByteArray(0, 0, 128, 63, 169, 168, 168, 61, 217, 216, 88, 62, 254, 253, 125, 63),
+"format": "RFloat",
+"height": 2,
+"mipmaps": false,
+"width": 2
+}
+
+[sub_resource type="Image" id="Image_qcj6d"]
+data = {
+"data": PackedByteArray(0, 0, 128, 63, 201, 200, 200, 61, 209, 208, 80, 62, 253, 252, 124, 63),
+"format": "RFloat",
+"height": 2,
+"mipmaps": false,
+"width": 2
+}
+
+[sub_resource type="Image" id="Image_thv3s"]
+data = {
+"data": PackedByteArray(0, 0, 128, 63, 145, 144, 144, 61, 185, 184, 56, 62, 254, 253, 125, 63),
+"format": "RFloat",
+"height": 2,
+"mipmaps": false,
+"width": 2
+}
+
+[sub_resource type="Image" id="Image_wfsj7"]
+data = {
+"data": PackedByteArray(0, 0, 128, 63, 161, 160, 160, 61, 189, 188, 60, 62, 252, 251, 123, 63),
+"format": "RFloat",
+"height": 2,
+"mipmaps": false,
+"width": 2
+}
+
+[sub_resource type="Image" id="Image_a2rle"]
+data = {
+"data": PackedByteArray(0, 0, 128, 63, 185, 184, 184, 61, 217, 216, 88, 62, 254, 253, 125, 63),
+"format": "RFloat",
+"height": 2,
+"mipmaps": false,
+"width": 2
+}
+
+[sub_resource type="Image" id="Image_h8s7s"]
+data = {
+"data": PackedByteArray(0, 0, 128, 63, 153, 152, 152, 61, 253, 252, 124, 63, 0, 0, 128, 63),
+"format": "RFloat",
+"height": 2,
+"mipmaps": false,
+"width": 2
+}
+
+[sub_resource type="Image" id="Image_715lw"]
+data = {
+"data": PackedByteArray(0, 0, 128, 63, 185, 184, 184, 61, 254, 253, 125, 63, 0, 0, 128, 63),
+"format": "RFloat",
+"height": 2,
+"mipmaps": false,
+"width": 2
+}
+
+[sub_resource type="Image" id="Image_cn1kv"]
+data = {
+"data": PackedByteArray(0, 0, 128, 63, 161, 160, 160, 61, 253, 252, 124, 63, 0, 0, 128, 63),
+"format": "RFloat",
+"height": 2,
+"mipmaps": false,
+"width": 2
+}
+
+[sub_resource type="Image" id="Image_ororb"]
+data = {
+"data": PackedByteArray(0, 0, 128, 63, 185, 184, 184, 61, 253, 252, 124, 63, 0, 0, 128, 63),
+"format": "RFloat",
+"height": 2,
+"mipmaps": false,
+"width": 2
+}
+
+[sub_resource type="Image" id="Image_34uww"]
+data = {
+"data": PackedByteArray(0, 0, 128, 63, 233, 232, 232, 61, 255, 254, 126, 63, 0, 0, 128, 63),
+"format": "RFloat",
+"height": 2,
+"mipmaps": false,
+"width": 2
+}
+
+[sub_resource type="Image" id="Image_2ou1e"]
+data = {
+"data": PackedByteArray(155, 154, 154, 62, 254, 253, 125, 63, 0, 0, 128, 63, 255, 254, 126, 63),
+"format": "RFloat",
+"height": 2,
+"mipmaps": false,
+"width": 2
+}
+
+[sub_resource type="Image" id="Image_ijpps"]
+data = {
+"data": PackedByteArray(161, 160, 160, 62, 0, 0, 128, 63, 0, 0, 128, 63, 255, 254, 126, 63),
+"format": "RFloat",
+"height": 2,
+"mipmaps": false,
+"width": 2
+}
+
+[sub_resource type="Image" id="Image_ihhc1"]
+data = {
+"data": PackedByteArray(159, 158, 158, 62, 255, 254, 126, 63, 0, 0, 128, 63, 255, 254, 126, 63),
+"format": "RFloat",
+"height": 2,
+"mipmaps": false,
+"width": 2
+}
+
+[sub_resource type="Image" id="Image_p1emx"]
+data = {
+"data": PackedByteArray(159, 158, 158, 62, 255, 254, 126, 63, 0, 0, 128, 63, 255, 254, 126, 63),
+"format": "RFloat",
+"height": 2,
+"mipmaps": false,
+"width": 2
+}
+
+[sub_resource type="Image" id="Image_bv7br"]
+data = {
+"data": PackedByteArray(149, 148, 148, 62, 254, 253, 125, 63, 0, 0, 128, 63, 255, 254, 126, 63),
+"format": "RFloat",
+"height": 2,
+"mipmaps": false,
+"width": 2
+}
+
+[sub_resource type="Image" id="Image_pr0cn"]
+data = {
+"data": PackedByteArray(149, 148, 148, 62, 254, 253, 125, 63, 0, 0, 128, 63, 255, 254, 126, 63),
+"format": "RFloat",
+"height": 2,
+"mipmaps": false,
+"width": 2
+}
+
+[sub_resource type="Image" id="Image_lq5u5"]
+data = {
+"data": PackedByteArray(139, 138, 138, 62, 255, 254, 126, 63, 0, 0, 128, 63, 255, 254, 126, 63),
+"format": "RFloat",
+"height": 2,
+"mipmaps": false,
+"width": 2
+}
+
+[sub_resource type="Image" id="Image_whu6e"]
+data = {
+"data": PackedByteArray(155, 154, 154, 62, 254, 253, 125, 63, 0, 0, 128, 63, 255, 254, 126, 63),
+"format": "RFloat",
+"height": 2,
+"mipmaps": false,
+"width": 2
+}
+
+[sub_resource type="Image" id="Image_uun2m"]
+data = {
+"data": PackedByteArray(137, 136, 136, 62, 255, 254, 126, 63, 0, 0, 128, 63, 0, 0, 128, 63),
+"format": "RFloat",
+"height": 2,
+"mipmaps": false,
+"width": 2
+}
+
+[sub_resource type="Image" id="Image_0prs4"]
+data = {
+"data": PackedByteArray(133, 132, 132, 62, 0, 0, 128, 63, 0, 0, 128, 63, 0, 0, 128, 63),
+"format": "RFloat",
+"height": 2,
+"mipmaps": false,
+"width": 2
+}
+
+[sub_resource type="Image" id="Image_b7ehx"]
+data = {
+"data": PackedByteArray(129, 128, 128, 62, 254, 253, 125, 63, 0, 0, 128, 63, 0, 0, 128, 63),
+"format": "RFloat",
+"height": 2,
+"mipmaps": false,
+"width": 2
+}
+
+[sub_resource type="Image" id="Image_5y85t"]
+data = {
+"data": PackedByteArray(149, 148, 148, 62, 254, 253, 125, 63, 0, 0, 128, 63, 255, 254, 126, 63),
+"format": "RFloat",
+"height": 2,
+"mipmaps": false,
+"width": 2
+}
+
+[sub_resource type="Image" id="Image_3nrj1"]
+data = {
+"data": PackedByteArray(145, 144, 144, 62, 254, 253, 125, 63, 0, 0, 128, 63, 254, 253, 125, 63),
+"format": "RFloat",
+"height": 2,
+"mipmaps": false,
+"width": 2
+}
+
+[sub_resource type="Image" id="Image_8nywc"]
+data = {
+"data": PackedByteArray(163, 162, 162, 62, 0, 0, 128, 63, 0, 0, 128, 63, 255, 254, 126, 63),
+"format": "RFloat",
+"height": 2,
+"mipmaps": false,
+"width": 2
+}
+
+[sub_resource type="Image" id="Image_iwlut"]
+data = {
+"data": PackedByteArray(159, 158, 158, 62, 255, 254, 126, 63, 0, 0, 128, 63, 255, 254, 126, 63),
+"format": "RFloat",
+"height": 2,
+"mipmaps": false,
+"width": 2
+}
+
+[sub_resource type="Image" id="Image_5etsv"]
+data = {
+"data": PackedByteArray(157, 156, 156, 62, 254, 253, 125, 63, 0, 0, 128, 63, 255, 254, 126, 63),
+"format": "RFloat",
+"height": 2,
+"mipmaps": false,
+"width": 2
+}
+
+[sub_resource type="Image" id="Image_oes28"]
+data = {
+"data": PackedByteArray(163, 162, 162, 62, 0, 0, 128, 63, 0, 0, 128, 63, 255, 254, 126, 63),
+"format": "RFloat",
+"height": 2,
+"mipmaps": false,
+"width": 2
+}
+
+[sub_resource type="Image" id="Image_d8m5i"]
+data = {
+"data": PackedByteArray(167, 166, 166, 62, 0, 0, 128, 63, 0, 0, 128, 63, 255, 254, 126, 63),
+"format": "RFloat",
+"height": 2,
+"mipmaps": false,
+"width": 2
+}
+
+[sub_resource type="Image" id="Image_ptbix"]
+data = {
+"data": PackedByteArray(163, 162, 162, 62, 0, 0, 128, 63, 0, 0, 128, 63, 255, 254, 126, 63),
+"format": "RFloat",
+"height": 2,
+"mipmaps": false,
+"width": 2
+}
+
+[sub_resource type="Image" id="Image_y37g8"]
+data = {
+"data": PackedByteArray(177, 176, 176, 62, 0, 0, 128, 63, 0, 0, 128, 63, 0, 0, 128, 63),
+"format": "RFloat",
+"height": 2,
+"mipmaps": false,
+"width": 2
+}
+
+[sub_resource type="Image" id="Image_6vh1e"]
+data = {
+"data": PackedByteArray(171, 170, 170, 62, 0, 0, 128, 63, 253, 252, 124, 62, 254, 253, 125, 63),
+"format": "RFloat",
+"height": 2,
+"mipmaps": false,
+"width": 2
+}
+
+[sub_resource type="Image" id="Image_a0y05"]
+data = {
+"data": PackedByteArray(193, 192, 192, 62, 0, 0, 128, 63, 129, 128, 0, 62, 254, 253, 125, 63),
+"format": "RFloat",
+"height": 2,
+"mipmaps": false,
+"width": 2
+}
+
+[sub_resource type="Image" id="Image_b1sxq"]
+data = {
+"data": PackedByteArray(171, 170, 170, 62, 0, 0, 128, 63, 149, 148, 20, 62, 251, 250, 122, 63),
+"format": "RFloat",
+"height": 2,
+"mipmaps": false,
+"width": 2
+}
+
+[sub_resource type="Image" id="Image_m4g3q"]
+data = {
+"data": PackedByteArray(141, 140, 140, 62, 0, 0, 128, 63, 169, 168, 40, 62, 253, 252, 124, 63),
+"format": "RFloat",
+"height": 2,
+"mipmaps": false,
+"width": 2
+}
+
+[sub_resource type="Image" id="Image_3n2pg"]
+data = {
+"data": PackedByteArray(159, 158, 158, 62, 0, 0, 128, 63, 145, 144, 16, 62, 250, 249, 121, 63),
+"format": "RFloat",
+"height": 2,
+"mipmaps": false,
+"width": 2
+}
+
+[sub_resource type="Image" id="Image_7ryd7"]
+data = {
+"data": PackedByteArray(167, 166, 166, 62, 255, 254, 126, 63, 149, 148, 20, 62, 193, 192, 192, 62),
+"format": "RFloat",
+"height": 2,
+"mipmaps": false,
+"width": 2
+}
+
+[sub_resource type="Image" id="Image_nxbld"]
+data = {
+"data": PackedByteArray(155, 154, 154, 62, 0, 0, 128, 63, 129, 128, 0, 62, 251, 250, 122, 63),
+"format": "RFloat",
+"height": 2,
+"mipmaps": false,
+"width": 2
+}
+
+[sub_resource type="Image" id="Image_7nd2a"]
+data = {
+"data": PackedByteArray(169, 168, 168, 62, 253, 252, 124, 63, 193, 192, 192, 61, 185, 184, 184, 62),
+"format": "RFloat",
+"height": 2,
+"mipmaps": false,
+"width": 2
+}
+
+[sub_resource type="Image" id="Image_85kns"]
+data = {
+"data": PackedByteArray(145, 144, 144, 62, 253, 252, 124, 63, 145, 144, 16, 61, 175, 174, 174, 62),
+"format": "RFloat",
+"height": 2,
+"mipmaps": false,
+"width": 2
+}
+
+[sub_resource type="Image" id="Image_daagy"]
+data = {
+"data": PackedByteArray(159, 158, 158, 62, 254, 253, 125, 63, 241, 240, 112, 61, 179, 178, 178, 62),
+"format": "RFloat",
+"height": 2,
+"mipmaps": false,
+"width": 2
+}
+
+[sub_resource type="Image" id="Image_pyor2"]
+data = {
+"data": PackedByteArray(141, 140, 140, 62, 0, 0, 128, 63, 153, 152, 152, 61, 171, 170, 170, 62),
+"format": "RFloat",
+"height": 2,
+"mipmaps": false,
+"width": 2
+}
+
+[sub_resource type="Image" id="Image_8sjxx"]
+data = {
+"data": PackedByteArray(153, 152, 152, 62, 254, 253, 125, 63, 169, 168, 168, 61, 191, 190, 190, 62),
+"format": "RFloat",
+"height": 2,
+"mipmaps": false,
+"width": 2
+}
+
+[sub_resource type="Image" id="Image_4esm6"]
+data = {
+"data": PackedByteArray(149, 148, 148, 62, 255, 254, 126, 63, 175, 174, 174, 62, 181, 180, 180, 62),
+"format": "RFloat",
+"height": 2,
+"mipmaps": false,
+"width": 2
+}
+
+[sub_resource type="Image" id="Image_ub0bu"]
+data = {
+"data": PackedByteArray(155, 154, 154, 62, 254, 253, 125, 63, 0, 0, 128, 63, 255, 254, 126, 63),
+"format": "RFloat",
+"height": 2,
+"mipmaps": false,
+"width": 2
+}
+
+[sub_resource type="Image" id="Image_f7k7v"]
+data = {
+"data": PackedByteArray(147, 146, 146, 62, 255, 254, 126, 63, 0, 0, 128, 63, 191, 190, 190, 62),
+"format": "RFloat",
+"height": 2,
+"mipmaps": false,
+"width": 2
+}
+
+[sub_resource type="Image" id="Image_kyok4"]
+data = {
+"data": PackedByteArray(133, 132, 132, 62, 217, 216, 216, 61, 0, 0, 128, 63, 252, 251, 123, 63),
+"format": "RFloat",
+"height": 2,
+"mipmaps": false,
+"width": 2
+}
+
+[sub_resource type="Image" id="Image_psqpq"]
+data = {
+"data": PackedByteArray(141, 140, 140, 62, 129, 128, 0, 62, 0, 0, 128, 63, 251, 250, 122, 63),
+"format": "RFloat",
+"height": 2,
+"mipmaps": false,
+"width": 2
+}
+
+[sub_resource type="Image" id="Image_libse"]
+data = {
+"data": PackedByteArray(151, 150, 150, 62, 173, 172, 44, 62, 0, 0, 128, 63, 251, 250, 122, 63),
+"format": "RFloat",
+"height": 2,
+"mipmaps": false,
+"width": 2
+}
+
+[sub_resource type="Image" id="Image_ox8vk"]
+data = {
+"data": PackedByteArray(157, 156, 156, 62, 241, 240, 240, 61, 0, 0, 128, 63, 252, 251, 123, 63),
+"format": "RFloat",
+"height": 2,
+"mipmaps": false,
+"width": 2
+}
+
+[sub_resource type="Image" id="Image_8m5sq"]
+data = {
+"data": PackedByteArray(177, 176, 176, 62, 177, 176, 48, 62, 0, 0, 128, 63, 251, 250, 122, 63),
+"format": "RFloat",
+"height": 2,
+"mipmaps": false,
+"width": 2
+}
+
+[sub_resource type="Image" id="Image_gog3h"]
+data = {
+"data": PackedByteArray(159, 158, 158, 62, 255, 254, 126, 63, 0, 0, 128, 63, 255, 254, 126, 63),
+"format": "RFloat",
+"height": 2,
+"mipmaps": false,
+"width": 2
+}
+
+[sub_resource type="Image" id="Image_rygy6"]
+data = {
+"data": PackedByteArray(163, 162, 162, 62, 0, 0, 128, 63, 0, 0, 128, 63, 255, 254, 126, 63),
+"format": "RFloat",
+"height": 2,
+"mipmaps": false,
+"width": 2
+}
+
+[sub_resource type="Image" id="Image_rne10"]
+data = {
+"data": PackedByteArray(169, 168, 168, 62, 0, 0, 128, 63, 0, 0, 128, 63, 255, 254, 126, 63),
+"format": "RFloat",
+"height": 2,
+"mipmaps": false,
+"width": 2
+}
+
+[sub_resource type="Image" id="Image_ekcqf"]
+data = {
+"data": PackedByteArray(167, 166, 166, 62, 0, 0, 128, 63, 0, 0, 128, 63, 255, 254, 126, 63),
+"format": "RFloat",
+"height": 2,
+"mipmaps": false,
+"width": 2
+}
+
+[sub_resource type="Image" id="Image_25kaq"]
+data = {
+"data": PackedByteArray(163, 162, 162, 62, 0, 0, 128, 63, 0, 0, 128, 63, 255, 254, 126, 63),
+"format": "RFloat",
+"height": 2,
+"mipmaps": false,
+"width": 2
+}
+
+[sub_resource type="Image" id="Image_d7sbe"]
+data = {
+"data": PackedByteArray(163, 162, 162, 62, 0, 0, 128, 63, 0, 0, 128, 63, 255, 254, 126, 63),
+"format": "RFloat",
+"height": 2,
+"mipmaps": false,
+"width": 2
+}
+
+[sub_resource type="Image" id="Image_hsvw1"]
+data = {
+"data": PackedByteArray(159, 158, 158, 62, 255, 254, 126, 63, 0, 0, 128, 63, 255, 254, 126, 63),
+"format": "RFloat",
+"height": 2,
+"mipmaps": false,
+"width": 2
+}
+
+[sub_resource type="Image" id="Image_7uydn"]
+data = {
+"data": PackedByteArray(157, 156, 156, 62, 254, 253, 125, 63, 0, 0, 128, 63, 255, 254, 126, 63),
+"format": "RFloat",
+"height": 2,
+"mipmaps": false,
+"width": 2
+}
+
+[sub_resource type="Image" id="Image_xnli3"]
+data = {
+"data": PackedByteArray(159, 158, 158, 62, 255, 254, 126, 63, 0, 0, 128, 63, 255, 254, 126, 63),
+"format": "RFloat",
+"height": 2,
+"mipmaps": false,
+"width": 2
+}
+
+[sub_resource type="Image" id="Image_yjvkc"]
+data = {
+"data": PackedByteArray(167, 166, 166, 62, 0, 0, 128, 63, 0, 0, 128, 63, 255, 254, 126, 63),
+"format": "RFloat",
+"height": 2,
+"mipmaps": false,
+"width": 2
+}
+
+[sub_resource type="Image" id="Image_7d31a"]
+data = {
+"data": PackedByteArray(155, 154, 154, 62, 254, 253, 125, 63, 0, 0, 128, 63, 255, 254, 126, 63),
+"format": "RFloat",
+"height": 2,
+"mipmaps": false,
+"width": 2
+}
+
+[sub_resource type="Image" id="Image_wxxv6"]
+data = {
+"data": PackedByteArray(137, 136, 136, 62, 255, 254, 126, 63, 0, 0, 128, 63, 0, 0, 128, 63),
+"format": "RFloat",
+"height": 2,
+"mipmaps": false,
+"width": 2
+}
+
+[sub_resource type="Image" id="Image_bec2l"]
+data = {
+"data": PackedByteArray(157, 156, 156, 62, 254, 253, 125, 63, 0, 0, 128, 63, 255, 254, 126, 63),
+"format": "RFloat",
+"height": 2,
+"mipmaps": false,
+"width": 2
+}
+
+[sub_resource type="Image" id="Image_ymx66"]
+data = {
+"data": PackedByteArray(165, 164, 164, 62, 0, 0, 128, 63, 129, 128, 128, 62, 254, 253, 125, 63),
+"format": "RFloat",
+"height": 2,
+"mipmaps": false,
+"width": 2
+}
+
+[sub_resource type="Image" id="Image_vyk1r"]
+data = {
+"data": PackedByteArray(153, 152, 152, 62, 0, 0, 128, 63, 169, 168, 168, 61, 254, 253, 125, 63),
+"format": "RFloat",
+"height": 2,
+"mipmaps": false,
+"width": 2
+}
+
+[sub_resource type="Image" id="Image_2ikbl"]
+data = {
+"data": PackedByteArray(147, 146, 146, 62, 0, 0, 128, 63, 217, 216, 216, 61, 250, 249, 121, 63),
+"format": "RFloat",
+"height": 2,
+"mipmaps": false,
+"width": 2
+}
+
+[sub_resource type="Image" id="Image_igncv"]
+data = {
+"data": PackedByteArray(153, 152, 152, 62, 0, 0, 128, 63, 169, 168, 168, 61, 253, 252, 124, 63),
+"format": "RFloat",
+"height": 2,
+"mipmaps": false,
+"width": 2
+}
+
+[sub_resource type="ImageTexture3D" id="ImageTexture3D_dldd0"]
+_images = Array[Image]([SubResource("Image_7gg6q"), SubResource("Image_2bj8f"), SubResource("Image_6byau"), SubResource("Image_ad7fu"), SubResource("Image_ngvqk"), SubResource("Image_ga8w4"), SubResource("Image_q12f5"), SubResource("Image_4dfbc"), SubResource("Image_ae7nu"), SubResource("Image_42l6e"), SubResource("Image_3d00q"), SubResource("Image_j58k0"), SubResource("Image_5ehol"), SubResource("Image_ba7o2"), SubResource("Image_k5uio"), SubResource("Image_6q53u"), SubResource("Image_7f0a8"), SubResource("Image_4g8i1"), SubResource("Image_a5e0n"), SubResource("Image_4wp1y"), SubResource("Image_6l2j8"), SubResource("Image_t0akw"), SubResource("Image_dmxsk"), SubResource("Image_w5w7p"), SubResource("Image_s088b"), SubResource("Image_sjfsb"), SubResource("Image_ojkgy"), SubResource("Image_usyav"), SubResource("Image_gibti"), SubResource("Image_km6xa"), SubResource("Image_xetwu"), SubResource("Image_rnafx"), SubResource("Image_x12p1"), SubResource("Image_dyaq5"), SubResource("Image_taop0"), SubResource("Image_wluq2"), SubResource("Image_kso7q"), SubResource("Image_xlf8e"), SubResource("Image_30km0"), SubResource("Image_46m5l"), SubResource("Image_t70vl"), SubResource("Image_2g46l"), SubResource("Image_c33b8"), SubResource("Image_8d58x"), SubResource("Image_0ux1w"), SubResource("Image_b3gwy"), SubResource("Image_f74hq"), SubResource("Image_crple"), SubResource("Image_fd2gr"), SubResource("Image_q2uuj"), SubResource("Image_hvabf"), SubResource("Image_njl12"), SubResource("Image_4eljw"), SubResource("Image_utccu"), SubResource("Image_533cs"), SubResource("Image_h5b3c"), SubResource("Image_8le8l"), SubResource("Image_ggscw"), SubResource("Image_h63pg"), SubResource("Image_wrucl"), SubResource("Image_3n3lb"), SubResource("Image_phrgc"), SubResource("Image_s86w0"), SubResource("Image_djaef"), SubResource("Image_686q5"), SubResource("Image_fe22f"), SubResource("Image_6fwo7"), SubResource("Image_4hp4e"), SubResource("Image_3hgio"), SubResource("Image_tkbum"), SubResource("Image_6favk"), SubResource("Image_6p2wy"), SubResource("Image_tp6u2"), SubResource("Image_14bs0"), SubResource("Image_c7vs7"), SubResource("Image_ahxuc"), SubResource("Image_yb0fi"), SubResource("Image_h63l1"), SubResource("Image_rta3y"), SubResource("Image_n5exm"), SubResource("Image_5kryo"), SubResource("Image_3aklc"), SubResource("Image_lwcl1"), SubResource("Image_8sa8m"), SubResource("Image_whoh0"), SubResource("Image_hq0aj"), SubResource("Image_j3yvg"), SubResource("Image_uqnr6"), SubResource("Image_lx43t"), SubResource("Image_3y1ic"), SubResource("Image_rjtma"), SubResource("Image_xothq"), SubResource("Image_5olbu"), SubResource("Image_gwi2f"), SubResource("Image_5bxe1"), SubResource("Image_0yvhv"), SubResource("Image_hevr8"), SubResource("Image_5urck"), SubResource("Image_nssyf"), SubResource("Image_6xtv5"), SubResource("Image_yxsyf"), SubResource("Image_a8l36"), SubResource("Image_7bv5n"), SubResource("Image_yukji"), SubResource("Image_8tkvb"), SubResource("Image_pfu6u"), SubResource("Image_1tfa7"), SubResource("Image_unpvt"), SubResource("Image_uuo8t"), SubResource("Image_4gdrh"), SubResource("Image_ygbf8"), SubResource("Image_8r1uk"), SubResource("Image_hskro"), SubResource("Image_lo1w4"), SubResource("Image_nn163"), SubResource("Image_yl568"), SubResource("Image_rdghw"), SubResource("Image_kad24"), SubResource("Image_gduac"), SubResource("Image_eorx2"), SubResource("Image_l7a8j"), SubResource("Image_rnt2o"), SubResource("Image_ffvxl"), SubResource("Image_4gbli"), SubResource("Image_341ve"), SubResource("Image_bl6cy"), SubResource("Image_sym11"), SubResource("Image_lbo1n"), SubResource("Image_7giue"), SubResource("Image_1r261"), SubResource("Image_x4aei"), SubResource("Image_sglx4"), SubResource("Image_enrrg"), SubResource("Image_wxamb"), SubResource("Image_qcj6d"), SubResource("Image_thv3s"), SubResource("Image_wfsj7"), SubResource("Image_a2rle"), SubResource("Image_h8s7s"), SubResource("Image_715lw"), SubResource("Image_cn1kv"), SubResource("Image_ororb"), SubResource("Image_34uww"), SubResource("Image_2ou1e"), SubResource("Image_ijpps"), SubResource("Image_ihhc1"), SubResource("Image_p1emx"), SubResource("Image_bv7br"), SubResource("Image_pr0cn"), SubResource("Image_lq5u5"), SubResource("Image_whu6e"), SubResource("Image_uun2m"), SubResource("Image_0prs4"), SubResource("Image_b7ehx"), SubResource("Image_5y85t"), SubResource("Image_3nrj1"), SubResource("Image_8nywc"), SubResource("Image_iwlut"), SubResource("Image_5etsv"), SubResource("Image_oes28"), SubResource("Image_d8m5i"), SubResource("Image_ptbix"), SubResource("Image_y37g8"), SubResource("Image_6vh1e"), SubResource("Image_a0y05"), SubResource("Image_b1sxq"), SubResource("Image_m4g3q"), SubResource("Image_3n2pg"), SubResource("Image_7ryd7"), SubResource("Image_nxbld"), SubResource("Image_7nd2a"), SubResource("Image_85kns"), SubResource("Image_daagy"), SubResource("Image_pyor2"), SubResource("Image_8sjxx"), SubResource("Image_4esm6"), SubResource("Image_ub0bu"), SubResource("Image_f7k7v"), SubResource("Image_kyok4"), SubResource("Image_psqpq"), SubResource("Image_libse"), SubResource("Image_ox8vk"), SubResource("Image_8m5sq"), SubResource("Image_gog3h"), SubResource("Image_rygy6"), SubResource("Image_rne10"), SubResource("Image_ekcqf"), SubResource("Image_25kaq"), SubResource("Image_d7sbe"), SubResource("Image_hsvw1"), SubResource("Image_7uydn"), SubResource("Image_xnli3"), SubResource("Image_yjvkc"), SubResource("Image_7d31a"), SubResource("Image_wxxv6"), SubResource("Image_bec2l"), SubResource("Image_ymx66"), SubResource("Image_vyk1r"), SubResource("Image_2ikbl"), SubResource("Image_igncv")])
+script = ExtResource("2_2bj8f")
+
+[node name="Specimen" unique_id=1890448719 instance=ExtResource("1_7gg6q")]
+display_name = "Bead Pack (non-raw)"
+
+[node name="ScalableMultiplayerPickableObject" parent="." index="0" unique_id=258651919]
+visible = true
+collision_layer = 4
+
+[node name="VolumeLayeredShader" parent="ScalableMultiplayerPickableObject" index="1" unique_id=2242875]
+texture = SubResource("ImageTexture3D_dldd0")
+
+[node name="MultiplayerPickable" parent="." index="1" unique_id=717229823]
+visible = true
+collision_layer = 4
