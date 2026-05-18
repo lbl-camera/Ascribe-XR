@@ -4,29 +4,34 @@
 [ext_resource type="PackedScene" uid="uid://cxr6ip1xkqkcj" path="res://scenes/UI/room_select.tscn" id="3_r3g3c"]
 [ext_resource type="PackedScene" uid="uid://buycbcke7jh2k" path="res://scenes/UI/mainmenuflat.tscn" id="4_ris1p"]
 
-[node name="Node3D" type="Node3D"]
+[node name="Node3D" type="Node3D" unique_id=461351587]
 transform = Transform3D(0.999192, 0, 0, 0, 0.999192, 0, 0, 0, 0.999192, 0, 0, 0)
 
-[node name="Viewport2Din3D" parent="." instance=ExtResource("3_dlvms")]
+[node name="Viewport2Din3D" parent="." unique_id=1146062689 instance=ExtResource("3_dlvms")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.29591, 0)
 screen_size = Vector2(2, 2)
 scene = ExtResource("4_ris1p")
 viewport_size = Vector2(3000, 3000)
+transparent = 1
 unshaded = true
-scene_properties_keys = PackedStringArray("mainmenuflat.gd", "scenes_directory", "button_size")
+scene_properties_keys = PackedStringArray("mainmenuflat.gd", "scenes_directory", "RebuldMenu", "scenes_paths")
 scenes_directory = "res://specimens"
-button_size = Vector2(556, 500)
+RebuldMenu = false
+scenes_paths = {}
 
-[node name="Viewport2Din3D2" parent="." instance=ExtResource("3_dlvms")]
+[node name="Viewport2Din3D2" parent="." unique_id=1052738584 instance=ExtResource("3_dlvms")]
 transform = Transform3D(0.433013, 0, -0.5, 0, 1, 0, 0.25, 0, 0.866025, 1.524, 1.296, 0.28)
 screen_size = Vector2(2, 2)
 viewport_size = Vector2(500, 1000)
+transparent = 1
 unshaded = true
+scene_properties_keys = PackedStringArray()
 
-[node name="Viewport2Din3D3" parent="." instance=ExtResource("3_dlvms")]
+[node name="Viewport2Din3D3" parent="." unique_id=1523434149 instance=ExtResource("3_dlvms")]
 transform = Transform3D(0.433013, 0, 0.5, 0, 1, 0, -0.25, 0, 0.866025, -1.524, 1.296, 0.28)
 screen_size = Vector2(2, 2)
 scene = ExtResource("3_r3g3c")
 viewport_size = Vector2(500, 1000)
+transparent = 1
 unshaded = true
 scene_properties_keys = PackedStringArray("room_select.gd")
