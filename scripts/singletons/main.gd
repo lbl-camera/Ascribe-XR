@@ -8,10 +8,14 @@ extends Node3D
 ## when one peer submits, that peer runs the job and RPCs progress to the rest,
 ## then each peer fetches the final result from the server's per-room cache.
 
+signal specimens_changed
+
 var world_3d: Node3D
-var current_3d_scene: Node3D
 var mainmenu: Node3D
 var specimens_root: Node3D
+
+var _open_specimens: Array[Specimen] = []
+var _active_specimen: Specimen = null
 
 var _active_procedural_ui: Panel = null
 var _active_specimen_id: String = ""
@@ -69,21 +73,34 @@ func process_scene_load():
 
 @rpc("any_peer", "call_local", "reliable")
 func load_specimen(scene_path: String, config: Dictionary) -> void:
-	_reset_world()
-
 	var packed: PackedScene = load(scene_path)
 	if packed == null:
 		push_error("SceneManager: Failed to load scene: %s" % scene_path)
 		return
 
-	var specimen: Specimen = packed.instantiate()
+	# Refuse mixed scale modes.
+	var probe: Specimen = packed.instantiate()
+	if not SceneManagerHelpers.can_load_with_scale_mode(_open_specimens, probe.scale_mode):
+		push_warning("SceneManager: refused to load %s (scale_mode mismatch with currently-open specimens)" % scene_path)
+		probe.queue_free()
+		return
+
+	# Use the probe instance as the actual one (avoids a second instantiate).
+	var specimen: Specimen = probe
 	_apply_config(specimen, config)
 
-	current_3d_scene = specimen
+	# First-load env transition: only if no specimens were open before.
+	if _open_specimens.is_empty():
+		_enter_specimen_mode_env()
+
+	_open_specimens.append(specimen)
 	specimens_root.add_child(specimen)
 	_position_specimen(specimen)
 	specimen.show()
+
+	_set_active_local(_open_specimens.size() - 1)
 	hide_mainmenu()
+	specimens_changed.emit()
 
 
 func _apply_config(specimen: Node, config: Dictionary) -> void:
@@ -92,16 +109,73 @@ func _apply_config(specimen: Node, config: Dictionary) -> void:
 			specimen.set(key, config[key])
 
 
-func _reset_world() -> void:
+## Apply the env transition that the old _reset_world used to perform on
+## every load: show the world room, hide the empty-state floor, fire
+## particles. The room-scene selection is done later by _position_specimen
+## via the new specimen's scale_mode, so this helper is scale-mode-agnostic.
+func _enter_specimen_mode_env() -> void:
 	world_3d.show()
 	$/root/Main/Floor.hide()
 	$/root/Main/GPUParticles3D.emitting = true
-	MenuManager.close_menu("specimen")
-	MenuManager.close_menu("story")
-	_close_procedural_ui()
-	if current_3d_scene:
-		current_3d_scene.queue_free()
-		current_3d_scene = null
+
+
+## Revert env to the empty-list / lobby state when the last specimen is
+## removed.
+func _exit_specimen_mode_env() -> void:
+	world_3d.hide()
+	$/root/Main/Floor.show()
+	$/root/Main/GPUParticles3D.emitting = false
+
+
+## Local (non-RPC) active setter. Caller is responsible for ensuring all
+## peers eventually run this with the same index.
+func _set_active_local(index: int) -> void:
+	if index < 0 or index >= _open_specimens.size():
+		_active_specimen = null
+		return
+	var target := _open_specimens[index]
+	if _active_specimen == target:
+		return
+	var prev := _active_specimen
+	_active_specimen = target
+	if prev and is_instance_valid(prev):
+		prev.deactivate()
+	_active_specimen.activate()
+
+
+@rpc("any_peer", "call_local", "reliable")
+func set_active_specimen(index: int) -> void:
+	if index < 0 or index >= _open_specimens.size():
+		push_warning("SceneManager.set_active_specimen: invalid index %d (size=%d)" % [index, _open_specimens.size()])
+		return
+	_set_active_local(index)
+	specimens_changed.emit()
+
+
+@rpc("any_peer", "call_local", "reliable")
+func remove_specimen(index: int) -> void:
+	if index < 0 or index >= _open_specimens.size():
+		push_warning("SceneManager.remove_specimen: invalid index %d (size=%d)" % [index, _open_specimens.size()])
+		return
+
+	var active_idx := _open_specimens.find(_active_specimen)
+	var new_active_idx := SceneManagerHelpers.next_active_after_remove(_open_specimens.size(), index, active_idx)
+
+	var victim := _open_specimens[index]
+	if victim == _active_specimen:
+		victim.deactivate()
+		_active_specimen = null
+	_open_specimens.remove_at(index)
+	victim.queue_free()
+
+	if new_active_idx == -1:
+		# List is empty — revert env and bring the main menu back.
+		_exit_specimen_mode_env()
+		show_mainmenu()
+	else:
+		_set_active_local(new_active_idx)
+
+	specimens_changed.emit()
 
 
 func _position_specimen(specimen: Specimen) -> void:
@@ -214,37 +288,52 @@ func specimen_job_error(error: String) -> void:
 
 
 func _fetch_and_load_result(specimen_id: String, function_name: String, room_id: String) -> void:
-	# Use POST /api/specimens/{id}/data with the same params+room_id that the
-	# submitter used — the server's RoomResultCache gives every peer the same
-	# result without recomputing.
 	var metadata := await _fetch_metadata_for_active(specimen_id)
 
-	var http := HTTPRequest.new()
-	add_child(http)
-	http.timeout = 30.0
-	var url := "%s/api/specimens/%s/data" % [Config.ascribe_link_url, specimen_id]
-	var body := JSON.stringify({"params": _active_params, "room_id": room_id})
-	var err := http.request(url, ["Content-Type: application/json"], HTTPClient.METHOD_POST, body)
-	if err != OK:
-		push_error("SceneManager: Failed to POST /data: %s" % error_string(err))
-		http.queue_free()
-		return
-	var response = await http.request_completed
-	http.queue_free()
+	var params_json := JSON.stringify(_active_params)
+	var query := "params=%s&room_id=%s" % [params_json.uri_encode(), room_id.uri_encode()]
+	var data_url := "%s/api/specimens/%s/data?%s" % [Config.ascribe_link_url, specimen_id, query]
 
-	var result_code: int = response[0]
-	var http_code: int = response[1]
-	var payload: PackedByteArray = response[3]
-	if result_code != HTTPRequest.RESULT_SUCCESS or http_code != 200:
-		push_error("SceneManager: /data failed: HTTP %d, body=%s" % [http_code, payload.get_string_from_utf8().substr(0, 200)])
+	var scene_path := _scene_path_for_type(metadata.get("type", "mesh"))
+	var packed: PackedScene = load(scene_path)
+	if packed == null:
+		push_error("SceneManager: Failed to load %s" % scene_path)
+		return
+	var specimen: Specimen = packed.instantiate()
+
+	# Refuse mixed scale modes.
+	if not SceneManagerHelpers.can_load_with_scale_mode(_open_specimens, specimen.scale_mode):
+		push_warning("SceneManager: refused to load dynamic %s (scale_mode mismatch)" % specimen_id)
+		specimen.queue_free()
 		return
 
-	var result_json = JSON.parse_string(payload.get_string_from_utf8())
-	if not (result_json is Dictionary):
-		push_error("SceneManager: Invalid /data response")
-		return
+	specimen.data_url = data_url
+	if "display_name" in specimen:
+		specimen.display_name = metadata.get("display_name", specimen.display_name)
 
-	_build_specimen_from_result(result_json, metadata)
+	if _open_specimens.is_empty():
+		_enter_specimen_mode_env()
+
+	_open_specimens.append(specimen)
+	specimens_root.add_child(specimen)
+	_position_specimen(specimen)
+	specimen.show()
+
+	# Close the procedural UI before activating the result specimen — both occupy
+	# the "specimen" MenuManager slot, and slot reuse from a fresh activate would
+	# leave _close_procedural_ui closing the brand-new result UI by mistake.
+	_close_procedural_ui()
+	_set_active_local(_open_specimens.size() - 1)
+	hide_mainmenu()
+	specimens_changed.emit()
+
+
+static func _scene_path_for_type(specimen_type: String) -> String:
+	match specimen_type:
+		"volume":
+			return "res://specimens/volume_specimen.tscn"
+		_:
+			return "res://specimens/mesh_specimen.tscn"
 
 
 func _fetch_metadata_for_active(specimen_id: String) -> Dictionary:
@@ -253,40 +342,6 @@ func _fetch_metadata_for_active(specimen_id: String) -> Dictionary:
 	var client := AscribeLinkClient.new(Config.ascribe_link_url)
 	client.setup(self)
 	return await client.fetch_specimen_metadata(specimen_id)
-
-
-func _build_specimen_from_result(result: Dictionary, metadata: Dictionary) -> void:
-	var result_type: String = result.get("type", "mesh")
-	match result_type:
-		"mesh":
-			_load_mesh_from_result(result, metadata)
-		"volume":
-			push_warning("SceneManager: Volume result type not yet wired through the new flow")
-		_:
-			push_error("SceneManager: Unsupported result type: %s" % result_type)
-
-
-func _load_mesh_from_result(result: Dictionary, metadata: Dictionary) -> void:
-	_reset_world()
-
-	var mesh_data := MeshData.new()
-	mesh_data.set_from_dict(result)
-
-	var packed: PackedScene = load("res://specimens/mesh_specimen.tscn")
-	if packed == null:
-		push_error("SceneManager: Failed to load mesh_specimen.tscn")
-		return
-	var specimen: Specimen = packed.instantiate()
-	if specimen.has_method("set_mesh_data"):
-		specimen.set_mesh_data(mesh_data)
-	if "display_name" in specimen:
-		specimen.display_name = metadata.get("display_name", specimen.display_name)
-
-	current_3d_scene = specimen
-	specimens_root.add_child(specimen)
-	_position_specimen(specimen)
-	specimen.show()
-	hide_mainmenu()
 
 
 func _close_procedural_ui() -> void:

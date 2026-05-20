@@ -22,22 +22,26 @@ var _data_http_request: HTTPRequest = null
 func _enter_tree():
 	super._enter_tree()
 
-	if ui_instance:
-		ui_instance.get_node("%FileDialog").file_selected.connect(_on_file_dialog_file_selected)
-		ui_instance.get_node("%MaterialList").item_selected.connect(_on_materiallist_item_selected)
-
-		if _mesh_preloaded:
-			# Mesh set via set_mesh_data() before tree entry — skip file dialog.
-			ui_instance.get_node("%FileDialogLayer").hide()
-			ui_instance.get_node("%SettingsLayer").show()
-			ui_instance.get_node("%MaterialMenu").show()
-
 	if not data_url.is_empty():
 		_load_from_data_url()
 	elif loading_file:
 		if loading_file.begins_with('uid://'):
 			loading_file = ResourceUID.get_id_path(ResourceUID.text_to_id(loading_file))
 		_load_file_local(loading_file)
+
+
+func activate() -> void:
+	super.activate()
+	if not ui_instance:
+		return
+	ui_instance.get_node("%FileDialog").file_selected.connect(_on_file_dialog_file_selected)
+	ui_instance.get_node("%MaterialList").item_selected.connect(_on_materiallist_item_selected)
+
+	if _mesh_preloaded:
+		# Mesh set via set_mesh_data() before tree entry — skip file dialog.
+		ui_instance.get_node("%FileDialogLayer").hide()
+		ui_instance.get_node("%SettingsLayer").show()
+		ui_instance.get_node("%MaterialMenu").show()
 
 
 func _process(delta: float) -> void:
@@ -94,7 +98,15 @@ func _on_data_url_completed(result: int, response_code: int, headers: PackedStri
 			ui_instance.get_node("LoadingLayer").hide()
 		return
 
-	var content_type = _get_content_type(headers)
+	var content_type := _get_content_type(headers)
+
+	# New hot path: ascribe-link binary envelope (both mesh and volume share this media type,
+	# but a MeshSpecimen only accepts type=mesh).
+	if content_type == BinaryEnvelope.MEDIA_TYPE:
+		_load_from_envelope(body)
+		return
+
+	# Legacy path: JSON dict from /api/processing/invoke or older servers.
 	if content_type.begins_with("application/json") or content_type.begins_with("text/json"):
 		var result_data = JSON.parse_string(body.get_string_from_utf8())
 		if result_data is Dictionary:
@@ -105,7 +117,7 @@ func _on_data_url_completed(result: int, response_code: int, headers: PackedStri
 				ui_instance.get_node("LoadingLayer").hide()
 		return
 
-	# Binary: STL/OBJ/GLB — write to temp and feed into the pipeline.
+	# Fallback: raw file (STL/OBJ/FBX). Write to temp and feed into the pipeline.
 	var file_ext = _get_file_extension(headers, data_url)
 	var temp_path = "user://temp_specimen." + file_ext
 	var file = FileAccess.open(temp_path, FileAccess.WRITE)
@@ -118,6 +130,33 @@ func _on_data_url_completed(result: int, response_code: int, headers: PackedStri
 	file.close()
 	_send_after_load = false
 	_load_file(temp_path)
+
+
+func _load_from_envelope(body: PackedByteArray) -> void:
+	var parsed := BinaryEnvelope.parse(body)
+	if parsed.has("error"):
+		push_error("MeshSpecimen: envelope parse failed: %s" % parsed["error"])
+		if ui_instance:
+			ui_instance.get_node("LoadingLayer").hide()
+		return
+
+	var preamble: Dictionary = parsed["preamble"]
+	if preamble.get("type", "") != "mesh":
+		push_error("MeshSpecimen: expected envelope type 'mesh', got %s" % preamble.get("type", "<none>"))
+		if ui_instance:
+			ui_instance.get_node("LoadingLayer").hide()
+		return
+
+	var mesh_data := MeshData.new()
+	mesh_data.flip_normals = flip_normals
+	if not mesh_data.set_from_bytes(preamble, body, parsed["offset"]):
+		push_error("MeshSpecimen: MeshData.set_from_bytes failed")
+		if ui_instance:
+			ui_instance.get_node("LoadingLayer").hide()
+		return
+
+	_mesh_data = mesh_data
+	_set_mesh_from_data(mesh_data)
 
 
 func _load_from_result_dict(data: Dictionary) -> void:
@@ -137,7 +176,7 @@ func _get_content_type(headers: PackedStringArray) -> String:
 	for header in headers:
 		var lower = header.to_lower()
 		if lower.begins_with("content-type:"):
-			var value = header.substr(14).strip_edges()
+			var value = header.substr(13).strip_edges()
 			var semicolon = value.find(";")
 			if semicolon != -1:
 				value = value.substr(0, semicolon).strip_edges()

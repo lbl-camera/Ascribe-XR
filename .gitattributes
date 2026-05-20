@@ -14,4 +14,21 @@
 *.dll filter=lfs diff=lfs merge=lfs -text
 *.wasm filter=lfs diff=lfs merge=lfs -text
 *.bin filter=lfs diff=lfs merge=lfs -text
+*.tif filter=lfs diff=lfs merge=lfs -text
+*.tiff filter=lfs diff=lfs merge=lfs -text
+*.r16 filter=lfs diff=lfs merge=lfs -text
+# Large scene files with embedded volume/terrain data
+/specimens/sanfrancisco_topography.tscn filter=lfs diff=lfs merge=lfs -text
+/specimens/ceramic.tscn filter=lfs diff=lfs merge=lfs -text
+/specimens/brainvolume.tscn filter=lfs diff=lfs merge=lfs -text
+/specimens/rockneutron.tscn filter=lfs diff=lfs merge=lfs -text
 rec_plant.tscn filter=lfs diff=lfs merge=lfs -text
+# Large specimen-data .tres volume files (explicit paths to avoid blanket *.tres)
+specimen_data/rock_ct.tres filter=lfs diff=lfs merge=lfs -text
+specimen_data/rec_plant.tres filter=lfs diff=lfs merge=lfs -text
+specimen_data/bin_rec_plant.tres filter=lfs diff=lfs merge=lfs -text
+specimen_data/pem_electrolizer.tres filter=lfs diff=lfs merge=lfs -text
+specimen_data/terrain/assets.tres filter=lfs diff=lfs merge=lfs -text
+# Large mesh JSON files (too big for plain text but JSON typically isn't LFS-tracked globally)
+specimen_data/cthead_mesh.json filter=lfs diff=lfs merge=lfs -text
+specimen_data/cthead-8bit/cthead_mesh.json filter=lfs diff=lfs merge=lfs -text

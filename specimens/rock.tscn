@@ -1,0 +1,23 @@
+[gd_scene format=3 uid="uid://b1nvcwjsdeshj"]
+
+[ext_resource type="PackedScene" uid="uid://5wygpbthgiou" path="res://scenes/Specimen/volumetric_specimen.tscn" id="1_oy6cd"]
+[ext_resource type="Texture2D" uid="uid://dcr68kgvh1b7l" path="res://assets/textures/logo/logowhite.png" id="2_oy6cd"]
+[ext_resource type="ImageTexture3D" uid="uid://blqoh8n68yo4e" path="res://specimen_data/rock_ct.tres" id="3_oy6cd"]
+
+[node name="Specimen2" unique_id=899165972 instance=ExtResource("1_oy6cd")]
+display_name = "Rock CT"
+thumbnail = ExtResource("2_oy6cd")
+story_text = Array[String](["Brain slices from public dataset used in BRATS code competition - IEEE ISBI"])
+
+[node name="ScalableMultiplayerPickableObject" parent="." index="0" unique_id=258651919]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.363629, 0)
+
+[node name="VolumeLayeredShader" parent="ScalableMultiplayerPickableObject" index="1" unique_id=2242875]
+transform = Transform3D(-0.25, -2.18557e-08, 2.18557e-08, -2.18557e-08, 0.25, 0, 2.18557e-08, 1.91069e-15, 0.25, 0, 0, 0)
+texture = ExtResource("3_oy6cd")
+gamma = 10.0
+opacity = 0.231
+
+[node name="MultiplayerPickable" parent="." index="1" unique_id=717229823]
+visible = true
+collision_layer = 4

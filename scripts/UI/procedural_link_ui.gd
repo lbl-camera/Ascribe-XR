@@ -5,10 +5,13 @@ extends Panel
 ## SceneManager RPCs, so each connected client runs the same state machine.
 
 signal ui_accept  # Legacy signal, kept for compatibility
-signal slider_changed(slider)
+signal loading_started
+signal loading_finished
+signal specimen_loaded(instance: Node)
+
 
 @onready var submit_button: Button = %SubmitButton
-@onready var container = %ProceduralForm
+@onready var proc_ui_container = %ProceduralForm
 
 var _schema: Dictionary = {}
 var _schema_pending: bool = false
@@ -35,50 +38,58 @@ var _submitted: bool = false
 
 var in_range: bool = false
 var in_drop_down: bool = false
+var _is_applying_remote_value: bool = false
 var slider_dict: Dictionary = {}
 var slider_spin_box: SpinBox = null
 var slider_h_box: HBoxContainer = null
 var param_controls: Dictionary = {}
+var current_container: Container
 
 
 func _ready() -> void:
 	submit_button.pressed.connect(on_submit_pressed)
 	if _schema_pending:
-		_build_ui_from_schema()
+		_build_ui_from_schema.rpc()
 		_schema_pending = false
 
-
+@rpc("any_peer", "call_local", "reliable")
 func _build_ui_from_schema() -> void:
 	if _schema.is_empty() or not _schema.has("properties"):
 		return
+	# clearing out everything between peers
+	for child in proc_ui_container.get_children():
+		child.queue_free()
 
+	param_controls.clear()
+	slider_dict.clear()
+	in_range = false
+	in_drop_down = false
 	param_controls.clear()
 
 	for keyword in _schema["properties"].keys():
+		
 		var properties_dict: Dictionary = _schema["properties"][keyword]
 		var new_label = Label.new()
+		current_container = HBoxContainer.new()
+		current_container.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		current_container.add_theme_constant_override("separation", 12)
+		current_container.alignment = BoxContainer.ALIGNMENT_BEGIN
 		new_label.text = keyword
-
-		var prop_type = properties_dict.get("type", "")
-		if prop_type == "number" and properties_dict.has("minimum"):
-			slider_h_box = HBoxContainer.new()
-			container.add_child(slider_h_box)
-			slider_h_box.add_child(new_label)
-
-			slider_spin_box = SpinBox.new()
-			if properties_dict.has("default"):
-				slider_spin_box.value = properties_dict["default"]
-			slider_h_box.add_child(slider_spin_box)
-
-			param_controls[keyword] = slider_spin_box
-		else:
-			container.add_child(new_label)
-
+		new_label.text = new_label.text.capitalize()
+		new_label.custom_minimum_size.x = 120
+		new_label.vertical_alignment = VERTICAL_ALIGNMENT_TOP
+		new_label.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
+		current_container.add_child(new_label)
 		make_ui(properties_dict, keyword)
+		proc_ui_container.add_child(current_container)
+		var separator: HSeparator = HSeparator.new()
+		separator.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		proc_ui_container.add_child(separator)
 
 
 func setup_drop_down(enum_possibilities: Array) -> OptionButton:
 	var drop_down: OptionButton = OptionButton.new()
+	drop_down.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
 	in_drop_down = true
 	for possibility in enum_possibilities:
 		drop_down.add_item(possibility)
@@ -88,32 +99,102 @@ func setup_drop_down(enum_possibilities: Array) -> OptionButton:
 func set_property_types(type, default, param_name: String):
 	match type:
 		"boolean":
-			var check_box = CheckBox.new()
-			container.add_child(check_box)
-			if default == "true":
-				check_box.button_pressed = true
+			var check_box := CheckBox.new()
+			current_container.add_child(check_box)
+			check_box.button_pressed = (default == true or default == "true")
+			check_box.toggled.connect(func(pressed: bool):
+				_send_param_value(param_name, pressed)
+			)
 			param_controls[param_name] = check_box
 
 		"number":
 			if in_range:
 				in_range = false
 				return
-			var spin_box = SpinBox.new()
-			container.add_child(spin_box)
+
+			var spin_box := SpinBox.new()
 			spin_box.value = default
+			spin_box.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
+			current_container.add_child(spin_box)
+
+			spin_box.value_changed.connect(func(new_value: float):
+				_send_param_value(param_name, new_value)
+			)
+
 			param_controls[param_name] = spin_box
+
+		"textarea":
+			var multiline := TextEdit.new()
+			multiline.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+			multiline.text = str(default)
+			multiline.custom_minimum_size.y = 80
+			setup_autogrow_text_edit(multiline, 2, 10)
+			current_container.add_child(multiline)
+
+			multiline.text_changed.connect(func():
+				_send_param_value(param_name, multiline.text)
+			)
+
+			param_controls[param_name] = multiline
 
 		"string":
 			if !in_drop_down:
-				var line_edit: LineEdit = LineEdit.new()
-				container.add_child(line_edit)
-				line_edit.text = default
+				var line_edit := LineEdit.new()
+				line_edit.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+				line_edit.text = str(default)
+				line_edit.focus_entered.connect(_on_text_section_entered)
+				current_container.add_child(line_edit)
+
+				line_edit.text_changed.connect(func(new_text: String):
+					_send_param_value(param_name, new_text)
+				)
+
 				param_controls[param_name] = line_edit
 			else:
 				in_drop_down = false
 
+@rpc("any_peer", "call_local", "reliable")
+func apply_param_value(param_name: String, value) -> void:
+	if not param_controls.has(param_name):
+		return
+	print("RECEIVED ", multiplayer.get_unique_id(), " ", param_name, " = ", value)
+	_is_applying_remote_value = true
+
+	var control = param_controls[param_name]
+
+	if control is HSlider:
+		control.value = float(value)
+	elif control is SpinBox:
+		control.value = float(value)
+	elif control is CheckBox:
+		control.button_pressed = bool(value)
+	elif control is OptionButton:
+		control.select(int(value))
+	elif control is LineEdit:
+		control.text = str(value)
+	elif control is TextEdit:
+		control.text = str(value)
+
+	_is_applying_remote_value = false
+
+func _send_param_value(param_name: String, value) -> void:
+	if _is_applying_remote_value:
+		return
+	print("proc ui path: ", get_path())
+	print("multiplayer authority: ", get_multiplayer_authority())
+	print("unique id: ", multiplayer.get_unique_id())
+	print("SENDING ", multiplayer.get_unique_id(), " ", param_name, " = ", value)
+	apply_param_value.rpc(param_name, value)
+
 
 func create_slider(slider_values: Array, initial_position, param_name: String):
+	var slider_row := HBoxContainer.new()
+	var slider_container := VBoxContainer.new()
+
+	slider_container.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	slider_row.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	slider_row.add_theme_constant_override("separation", 8)
+
 	if initial_position is String:
 		if initial_position == "true":
 			initial_position = 1.0
@@ -122,50 +203,100 @@ func create_slider(slider_values: Array, initial_position, param_name: String):
 		else:
 			return
 
-	var slider = HSlider.new()
+	var slider := HSlider.new()
+	slider.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	slider.ticks_on_borders = true
-
-	var range_container = HBoxContainer.new()
-
 	slider.min_value = slider_values[0]
-	slider_spin_box.min_value = slider_values[0]
+	slider.max_value = slider_values[1]
+	slider.value = initial_position
 
-	var min_label = Label.new()
+	var spin_box := SpinBox.new()
+	spin_box.min_value = slider_values[0]
+	spin_box.max_value = slider_values[1]
+	spin_box.value = initial_position
+	spin_box.custom_minimum_size.x = 80
+
+	slider_row.add_child(slider)
+	slider_row.add_child(spin_box)
+
+	var range_row := HBoxContainer.new()
+	range_row.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	range_row.add_theme_constant_override("separation", 8)
+
+	var slider_range := HBoxContainer.new()
+	slider_range.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+
+	var min_label := Label.new()
 	min_label.text = str(slider.min_value)
 
-	slider.max_value = slider_values[1]
-	slider_spin_box.max_value = slider_values[1]
-
-	var max_label = Label.new()
-	max_label.text = str(slider.max_value)
-
-	var spacer = Control.new()
+	var spacer := Control.new()
 	spacer.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 
-	container.add_child(slider)
-	container.add_child(range_container)
+	var max_label := Label.new()
+	max_label.text = str(slider.max_value)
+	max_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 
-	range_container.add_child(min_label)
-	range_container.add_child(spacer)
-	range_container.add_child(max_label)
+	slider_range.add_child(min_label)
+	slider_range.add_child(spacer)
+	slider_range.add_child(max_label)
 
-	slider.value = initial_position
-	slider_spin_box.value = initial_position
+	var spinbox_spacer := Control.new()
+	spinbox_spacer.custom_minimum_size.x = spin_box.custom_minimum_size.x
 
-	slider_dict[slider] = slider_spin_box
+	range_row.add_child(slider_range)
+	range_row.add_child(spinbox_spacer)
+
+	slider_container.add_child(slider_row)
+	slider_container.add_child(range_row)
+
+	slider_dict[slider] = spin_box
 	param_controls[param_name] = slider
 
-	slider.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	slider.value_changed.connect(on_slider_value_changed.bind(slider))
-	slider_spin_box.value_changed.connect(on_spinbox_value_changed.bind(slider))
+	slider.value_changed.connect(func(new_value: float):
+		if _is_applying_remote_value:
+			return
+		if slider_dict.has(slider):
+			slider_dict[slider].value = new_value
+		_send_param_value(param_name, new_value)
+	)
 
+	spin_box.value_changed.connect(func(new_value: float):
+		if _is_applying_remote_value:
+			return
+		slider.value = new_value
+		_send_param_value(param_name, new_value)
+	)
 
+	current_container.add_child(slider_container)
+
+func setup_autogrow_text_edit(text_edit: TextEdit, min_lines: int = 2, max_lines: int = 8) -> void:
+	text_edit.wrap_mode = TextEdit.LINE_WRAPPING_BOUNDARY
+	text_edit.scroll_fit_content_height = true
+	text_edit.text_changed.connect(_on_text_edit_text_changed.bind(text_edit, min_lines, max_lines))
+
+	_update_text_edit_height(text_edit, min_lines, max_lines)
+	
+func _on_text_edit_text_changed(text_edit: TextEdit, min_lines: int, max_lines: int) -> void:
+	_update_text_edit_height(text_edit, min_lines, max_lines)
+
+func _update_text_edit_height(text_edit: TextEdit, min_lines: int, max_lines: int) -> void:
+	var line_count := text_edit.get_total_visible_line_count()
+	line_count = clamp(line_count, min_lines, max_lines)
+
+	var line_height := text_edit.get_line_height()
+	var top_padding := 8
+	var bottom_padding := 8
+
+	text_edit.custom_minimum_size.y = line_count * line_height + top_padding + bottom_padding
+	
 func _get_default_for_type(properties: Dictionary) -> Variant:
 	if properties.has('default'):
 		return properties['default']
 
 	var prop_type = properties.get('type', '')
 	match prop_type:
+		"textarea":
+			return ""
 		"string":
 			return ""
 		"number":
@@ -181,29 +312,23 @@ func _get_default_for_type(properties: Dictionary) -> Variant:
 
 func make_ui(properties: Dictionary, param_name: String):
 	var default_value = _get_default_for_type(properties)
-	var slider_values = []
-	for i in range(properties.keys().size()):
-		var property_type = properties.keys()[i]
-		match property_type:
-			"enum":
-				var drop_down_menu = setup_drop_down(properties[property_type])
-				drop_down_menu.selected = properties[property_type].find(default_value)
-				container.add_child(drop_down_menu)
-				param_controls[param_name] = drop_down_menu
 
-			"type":
-				if i + 1 < properties.keys().size():
-					if properties.keys()[i + 1] == "minimum":
-						in_range = true
-				set_property_types(properties[property_type], default_value, param_name)
-			"minimum":
-				slider_values.append(properties[property_type])
+	if properties.has("enum"):
+		var drop_down_menu = setup_drop_down(properties["enum"])
+		drop_down_menu.selected = properties["enum"].find(default_value)
+		current_container.add_child(drop_down_menu)
+		drop_down_menu.item_selected.connect(func(index: int):
+			_send_param_value(param_name, index)
+		)
+		param_controls[param_name] = drop_down_menu
+		return
 
-			"maximum":
-				slider_values.append(properties[property_type])
-	if slider_values:
-		create_slider(slider_values, default_value, param_name)
+	if properties.get("type") == "number" and properties.has("minimum") and properties.has("maximum"):
+		create_slider([properties["minimum"], properties["maximum"]], default_value, param_name)
+		return
 
+	if properties.has("type"):
+		set_property_types(properties["type"], default_value, param_name)
 
 func extract_parameters() -> Dictionary:
 	var param_dict: Dictionary = {}
@@ -219,7 +344,7 @@ func extract_parameters() -> Dictionary:
 			param_dict[param_name] = control.button_pressed
 		elif control is OptionButton:
 			param_dict[param_name] = control.get_item_text(control.selected)
-		elif control is LineEdit:
+		elif control is LineEdit or control is TextEdit:
 			param_dict[param_name] = control.text
 
 	return param_dict
@@ -235,6 +360,10 @@ func on_spinbox_value_changed(new_value: float, slider: HSlider) -> void:
 	if slider_dict.has(slider):
 		slider.value = new_value
 
+
+func _on_text_section_entered():
+	print("keyboard")
+	DisplayServer.virtual_keyboard_show("")
 
 # ---------------------------------------------------------------------------
 # Multiplayer submission — SceneManager coordinates the rest.
@@ -256,7 +385,7 @@ func on_submit_pressed() -> void:
 ## Called via SceneManager RPC once any peer has submitted: hide the form,
 ## show a progress panel so every client sees the same loading screen.
 func enter_loading_state() -> void:
-	container.hide()
+	proc_ui_container.hide()
 	submit_button.hide()
 	_show_progress_ui()
 
