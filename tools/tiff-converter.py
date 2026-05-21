@@ -13,6 +13,7 @@ down_sampling_factor_x = int(sys.argv[3])
 down_sampling_factor_y = int(sys.argv[4])
 down_sampling_factor_z = int(sys.argv[5])
 frame_steps = int(sys.argv[6])
+invert = int(sys.argv[7]) # this should be a 0 or 1
 
 output_dir.mkdir(parents=True, exist_ok=True)
 
@@ -33,7 +34,9 @@ def normalize_to_uint8(data):
 
     if data.max() > 0:
         data /= data.max()
-
+    if invert:
+        data = np.max(data)-data
+        
     return (data * 255).astype(np.uint8)
 
 
