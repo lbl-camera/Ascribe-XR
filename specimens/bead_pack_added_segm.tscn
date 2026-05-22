@@ -1,14 +1,16 @@
 [gd_scene format=3 uid="uid://bkte8egxhtm0c"]
 
 [ext_resource type="PackedScene" uid="uid://nsaby1sui3c" path="res://specimens/volume_specimen.tscn" id="1_7gg6q"]
-[ext_resource type="Texture2D" uid="uid://dcr68kgvh1b7l" path="res://assets/textures/logo/logowhite.png" id="2_6byau"]
+[ext_resource type="Texture2D" uid="uid://d3bvf2icfwijo" path="res://assets/textures/thumbnails/bead_pack.png" id="2_2bj8f"]
 [ext_resource type="ImageTexture3D" uid="uid://bgccfmulismq0" path="res://specimen_data/bead_pack_added_segm.tres" id="3_2bj8f"]
 
 [node name="Specimen" unique_id=1890448719 instance=ExtResource("1_7gg6q")]
 process_mode = 4
 data_url = ""
 display_name = "Bead Pack (non-raw)"
-thumbnail = ExtResource("2_6byau")
+thumbnail = ExtResource("2_2bj8f")
+story_text = Array[String](["X-ray Computed Tomography (XCT) is also heavily utilized to image Beadpack samples, which serve as highly standardized, synthetic models for porous media in fluid dynamics and geology. This specific dataset features a monodispersive (uniformly sized) set of glass beads packed tightly together to mimic the structural matrix of natural sand grains or granular soils. Because the beads have a perfectly known, identical geometry, the XCT scan provides an ideal baseline to accurately quantify the sample's internal pore networks and throat sizes. This precise, three-dimensional mapping makes Beadpack datasets incredibly valuable for simulating permeability experiments, enabling researchers to benchmark fluid flow models and analyze transport behaviors through porous materials with absolute structural certainty.
+"])
 
 [node name="ScalableMultiplayerPickableObject" parent="." index="0" unique_id=258651919]
 visible = true

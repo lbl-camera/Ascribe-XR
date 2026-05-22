@@ -1,14 +1,15 @@
 [gd_scene format=3 uid="uid://dtl1hdr2jwsns"]
 
 [ext_resource type="PackedScene" uid="uid://nsaby1sui3c" path="res://specimens/volume_specimen.tscn" id="1_1r67m"]
-[ext_resource type="Texture2D" uid="uid://dcr68kgvh1b7l" path="res://assets/textures/logo/logowhite.png" id="2_jqqfq"]
+[ext_resource type="Texture2D" uid="uid://d3bvf2icfwijo" path="res://assets/textures/thumbnails/bead_pack.png" id="2_ukldo"]
 [ext_resource type="ImageTexture3D" uid="uid://bfqsqstq00cg4" path="res://specimen_data/bead_pack_raw.tres" id="3_ukldo"]
 
 [node name="Specimen" unique_id=1870638612 instance=ExtResource("1_1r67m")]
 process_mode = 4
 data_url = ""
 display_name = "Bead Pack (Raw, Full)"
-thumbnail = ExtResource("2_jqqfq")
+thumbnail = ExtResource("2_ukldo")
+story_text = Array[String](["X-ray Computed Tomography (XCT) is also heavily utilized to image Beadpack samples, which serve as highly standardized, synthetic models for porous media in fluid dynamics and geology. This specific dataset features a monodispersive (uniformly sized) set of glass beads packed tightly together to mimic the structural matrix of natural sand grains or granular soils.", "Because the beads have a perfectly known, identical geometry, the XCT scan provides an ideal baseline to accurately quantify the sample's internal pore networks and throat sizes. This precise, three-dimensional mapping makes Beadpack datasets incredibly valuable for simulating permeability experiments, enabling researchers to benchmark fluid flow models and analyze transport behaviors through porous materials with absolute structural certainty."])
 
 [node name="ScalableMultiplayerPickableObject" parent="." index="0" unique_id=258651919]
 visible = true
@@ -18,6 +19,9 @@ collision_layer = 4
 texture = ExtResource("3_ukldo")
 gamma = 6.18
 opacity = 0.64
+
+[node name="CollisionShape3D2" parent="ScalableMultiplayerPickableObject" index="2" unique_id=20357374]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.0017242581, -0.004333526, 0.007849127)
 
 [node name="MultiplayerPickable" parent="." index="1" unique_id=717229823]
 visible = true

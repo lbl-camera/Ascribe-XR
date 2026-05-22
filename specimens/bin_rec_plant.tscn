@@ -1,14 +1,15 @@
 [gd_scene format=3 uid="uid://dsvtw2x7lrl6b"]
 
 [ext_resource type="PackedScene" uid="uid://nsaby1sui3c" path="res://specimens/volume_specimen.tscn" id="1_k28ic"]
-[ext_resource type="Texture2D" uid="uid://dcr68kgvh1b7l" path="res://assets/textures/logo/logowhite.png" id="2_y4p0y"]
+[ext_resource type="Texture2D" uid="uid://dj65hxs2txb5u" path="res://assets/textures/thumbnails/Plant.png" id="2_ll2cq"]
 [ext_resource type="ImageTexture3D" uid="uid://bbxfq54jwg02q" path="res://specimen_data/bin_rec_plant.tres" id="3_ll2cq"]
 
 [node name="Specimen" unique_id=1376042211 instance=ExtResource("1_k28ic")]
 process_mode = 4
 data_url = ""
 display_name = "Bin Plant"
-thumbnail = ExtResource("2_y4p0y")
+thumbnail = ExtResource("2_ll2cq")
+story_text = Array[String](["Utilizing X-ray Computed Tomography (XCT), researchers can non-destructively quantify the profound impacts of environmental drought on both the root chemistry and the three-dimensional root system architecture of Panicum hallii, a model perennial grass. This advanced imaging method allows for the precise measurement of spatial shifts in root biomass, branching density, and cellular composition as the plant adapts to water scarcity. ", "Visually, high-resolution XCT reconstructions provide an intricate look inside the plant's anatomy, mapping the hollow structure of the stem and isolating the structural variations or specialized air cavities associated with the exodermis—the outer protective cell layer of the root cortex. By pairing these cellular-level visualizations with macroscopic architectural mapping, the scan delivers a comprehensive, multi-scale assessment of how Panicum hallii physically remodels itself to survive drought conditions. "])
 
 [node name="ScalableMultiplayerPickableObject" parent="." index="0" unique_id=258651919]
 visible = true

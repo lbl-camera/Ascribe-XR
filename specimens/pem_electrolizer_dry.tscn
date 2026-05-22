@@ -1,14 +1,17 @@
 [gd_scene format=3 uid="uid://bfdfnlut63y3c"]
 
 [ext_resource type="PackedScene" uid="uid://nsaby1sui3c" path="res://specimens/volume_specimen.tscn" id="1_gd1fl"]
-[ext_resource type="Texture2D" uid="uid://dcr68kgvh1b7l" path="res://assets/textures/logo/logowhite.png" id="2_goxk4"]
+[ext_resource type="Texture2D" uid="uid://vp03srlo6pan" path="res://assets/textures/thumbnails/GDL Fuel Cell.png" id="2_gd1fl"]
 [ext_resource type="ImageTexture3D" uid="uid://cb2xm6uv4cj8e" path="res://specimen_data/GDL_fuel_cell.tres" id="3_gd1fl"]
 
 [node name="Specimen" unique_id=1030698190 instance=ExtResource("1_gd1fl")]
 process_mode = 4
 data_url = ""
 display_name = "PEM Electrolizer (Dry)"
-thumbnail = ExtResource("2_goxk4")
+thumbnail = ExtResource("2_gd1fl")
+story_text = Array[String](["By pairing structural X-ray datasets with dynamic neutron imaging, this dual-method characterization clarifies how the microstructural engineering of ancient materials directly governs their macroscopic moisture movement, durability, and resistance to environmental degradation over thousands of years.
+", "Furthermore, integrating these X-ray datasets with a pore network model provides a powerful framework to investigate breakthrough capillary pressure and water saturation dynamics, establishing a crucial link between microscale wettability and macroscopic fuel cell performance (Deep learning for multiphase segmentation of X-ray images of gas diffusion layers - ScienceDirect).
+"])
 
 [node name="ScalableMultiplayerPickableObject" parent="." index="0" unique_id=258651919]
 visible = true

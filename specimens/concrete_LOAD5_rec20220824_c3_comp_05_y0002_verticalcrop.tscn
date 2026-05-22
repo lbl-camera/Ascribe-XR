@@ -1,14 +1,15 @@
 [gd_scene format=3 uid="uid://basywwxiw60ba"]
 
 [ext_resource type="PackedScene" uid="uid://nsaby1sui3c" path="res://specimens/volume_specimen.tscn" id="1_fa7yi"]
-[ext_resource type="Texture2D" uid="uid://dcr68kgvh1b7l" path="res://assets/textures/logo/logowhite.png" id="2_e2i5j"]
+[ext_resource type="Texture2D" uid="uid://xlffg3gmed5x" path="res://assets/textures/thumbnails/concrete_volume.png" id="2_awi0m"]
 [ext_resource type="ImageTexture3D" uid="uid://bmt0isyyifrrj" path="res://specimen_data/concrete_LOAD5_rec20220824_c3_comp_05_y0002_verticalcrop.tres" id="3_awi0m"]
 
 [node name="Specimen" unique_id=680391026 instance=ExtResource("1_fa7yi")]
 process_mode = 4
 data_url = ""
 display_name = "concrete_LOAD5_rec20220824_c3_comp_05_y0002_verticalcrop"
-thumbnail = ExtResource("2_e2i5j")
+thumbnail = ExtResource("2_awi0m")
+story_text = Array[String](["This integrated dataset combines synchrotron X-ray microtomography ($\\mu$CT) and non-destructive neutron radiography to investigate the internal microstructure and fluid transport properties of ancient Roman concrete drilled from the \"Hospitium\" in Pompeii. High-resolution 3D XCT imaging enables the precise extraction and quantitative analysis of internal architectural features—including three-dimensional crack propagation networks, pore size distributions, pore orientations, and matrix tortuosity and connectivity.", "Simultaneously, neutron radiography is deployed to track and visually quantify real-time water distribution and absorptivity through the material's complex pore networks, including the specific impact of mechanically induced cracks.", "By pairing structural X-ray datasets with dynamic neutron imaging, this dual-method characterization clarifies how the microstructural engineering of ancient materials directly governs their macroscopic moisture movement, durability, and resistance to environmental degradation over thousands of years."])
 
 [node name="ScalableMultiplayerPickableObject" parent="." index="0" unique_id=258651919]
 visible = true
