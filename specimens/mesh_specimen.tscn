@@ -10,6 +10,7 @@
 script = ExtResource("2_6ounj")
 loading_file = ""
 flip_normals = false
+data_url = ""
 display_name = "Load Mesh File"
 thumbnail = ExtResource("3_d63jp")
 ui = ExtResource("5_jquso")

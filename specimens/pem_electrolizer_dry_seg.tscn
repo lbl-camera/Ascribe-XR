@@ -23,7 +23,7 @@ gamma = 10.0
 opacity = 0.086
 
 [node name="CollisionShape3D2" parent="ScalableMultiplayerPickableObject" index="2" unique_id=20357374]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.012051351, 0.020419262, -0.00043943524)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.003640782, -0.011172511, -0.011920154)
 
 [node name="MultiplayerPickable" parent="." index="1" unique_id=717229823]
 visible = true
