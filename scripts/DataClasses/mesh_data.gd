@@ -21,6 +21,8 @@ func get_data() -> ArrayMesh:
 		_cached_mesh = MeshUtils.build_mesh(to_dict(), flip_normals)
 	return _cached_mesh
 
+func invalidate_mesh() -> void:
+	_cached_mesh = null
 
 ## Set data from a dictionary (as received from network or loaders).
 ## Supports both legacy format {"vertices": [...], "indices": [...]}

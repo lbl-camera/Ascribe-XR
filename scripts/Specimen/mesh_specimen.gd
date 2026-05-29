@@ -272,24 +272,26 @@ func set_mesh_data(data: MeshData) -> void:
 
 
 func _set_mesh_from_data(data: MeshData) -> void:
-	print("MeshSpecimen: Building mesh — verts=%d, indices=%d, normals=%d" % [
-		data.vertices.size(), data.indices.size(), data.normals.size()])
+	var previous_material: Material = null
+
+	if specimen_scene and specimen_scene is MeshInstance3D:
+		previous_material = specimen_scene.get_surface_override_material(0)
+
 	var mesh = data.get_data()
 	if mesh == null:
-		push_error("MeshSpecimen: Failed to build mesh (verts=%d, indices=%d, normals=%d)" % [
-			data.vertices.size(), data.indices.size(), data.normals.size()])
-		if ui_instance:
-			ui_instance.get_node("LoadingLayer").hide()
+		push_error("MeshSpecimen: Failed to build mesh")
 		return
-
-	print("MeshSpecimen: Mesh AABB = ", mesh.get_aabb())
 
 	var mesh_instance = MeshInstance3D.new()
 	mesh_instance.mesh = mesh
 	mesh_instance.transform = Transform3D.IDENTITY
 
+	if previous_material:
+		mesh_instance.set_surface_override_material(0, previous_material)
+
 	if specimen_scene:
 		specimen_scene.queue_free()
+
 	specimen_scene = mesh_instance
 	_set_pickable(mesh_instance)
 
@@ -307,10 +309,18 @@ func _set_pickable(node: Node3D) -> void:
 		ui_instance.get_node("%MaterialMenu").show()
 		ui_instance.get_node("%FileDialogLayer").hide()
 		ui_instance.get_node("LoadingLayer").hide()
+		
 		ui_instance.get_node("%FlipNormals").show()
 		var flip_node: CheckButton = ui_instance.get_node("%FlipNormals")
+		
 		if flip_node and !flip_node.pressed.is_connected(on_flip_normals_pressed):
 			flip_node.connect("pressed", on_flip_normals_pressed)
+
+func _force_cull_back(mesh_instance: MeshInstance3D) -> void:
+	var mat := StandardMaterial3D.new()
+	mat.cull_mode = BaseMaterial3D.CULL_FRONT
+	mesh_instance.set_surface_override_material(0, mat)
+
 
 func on_flip_normals_pressed() -> void:
 	
@@ -323,6 +333,8 @@ func on_flip_normals_pressed() -> void:
 
 	if is_multiplayer_authority():
 		_send_mesh(_mesh_data.to_dict())
+		
+
 
 
 func _flip_mesh_data_normals(data: MeshData) -> void:
@@ -330,14 +342,15 @@ func _flip_mesh_data_normals(data: MeshData) -> void:
 	print(data.normals.slice(0, 6))
 	if data.indices.size() >= 3:
 		for i in range(0, data.indices.size(), 3):
-			var tmp = data.indices[i + 1]
+			var temp = data.indices[i + 1]
 			data.indices[i + 1] = data.indices[i + 2]
-			data.indices[i + 2] = tmp
+			data.indices[i + 2] = temp
 
 	# the actual inverting part
 	for i in range(data.normals.size()):
 		data.normals[i] = -data.normals[i]
 	print(data.normals.slice(0, 6))
+	data.invalidate_mesh()
 
 func _make_pickable(node: Node3D) -> void:
 	var collision := CollisionShape3D.new()
@@ -493,3 +506,5 @@ func _set_shader(material_name: String = "glass") -> void:
 		specimen_scene.set_surface_override_material(0, material)
 	else:
 		push_warning("Could not find material: %s" % material_name)
+	
+	
