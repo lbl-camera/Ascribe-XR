@@ -278,7 +278,9 @@ func _set_mesh_from_data(data: MeshData) -> void:
 		previous_material = specimen_scene.get_surface_override_material(0)
 
 	var mesh = data.get_data()
-
+	if mesh == null:
+		push_error("MeshSpecimen: Failed to build mesh")
+		return
 
 	var mesh_instance = MeshInstance3D.new()
 	mesh_instance.mesh = mesh
@@ -311,13 +313,16 @@ func _set_pickable(node: Node3D) -> void:
 		ui_instance.get_node("%FlipNormals").show()
 		var flip_node: CheckButton = ui_instance.get_node("%FlipNormals")
 		
-		if flip_node and !flip_node.toggled.is_connected(on_flip_normals_toggled):
-			flip_node.connect("toggled", on_flip_normals_toggled)
+		if flip_node and !flip_node.pressed.is_connected(on_flip_normals_pressed):
+			flip_node.connect("pressed", on_flip_normals_pressed)
+
+func _force_cull_back(mesh_instance: MeshInstance3D) -> void:
+	var mat := StandardMaterial3D.new()
+	mat.cull_mode = BaseMaterial3D.CULL_FRONT
+	mesh_instance.set_surface_override_material(0, mat)
 
 
-
-
-func on_flip_normals_toggled(toggled_on: bool) -> void:
+func on_flip_normals_pressed() -> void:
 	
 	if _mesh_data == null:
 		return
@@ -326,15 +331,15 @@ func on_flip_normals_toggled(toggled_on: bool) -> void:
 	_flip_mesh_data_normals(_mesh_data)
 	_set_mesh_from_data(_mesh_data)
 
-
-	_send_mesh(_mesh_data.to_dict())
+	if is_multiplayer_authority():
+		_send_mesh(_mesh_data.to_dict())
 		
 
 
 
 func _flip_mesh_data_normals(data: MeshData) -> void:
 	# need to do reverse triangle winding for the sake of fixing the lighting
-
+	print(data.normals.slice(0, 6))
 	if data.indices.size() >= 3:
 		for i in range(0, data.indices.size(), 3):
 			var temp = data.indices[i + 1]
@@ -344,7 +349,7 @@ func _flip_mesh_data_normals(data: MeshData) -> void:
 	# the actual inverting part
 	for i in range(data.normals.size()):
 		data.normals[i] = -data.normals[i]
-
+	print(data.normals.slice(0, 6))
 	data.invalidate_mesh()
 
 func _make_pickable(node: Node3D) -> void:
