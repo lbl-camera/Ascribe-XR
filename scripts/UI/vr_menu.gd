@@ -79,11 +79,11 @@ func setup(control: Control, options: Dictionary = {}) -> void:
 	# Update grab collision to match screen size (slightly larger for easy grabbing).
 	# Position it behind the viewport body so the pointer raycast hits the
 	# viewport StaticBody3D first (enabling click-through to 2D UI).
-	var grab_shape: CollisionShape3D = $GrabCollision
-	if grab_shape and grab_shape.shape is BoxShape3D:
-		var box = grab_shape.shape as BoxShape3D
-		box.size = Vector3(screen_size.x + 0.1, screen_size.y + 0.1, 0.05)
-		grab_shape.position.z = -0.04
+	#var grab_shape: CollisionShape3D = $GrabCollision
+	#if grab_shape and grab_shape.shape is BoxShape3D:
+		#var box = grab_shape.shape as BoxShape3D
+		#box.size = Vector3(screen_size.x + 0.1, screen_size.y + 0.1, 0.05)
+		#grab_shape.position.z = -0.04
 
 	# Disable grab if not grabbable
 	if not _grabbable:
