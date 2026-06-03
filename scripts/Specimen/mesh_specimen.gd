@@ -278,7 +278,11 @@ func _set_mesh_from_data(data: MeshData) -> void:
 		previous_material = specimen_scene.get_surface_override_material(0)
 
 	var mesh = data.get_data()
-
+	if mesh == null:
+		push_error("MeshSpecimen: Failed to build mesh")
+		if ui_instance:
+			ui_instance.get_node("LoadingLayer").hide()
+		return
 
 	var mesh_instance = MeshInstance3D.new()
 	mesh_instance.mesh = mesh
@@ -319,7 +323,7 @@ func on_flip_normals_toggled(toggled_on: bool) -> void:
 	if _mesh_data == null:
 		return
 
-	flip_normals = !flip_normals
+	flip_normals = toggled_on
 	_flip_mesh_data_normals(_mesh_data)
 	_set_mesh_from_data(_mesh_data)
 
