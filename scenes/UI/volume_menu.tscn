@@ -17,7 +17,7 @@ unique_name_in_owner = true
 [node name="FileDialog" parent="FileDialogLayer" unique_id=926405348 instance=ExtResource("2_wdy41")]
 unique_name_in_owner = true
 theme = null
-current_path = "C:/Users/Luke Weidner/Documents"
+current_path = "C:/Users/lukew/OneDrive/Pictures/Documents"
 file_filters = Array[String](["*.zip", "*.bin", "*.npy"])
 
 [node name="SettingsLayer" type="CanvasLayer" parent="." unique_id=721217544]

@@ -32,3 +32,4 @@ specimen_data/terrain/assets.tres filter=lfs diff=lfs merge=lfs -text
 # Large mesh JSON files (too big for plain text but JSON typically isn't LFS-tracked globally)
 specimen_data/cthead_mesh.json filter=lfs diff=lfs merge=lfs -text
 specimen_data/cthead-8bit/cthead_mesh.json filter=lfs diff=lfs merge=lfs -text
+
