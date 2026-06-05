@@ -35,6 +35,8 @@ var _is_closing: bool = false
 ## Whether grabbing is enabled for this menu.
 var _grabbable: bool = true
 
+var _edge_overlap_count = 0
+
 ## If true, the content Control is removed from the viewport before the menu
 ## is freed — keeping it alive for reuse (e.g., NetworkGateway).
 var _preserve_content: bool = false
@@ -45,7 +47,8 @@ func _ready() -> void:
 
 	if Engine.is_editor_hint():
 		return
-
+	
+	enabled = false
 	# Configure as a floating, non-physics object
 	gravity_scale = 0.0
 	freeze = true
@@ -54,6 +57,10 @@ func _ready() -> void:
 	# XRToolsPickable config: hold to grab, restore frozen when released
 	press_to_hold = true
 	release_mode = ReleaseMode.FROZEN
+	var player = get_tree().get_first_node_in_group("Player")
+	var pointer = player.get_node("FunctionPointer")
+	
+	pointer.pointing_event.connect(_on_pointing_event)
 
 
 ## Configure the menu with a Control and options dictionary.
@@ -80,10 +87,15 @@ func setup(control: Control, options: Dictionary = {}) -> void:
 	# Position it behind the viewport body so the pointer raycast hits the
 	# viewport StaticBody3D first (enabling click-through to 2D UI).
 	var grab_shape: CollisionShape3D = $GrabCollision
+
+	#if grab_shape:
+		#grab_shape.disabled = true
 	if grab_shape and grab_shape.shape is BoxShape3D:
 		var box = grab_shape.shape as BoxShape3D
-		box.size = Vector3(screen_size.x + 0.1, screen_size.y + 0.1, 0.05)
-		grab_shape.position.z = -0.04
+		box.size = Vector3(screen_size.x - 0.1, screen_size.y - 0.1, 0.05)
+		#grab_shape.position.z = -0.04
+		
+	adjust_area_collisions(screen_size)
 
 	# Disable grab if not grabbable
 	if not _grabbable:
@@ -111,6 +123,56 @@ func setup(control: Control, options: Dictionary = {}) -> void:
 		_viewport_2d._dirty = _viewport_2d._DIRTY_ALL & ~_viewport_2d._DIRTY_SCENE
 		_viewport_2d._update_render()
 
+func adjust_area_collisions(screen_size: Vector2) -> void:
+	var edge_thickness := 0.12
+	var depth := 0.12
+	var z := -0.04
+
+	var w := screen_size.x
+	var h := screen_size.y
+
+	var data := {
+		"Left": {
+			"size": Vector3(edge_thickness, h, depth),
+			"pos": Vector3(-w * 0.5 + edge_thickness * 0.5, 0.0, z),
+		},
+		"Right": {
+			"size": Vector3(edge_thickness, h, depth),
+			"pos": Vector3(w * 0.5 - edge_thickness * 0.5, 0.0, z),
+		},
+		"Top": {
+			"size": Vector3(w, edge_thickness, depth),
+			"pos": Vector3(0.0, h * 0.5 - edge_thickness * 0.5, z),
+		},
+		"Bottom": {
+			"size": Vector3(w, edge_thickness, depth),
+			"pos": Vector3(0.0, -h * 0.5 + edge_thickness * 0.5, z),
+		},
+	}
+
+	for area in $Edges.get_children():
+		if not data.has(area.name):
+			continue
+
+		area.monitoring = true
+		area.monitorable = true
+		area.add_to_group("menu_edge")
+
+		var collision := area.get_node_or_null("CollisionShape3D") as CollisionShape3D
+		if collision == null:
+			collision = CollisionShape3D.new()
+			collision.name = "CollisionShape3D"
+			area.add_child(collision)
+		collision.debug_color = Color.RED
+		var box := collision.shape as BoxShape3D
+		if box == null:
+			box = BoxShape3D.new()
+			collision.shape = box
+
+		box.size = data[area.name]["size"]
+		area.position = data[area.name]["pos"]
+		collision.position = Vector3.ZERO
+				
 
 ## Play the open (grow) animation.
 func open() -> void:
@@ -139,6 +201,15 @@ func close() -> void:
 		.set_trans(Tween.TRANS_CUBIC)
 	_tween.tween_callback(_on_close_complete)
 
+func _on_pointing_event(event) -> void:
+	for property in event.get_property_list():
+		print(property.name)
+	var collider = event.target
+
+	if collider and collider.is_in_group("menu_edge"):
+		enabled = true
+	else:
+		enabled = false
 
 ## Immediately close without animation (used when replacing menus).
 func close_immediate() -> void:

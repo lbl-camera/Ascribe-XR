@@ -48,6 +48,10 @@ version_control/autoload_on_startup=true
 
 enabled=PackedStringArray("res://addons/godot-xr-tools/plugin.cfg", "res://addons/import_cleaner/addons/ImportCleaner/plugin.cfg", "res://addons/volume_layered_shader/plugin.cfg")
 
+[global_group]
+
+Player=""
+
 [input]
 
 ui_menu={
