@@ -124,29 +124,30 @@ func setup(control: Control, options: Dictionary = {}) -> void:
 		_viewport_2d._update_render()
 
 func adjust_area_collisions(screen_size: Vector2) -> void:
-	var edge_thickness := 0.12
-	var depth := 0.12
-	var z := -0.04
+	var edge_thickness = 0.12
+	var depth = 0.12
+	# using the same z as the grabCollision
+	var z = -0.04
 
-	var w := screen_size.x
-	var h := screen_size.y
+	var width = screen_size.x
+	var height = screen_size.y
 
 	var data := {
 		"Left": {
-			"size": Vector3(edge_thickness, h, depth),
-			"pos": Vector3(-w * 0.5 + edge_thickness * 0.5, 0.0, z),
+			"size": Vector3(edge_thickness, height, depth),
+			"pos": Vector3(-width * 0.5 + edge_thickness * 0.5, 0.0, z),
 		},
 		"Right": {
-			"size": Vector3(edge_thickness, h, depth),
-			"pos": Vector3(w * 0.5 - edge_thickness * 0.5, 0.0, z),
+			"size": Vector3(edge_thickness, height, depth),
+			"pos": Vector3(width * 0.5 - edge_thickness * 0.5, 0.0, z),
 		},
 		"Top": {
-			"size": Vector3(w, edge_thickness, depth),
-			"pos": Vector3(0.0, h * 0.5 - edge_thickness * 0.5, z),
+			"size": Vector3(width, edge_thickness, depth),
+			"pos": Vector3(0.0, height * 0.5 - edge_thickness * 0.5, z),
 		},
 		"Bottom": {
-			"size": Vector3(w, edge_thickness, depth),
-			"pos": Vector3(0.0, -h * 0.5 + edge_thickness * 0.5, z),
+			"size": Vector3(width, edge_thickness, depth),
+			"pos": Vector3(0.0, -height * 0.5 + edge_thickness * 0.5, z),
 		},
 	}
 
@@ -202,8 +203,7 @@ func close() -> void:
 	_tween.tween_callback(_on_close_complete)
 
 func _on_pointing_event(event) -> void:
-	for property in event.get_property_list():
-		print(property.name)
+
 	var collider = event.target
 
 	if collider and collider.is_in_group("menu_edge"):
