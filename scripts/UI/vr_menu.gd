@@ -41,6 +41,8 @@ var _edge_overlap_count = 0
 ## is freed — keeping it alive for reuse (e.g., NetworkGateway).
 var _preserve_content: bool = false
 
+var _screen_size := Vector2(2.0, 1.2)
+var _pointer_over_edge := false
 
 func _ready() -> void:
 	super._ready()
@@ -71,7 +73,7 @@ func setup(control: Control, options: Dictionary = {}) -> void:
 	var viewport_size: Vector2 = options.get("viewport_size", Vector2(1024, 614))
 	_grabbable = options.get("grabbable", true)
 	_preserve_content = options.get("preserve_content", false)
-
+	_screen_size = screen_size
 	# Configure the Viewport2DIn3D
 	_viewport_2d.screen_size = screen_size
 	_viewport_2d.viewport_size = viewport_size
@@ -88,14 +90,13 @@ func setup(control: Control, options: Dictionary = {}) -> void:
 	# viewport StaticBody3D first (enabling click-through to 2D UI).
 	var grab_shape: CollisionShape3D = $GrabCollision
 
-	#if grab_shape:
-		#grab_shape.disabled = true
+
 	if grab_shape and grab_shape.shape is BoxShape3D:
 		var box = grab_shape.shape as BoxShape3D
-		box.size = Vector3(screen_size.x - 0.1, screen_size.y - 0.1, 0.05)
-		#grab_shape.position.z = -0.04
+		box.size = Vector3(screen_size.x + 0.1, screen_size.y + 0.1, 0.05)
+		grab_shape.position.z = -0.04
 		
-	adjust_area_collisions(screen_size)
+
 
 	# Disable grab if not grabbable
 	if not _grabbable:
@@ -122,58 +123,6 @@ func setup(control: Control, options: Dictionary = {}) -> void:
 		# the scene handler would remove and destroy it.
 		_viewport_2d._dirty = _viewport_2d._DIRTY_ALL & ~_viewport_2d._DIRTY_SCENE
 		_viewport_2d._update_render()
-
-func adjust_area_collisions(screen_size: Vector2) -> void:
-	var edge_thickness = 0.12
-	var depth = 0.12
-	# using the same z as the grabCollision
-	var z = -0.04
-
-	var width = screen_size.x
-	var height = screen_size.y
-
-	var data := {
-		"Left": {
-			"size": Vector3(edge_thickness, height, depth),
-			"pos": Vector3(-width * 0.5 + edge_thickness * 0.5, 0.0, z),
-		},
-		"Right": {
-			"size": Vector3(edge_thickness, height, depth),
-			"pos": Vector3(width * 0.5 - edge_thickness * 0.5, 0.0, z),
-		},
-		"Top": {
-			"size": Vector3(width, edge_thickness, depth),
-			"pos": Vector3(0.0, height * 0.5 - edge_thickness * 0.5, z),
-		},
-		"Bottom": {
-			"size": Vector3(width, edge_thickness, depth),
-			"pos": Vector3(0.0, -height * 0.5 + edge_thickness * 0.5, z),
-		},
-	}
-
-	for area in $Edges.get_children():
-		if not data.has(area.name):
-			continue
-
-		area.monitoring = true
-		area.monitorable = true
-		area.add_to_group("menu_edge")
-
-		var collision := area.get_node_or_null("CollisionShape3D") as CollisionShape3D
-		if collision == null:
-			collision = CollisionShape3D.new()
-			collision.name = "CollisionShape3D"
-			area.add_child(collision)
-		collision.debug_color = Color.RED
-		var box := collision.shape as BoxShape3D
-		if box == null:
-			box = BoxShape3D.new()
-			collision.shape = box
-
-		box.size = data[area.name]["size"]
-		area.position = data[area.name]["pos"]
-		collision.position = Vector3.ZERO
-				
 
 ## Play the open (grow) animation.
 func open() -> void:
@@ -202,14 +151,61 @@ func close() -> void:
 		.set_trans(Tween.TRANS_CUBIC)
 	_tween.tween_callback(_on_close_complete)
 
+func _is_node_in_this_menu(node: Node) -> bool:
+	while node:
+		if node == self:
+			return true
+		node = node.get_parent()
+	return false
+
+func _is_local_pos_on_edge(local_pos: Vector3) -> bool:
+	var edge_thickness := 0.12
+	# half the width and height to get where the edges are later
+	var half_w = _screen_size.x * 0.5
+	var half_h = _screen_size.y * 0.5
+
+	var x = local_pos.x
+	var y = local_pos.y
+
+	var inside_panel = abs(x) <= half_w and abs(y) <= half_h
+	if not inside_panel:
+		return false
+	# this is how we can check if we are on the top, bottom, left, right edge
+	var on_left = x <= -half_w + edge_thickness
+	var on_right = x >= half_w - edge_thickness
+	var on_top = y >= half_h - edge_thickness
+	var on_bottom = y <= -half_h + edge_thickness
+
+	return on_left or on_right or on_top or on_bottom
+
 func _on_pointing_event(event) -> void:
+	
+	var target = event.target
+	
+	if target == null:
+		_pointer_over_edge = false
+		if not is_picked_up():
+			enabled = false
+		return
 
-	var collider = event.target
-
-	if collider and collider.is_in_group("menu_edge"):
-		enabled = true
-	else:
+	# make sure the pointer is hitting this menu or one of its children.
+	if not _is_node_in_this_menu(target):
+		return
+	
+	var hit_pos: Vector3 = event.position
+	var local_pos: Vector3 = to_local(hit_pos)
+	# if these local coordinates are where we classify as an edge
+	# we can then grab
+	_pointer_over_edge = _is_local_pos_on_edge(local_pos)
+	
+	if _pointer_over_edge:
+		enabled = _grabbable
+	elif not is_picked_up():
 		enabled = false
+
+	#if _edge_overlap_count == 0 and not is_picked_up():
+		#enabled = false
+
 
 ## Immediately close without animation (used when replacing menus).
 func close_immediate() -> void:

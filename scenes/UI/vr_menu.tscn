@@ -71,17 +71,3 @@ viewport_size = Vector2(1024, 614)
 [node name="CollisionShape3D" type="CollisionShape3D" parent="Viewport2DIn3D/StaticBody3D" unique_id=1524281763]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -0.01)
 shape = SubResource("BoxShape3D_pointer")
-
-[node name="Edges" type="Node3D" parent="." unique_id=1701097937]
-
-[node name="Left" type="Area3D" parent="Edges" unique_id=393946160 groups=["menu_edge"]]
-collision_layer = 1048577
-
-[node name="Right" type="Area3D" parent="Edges" unique_id=1598732294 groups=["menu_edge"]]
-collision_layer = 1048577
-
-[node name="Top" type="Area3D" parent="Edges" unique_id=2039004928 groups=["menu_edge"]]
-collision_layer = 1048577
-
-[node name="Bottom" type="Area3D" parent="Edges" unique_id=1978189476 groups=["menu_edge"]]
-collision_layer = 1048577
