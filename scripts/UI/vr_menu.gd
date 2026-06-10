@@ -35,7 +35,6 @@ var _is_closing: bool = false
 ## Whether grabbing is enabled for this menu.
 var _grabbable: bool = true
 
-var _edge_overlap_count = 0
 
 ## If true, the content Control is removed from the viewport before the menu
 ## is freed — keeping it alive for reuse (e.g., NetworkGateway).
@@ -43,6 +42,7 @@ var _preserve_content: bool = false
 
 var _screen_size := Vector2(2.0, 1.2)
 var _pointer_over_edge := false
+@export var edge_thickness = 0.40
 
 func _ready() -> void:
 	super._ready()
@@ -159,7 +159,6 @@ func _is_node_in_this_menu(node: Node) -> bool:
 	return false
 
 func _is_local_pos_on_edge(local_pos: Vector3) -> bool:
-	var edge_thickness := 0.12
 	# half the width and height to get where the edges are later
 	var half_w = _screen_size.x * 0.5
 	var half_h = _screen_size.y * 0.5
@@ -203,8 +202,6 @@ func _on_pointing_event(event) -> void:
 	elif not is_picked_up():
 		enabled = false
 
-	#if _edge_overlap_count == 0 and not is_picked_up():
-		#enabled = false
 
 
 ## Immediately close without animation (used when replacing menus).

@@ -56,7 +56,7 @@ tracker = &"right_hand"
 [node name="RightHand" parent="RightHandController" unique_id=114374070 instance=ExtResource("2_4pri4")]
 
 [node name="FunctionPickup" parent="RightHandController" unique_id=1643629898 instance=ExtResource("2_v33fx")]
-ranged_distance = 5.45
+ranged_distance = 10.0
 ranged_angle = 45.0
 impulse_factor = 2.0
 
