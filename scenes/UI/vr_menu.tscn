@@ -2,24 +2,35 @@
 
 [ext_resource type="Script" uid="uid://1id0q8i7gwbp" path="res://scripts/UI/vr_menu.gd" id="1_vrmenu"]
 [ext_resource type="Script" uid="uid://eavk7267igp7" path="res://addons/godot-xr-tools/objects/viewport_2d_in_3d.gd" id="2_v2d3d"]
+[ext_resource type="Shader" uid="uid://bdcl4inxv0h1u" path="res://shaders/highlight.gdshader" id="2_w1ybm"]
 [ext_resource type="Script" uid="uid://cpl5yiyf1ypft" path="res://addons/godot-xr-tools/objects/viewport_2d_in_3d_body.gd" id="3_v2dbody"]
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_grab"]
 resource_local_to_scene = true
 size = Vector3(2.1, 1.3, 0.05)
 
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_w1ybm"]
+render_priority = 0
+shader = ExtResource("2_w1ybm")
+shader_parameter/glow_color = Color(1, 0.8, 0.1, 1)
+shader_parameter/edge_width = 0.02
+shader_parameter/glow_strength = 2.0
+
+[sub_resource type="QuadMesh" id="QuadMesh_3cb7g"]
+material = SubResource("ShaderMaterial_w1ybm")
+
 [sub_resource type="QuadMesh" id="QuadMesh_screen"]
 resource_local_to_scene = true
 size = Vector2(2, 1.2)
 
-[sub_resource type="ViewportTexture" id="ViewportTexture_5iaxp"]
+[sub_resource type="ViewportTexture" id="ViewportTexture_4ojia"]
 viewport_path = NodePath("Viewport2DIn3D/Viewport")
 
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_w1ybm"]
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_chs5w"]
 transparency = 1
 cull_mode = 2
 shading_mode = 0
-albedo_texture = SubResource("ViewportTexture_5iaxp")
+albedo_texture = SubResource("ViewportTexture_4ojia")
 texture_filter = 1
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_pointer"]
@@ -33,12 +44,16 @@ gravity_scale = 0.0
 freeze = true
 freeze_mode = 1
 script = ExtResource("1_vrmenu")
+highlight_when_enabled = null
 release_mode = 1
 
 [node name="GrabCollision" type="CollisionShape3D" parent="." unique_id=263098466]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -0.02)
 shape = SubResource("BoxShape3D_grab")
 debug_color = Color(0.9927115, 0, 0.2546581, 0.41960785)
+
+[node name="Highlight" type="MeshInstance3D" parent="." unique_id=872886749]
+mesh = SubResource("QuadMesh_3cb7g")
 
 [node name="Viewport2DIn3D" type="Node3D" parent="." unique_id=69049931]
 script = ExtResource("2_v2d3d")
@@ -59,7 +74,7 @@ render_target_update_mode = 1
 
 [node name="Screen" type="MeshInstance3D" parent="Viewport2DIn3D" unique_id=1869170162]
 mesh = SubResource("QuadMesh_screen")
-surface_material_override/0 = SubResource("StandardMaterial3D_w1ybm")
+surface_material_override/0 = SubResource("StandardMaterial3D_chs5w")
 
 [node name="StaticBody3D" type="StaticBody3D" parent="Viewport2DIn3D" unique_id=1200919137]
 collision_layer = 5242881

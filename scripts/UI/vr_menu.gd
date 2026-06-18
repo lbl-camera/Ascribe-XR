@@ -25,6 +25,8 @@ var _content: Control = null
 
 ## Reference to the Viewport2DIn3D child.
 @onready var _viewport_2d: XRToolsViewport2DIn3D = $Viewport2DIn3D
+@onready var highlight_mesh: MeshInstance3D = $Highlight
+
 
 ## Animation tween.
 var _tween: Tween
@@ -43,6 +45,8 @@ var _preserve_content: bool = false
 var _screen_size := Vector2(2.0, 1.2)
 var _pointer_over_edge := false
 @export var edge_thickness = 0.40
+@export var highlight_when_enabled: bool = true
+
 
 func _ready() -> void:
 	super._ready()
@@ -50,12 +54,12 @@ func _ready() -> void:
 	if Engine.is_editor_hint():
 		return
 	
-	enabled = false
+	_set_grabbable_enabled(false)
 	# Configure as a floating, non-physics object
 	gravity_scale = 0.0
 	freeze = true
 	freeze_mode = RigidBody3D.FREEZE_MODE_KINEMATIC
-
+	highlight_mesh.visible = false
 	# XRToolsPickable config: hold to grab, restore frozen when released
 	press_to_hold = true
 	release_mode = ReleaseMode.FROZEN
@@ -95,12 +99,14 @@ func setup(control: Control, options: Dictionary = {}) -> void:
 		var box = grab_shape.shape as BoxShape3D
 		box.size = Vector3(screen_size.x + 0.1, screen_size.y + 0.1, 0.05)
 		grab_shape.position.z = -0.04
+	highlight_mesh.mesh.size = screen_size
+	highlight_mesh.position.z = 0.06
 		
 
 
 	# Disable grab if not grabbable
 	if not _grabbable:
-		enabled = false  # XRToolsPickable.enabled — prevents pick_up
+		_set_grabbable_enabled(false)  # XRToolsPickable.enabled — prevents pick_up
 
 	# Add the Control to the viewport and wire up the Viewport2DIn3D render
 	# pipeline. Normally Viewport2DIn3D expects a PackedScene set via its
@@ -150,14 +156,16 @@ func close() -> void:
 		.set_ease(Tween.EASE_IN) \
 		.set_trans(Tween.TRANS_CUBIC)
 	_tween.tween_callback(_on_close_complete)
-
+	
+## helper for edge detection
 func _is_node_in_this_menu(node: Node) -> bool:
 	while node:
 		if node == self:
 			return true
 		node = node.get_parent()
 	return false
-
+	
+## VRMenu Edge detection
 func _is_local_pos_on_edge(local_pos: Vector3) -> bool:
 	# half the width and height to get where the edges are later
 	var half_w = _screen_size.x * 0.5
@@ -177,6 +185,15 @@ func _is_local_pos_on_edge(local_pos: Vector3) -> bool:
 
 	return on_left or on_right or on_top or on_bottom
 
+
+func _set_grabbable_enabled(value: bool) -> void:
+	enabled = value
+
+	if highlight_mesh:
+		highlight_mesh.visible = value and highlight_when_enabled
+
+## Checking if something is grabbable depends on the pointer event
+## If pointer is on an edge, then enabled is set to true, false otherwise
 func _on_pointing_event(event) -> void:
 	
 	var target = event.target
@@ -184,7 +201,7 @@ func _on_pointing_event(event) -> void:
 	if target == null:
 		_pointer_over_edge = false
 		if not is_picked_up():
-			enabled = false
+			_set_grabbable_enabled(false)
 		return
 
 	# make sure the pointer is hitting this menu or one of its children.
@@ -198,9 +215,9 @@ func _on_pointing_event(event) -> void:
 	_pointer_over_edge = _is_local_pos_on_edge(local_pos)
 	
 	if _pointer_over_edge:
-		enabled = _grabbable
+		_set_grabbable_enabled(_grabbable)
 	elif not is_picked_up():
-		enabled = false
+		_set_grabbable_enabled(false)
 
 
 
@@ -221,6 +238,7 @@ func close_immediate() -> void:
 ## Emit accept signal (call from the displayed Control or externally).
 func accept() -> void:
 	accepted.emit()
+
 
 
 func _on_close_complete() -> void:

@@ -1,6 +1,6 @@
 extends Panel
-
-## Builds a form from a JSON Schema and defers submission to SceneManager.
+ 
+## ProceduralLinkUI -- Builds a form from a JSON Schema and defers submission to SceneManager.
 ## Submission, progress, and result loading are coordinated across peers by
 ## SceneManager RPCs, so each connected client runs the same state machine.
 
@@ -9,10 +9,12 @@ signal loading_started
 signal loading_finished
 signal specimen_loaded(instance: Node)
 
-
+## References to the form and buttons to cancel/submit
 @onready var submit_button: Button = %SubmitButton
 @onready var proc_ui_container = %ProceduralForm
+@onready var cancel_button: Button = %CancelButton
 
+## Our schema is represented as a dictionary from python
 var _schema: Dictionary = {}
 var _schema_pending: bool = false
 
@@ -26,6 +28,7 @@ var _progress_label: RichTextLabel = null
 var _last_params: Dictionary = {}
 var _submitted: bool = false
 
+## Whenever we have an assigned schema, we need to build the UI
 @export var schema: Dictionary:
 	set(value):
 		_schema = value
@@ -36,18 +39,23 @@ var _submitted: bool = false
 	get:
 		return _schema
 
+## states for building the UI
 var in_range: bool = false
 var in_drop_down: bool = false
 var _is_applying_remote_value: bool = false
+## we need references to the slider related components at different points
 var slider_dict: Dictionary = {}
 var slider_spin_box: SpinBox = null
 var slider_h_box: HBoxContainer = null
+## Keep track of all controls added to the UI and the current container
 var param_controls: Dictionary = {}
 var current_container: Container
 
 
 func _ready() -> void:
+	# Connect signals and build UI on start up
 	submit_button.pressed.connect(on_submit_pressed)
+	cancel_button.pressed.connect(on_cancel_pressed)
 	if _schema_pending:
 		_build_ui_from_schema.rpc()
 		_schema_pending = false
@@ -65,9 +73,10 @@ func _build_ui_from_schema() -> void:
 	in_range = false
 	in_drop_down = false
 	param_controls.clear()
-
+	# To build the UI, go through each property and make the UI for that property
+	# We need to start with a label that goes into the left side, and we can fix
+	# the scaling and visuals along the way.
 	for keyword in _schema["properties"].keys():
-		
 		var properties_dict: Dictionary = _schema["properties"][keyword]
 		var new_label = Label.new()
 		current_container = HBoxContainer.new()
@@ -86,7 +95,7 @@ func _build_ui_from_schema() -> void:
 		separator.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		proc_ui_container.add_child(separator)
 
-
+## helper to set up drop down menus if we come across an enum
 func setup_drop_down(enum_possibilities: Array) -> OptionButton:
 	var drop_down: OptionButton = OptionButton.new()
 	drop_down.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
@@ -95,7 +104,11 @@ func setup_drop_down(enum_possibilities: Array) -> OptionButton:
 		drop_down.add_item(possibility)
 	return drop_down
 
-
+## helper to handle more simple data types in schema -- string, int, bool, etc.
+## Boolean --> Checkbox
+## number (int/float) --> SpinBox
+## textarea --> multiline textbox
+## string --> single line textbox
 func set_property_types(type, default, param_name: String):
 	match type:
 		"boolean":
@@ -188,13 +201,14 @@ func _send_param_value(param_name: String, value) -> void:
 
 
 func create_slider(slider_values: Array, initial_position, param_name: String):
-	var slider_row := HBoxContainer.new()
-	var slider_container := VBoxContainer.new()
-
+	# sliders are made up of a spin box, and the slider itself next to each other
+	var slider_row = HBoxContainer.new()
+	var slider_container = VBoxContainer.new()
+	# we want it to expand the whole viewport
 	slider_container.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	slider_row.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	slider_row.add_theme_constant_override("separation", 8)
-
+	# convert true false values in schema
 	if initial_position is String:
 		if initial_position == "true":
 			initial_position = 1.0
@@ -202,14 +216,14 @@ func create_slider(slider_values: Array, initial_position, param_name: String):
 			initial_position = 0.0
 		else:
 			return
-
-	var slider := HSlider.new()
+	# a slider is made up of the two values in the passed in array
+	var slider = HSlider.new()
 	slider.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	slider.ticks_on_borders = true
+	slider.ticks_on_gorders = true
 	slider.min_value = slider_values[0]
 	slider.max_value = slider_values[1]
 	slider.value = initial_position
-
+	# same for spin box
 	var spin_box := SpinBox.new()
 	spin_box.min_value = slider_values[0]
 	spin_box.max_value = slider_values[1]
@@ -218,28 +232,28 @@ func create_slider(slider_values: Array, initial_position, param_name: String):
 
 	slider_row.add_child(slider)
 	slider_row.add_child(spin_box)
-
-	var range_row := HBoxContainer.new()
+	# we need to have a new row under the slider to show the ranges
+	var range_row = HBoxContainer.new()
 	range_row.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	range_row.add_theme_constant_override("separation", 8)
 
-	var slider_range := HBoxContainer.new()
+	var slider_range = HBoxContainer.new()
 	slider_range.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 
-	var min_label := Label.new()
+	var min_label = Label.new()
 	min_label.text = str(slider.min_value)
-
-	var spacer := Control.new()
+	# this lets us have a gap between the two labels
+	var spacer = Control.new()
 	spacer.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 
-	var max_label := Label.new()
+	var max_label = Label.new()
 	max_label.text = str(slider.max_value)
 	max_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 
 	slider_range.add_child(min_label)
 	slider_range.add_child(spacer)
 	slider_range.add_child(max_label)
-
+	# this lets us have a gap between slider ranges and spin box
 	var spinbox_spacer := Control.new()
 	spinbox_spacer.custom_minimum_size.x = spin_box.custom_minimum_size.x
 
@@ -250,8 +264,9 @@ func create_slider(slider_values: Array, initial_position, param_name: String):
 	slider_container.add_child(range_row)
 
 	slider_dict[slider] = spin_box
+	# add this to the param controls for later
 	param_controls[param_name] = slider
-
+	# connect signal so we can have the spin box update slider and vice versa
 	slider.value_changed.connect(func(new_value: float):
 		if _is_applying_remote_value:
 			return
@@ -266,9 +281,10 @@ func create_slider(slider_values: Array, initial_position, param_name: String):
 		slider.value = new_value
 		_send_param_value(param_name, new_value)
 	)
-
+	# add to the container (VBOX)
 	current_container.add_child(slider_container)
-
+	
+## ProcUI supports multiline text edits, but we need to do set ups first
 func setup_autogrow_text_edit(text_edit: TextEdit, min_lines: int = 2, max_lines: int = 8) -> void:
 	text_edit.wrap_mode = TextEdit.LINE_WRAPPING_BOUNDARY
 	text_edit.scroll_fit_content_height = true
@@ -288,7 +304,8 @@ func _update_text_edit_height(text_edit: TextEdit, min_lines: int, max_lines: in
 	var bottom_padding := 8
 
 	text_edit.custom_minimum_size.y = line_count * line_height + top_padding + bottom_padding
-	
+
+## Schema can have default values, the procUI builds with these in mind	
 func _get_default_for_type(properties: Dictionary) -> Variant:
 	if properties.has('default'):
 		return properties['default']
@@ -309,10 +326,11 @@ func _get_default_for_type(properties: Dictionary) -> Variant:
 
 	return ""
 
-
+## Gets called for each parameter in the schema
+## the properties variable is the dictionary containing keys for 'enum' or 'type'
 func make_ui(properties: Dictionary, param_name: String):
 	var default_value = _get_default_for_type(properties)
-
+	# creates drop down for enums
 	if properties.has("enum"):
 		var drop_down_menu = setup_drop_down(properties["enum"])
 		drop_down_menu.selected = properties["enum"].find(default_value)
@@ -322,14 +340,16 @@ func make_ui(properties: Dictionary, param_name: String):
 		)
 		param_controls[param_name] = drop_down_menu
 		return
-
+	# make a slider if we have min and max values
 	if properties.get("type") == "number" and properties.has("minimum") and properties.has("maximum"):
 		create_slider([properties["minimum"], properties["maximum"]], default_value, param_name)
 		return
-
+	# send to a more general function, where we can make UI for basic types
 	if properties.has("type"):
 		set_property_types(properties["type"], default_value, param_name)
 
+## function to extract parameters from the param_dict variable
+## this lets us properly submit those values to specimen generation
 func extract_parameters() -> Dictionary:
 	var param_dict: Dictionary = {}
 
@@ -349,7 +369,7 @@ func extract_parameters() -> Dictionary:
 
 	return param_dict
 
-
+## signal functions to tie slider and spinboxes together
 func on_slider_value_changed(new_value: float, slider: HSlider) -> void:
 	if slider_dict.has(slider):
 		var spin_box: SpinBox = slider_dict[slider]
@@ -360,9 +380,9 @@ func on_spinbox_value_changed(new_value: float, slider: HSlider) -> void:
 	if slider_dict.has(slider):
 		slider.value = new_value
 
-
+## unused for now -- wanted virtual keyboard
 func _on_text_section_entered():
-	print("keyboard")
+	
 	DisplayServer.virtual_keyboard_show("")
 
 # ---------------------------------------------------------------------------
@@ -380,7 +400,9 @@ func on_submit_pressed() -> void:
 	_last_params = extract_parameters()
 	ui_accept.emit(_last_params)
 	SceneManager.request_submit(function_name, _last_params)
-
+	
+func on_cancel_pressed() -> void:
+	SceneManager.cancel_procedural_request.rpc()
 
 ## Called via SceneManager RPC once any peer has submitted: hide the form,
 ## show a progress panel so every client sees the same loading screen.

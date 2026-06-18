@@ -39,7 +39,7 @@ size_flags_vertical = 3
 layout_mode = 2
 alignment = 1
 
-[node name="Button" type="Button" parent="MarginContainer/VBoxContainer2/ButtonContainer" unique_id=856813400]
+[node name="CancelButton" type="Button" parent="MarginContainer/VBoxContainer2/ButtonContainer" unique_id=856813400]
 unique_name_in_owner = true
 layout_mode = 2
 text = "Cancel"

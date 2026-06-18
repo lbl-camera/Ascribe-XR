@@ -6,6 +6,87 @@ import numpy as np
 from PIL import Image
 import tifffile
 
+"""
+TIFF to JPEG Volume Converter
+
+This script converts TIFF image data into JPEG image slices.
+
+It supports two TIFF input layouts:
+
+1. A directory of 2D TIFF files
+   - Each TIFF is treated as one slice of a larger 3D volume.
+   - All 2D TIFF files are loaded and stacked into one 3D NumPy array.
+   - The combined volume has shape:
+
+        z, y, x
+
+2. Individual 3D TIFF stack files
+   - Each 3D TIFF is treated as an already-combined volume.
+   - The volume is processed directly.
+
+Usage:
+    python tiff-converter.py <input_dir> <output_dir> <x_factor> <y_factor> <z_factor> <frame_steps> <invert>
+
+Arguments:
+    input_dir:
+        Directory containing .tif or .tiff files.
+
+    output_dir:
+        Directory where JPEG files will be written.
+        The directory is created if it does not already exist.
+
+    x_factor:
+        Downsampling factor for the x-axis, or image width.
+        Use 1 to keep full resolution.
+        Use 2 to keep every 2nd pixel.
+        Use 4 to keep every 4th pixel.
+
+    y_factor:
+        Downsampling factor for the y-axis, or image height.
+        Use 1 to keep full resolution.
+
+    z_factor:
+        Downsampling factor for the z-axis, or stack depth.
+        Use 1 to keep every slice.
+        Use 2 to keep every 2nd slice.
+
+    frame_steps:
+        Controls which frames are saved as JPEGs after downsampling.
+        Use 1 to save every frame.
+        Use 2 to save every 2nd frame.
+        Use 10 to save every 10th frame.
+
+    invert:
+        Whether to invert image brightness.
+        Use 0 for normal brightness.
+        Use 1 to invert, so dark becomes light and light becomes dark.
+
+Example:
+    python tiff-converter.py ./input_tiffs ./output_jpegs 2 2 2 1 0
+
+    This reads TIFFs from ./input_tiffs, downsamples x/y/z by 2,
+    saves every frame, does not invert brightness, and writes JPEGs
+    to ./output_jpegs.
+
+Processing flow:
+    1. Read TIFF files from the input directory.
+    2. If TIFFs are 2D, collect them and stack them into one 3D volume.
+    3. If a TIFF is already 3D, process it directly.
+    4. Downsample the volume using NumPy slicing:
+
+           volume[::z_factor, ::y_factor, ::x_factor]
+
+    5. Normalize the image intensity values to 8-bit range, 0-255.
+    6. Optionally invert brightness.
+    7. Save selected frames as JPEG files.
+
+Notes:
+    - JPEG images must be 8-bit, so the script normalizes input data.
+    - The downsampling method is simple decimation, meaning it keeps every nth voxel.
+      It does not average or interpolate between pixels.
+    - Output JPEG files are named using the source file or combined stack name,
+      followed by the frame index.
+"""
 
 input_dir = Path(sys.argv[1])
 output_dir = Path(sys.argv[2])
