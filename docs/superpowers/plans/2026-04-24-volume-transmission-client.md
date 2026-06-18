@@ -6,7 +6,7 @@
 
 **Architecture:** Add one shared parser (`BinaryEnvelope`) that reads the length-prefixed JSON preamble. `MeshData` and `VolumetricData` each get a `set_from_bytes(preamble, body, offset)` method. `MeshSpecimen` gains a content-type branch for the envelope media type. `VolumeSpecimen` mirrors `MeshSpecimen`'s `data_url` flow. `SceneManager._fetch_and_load_result` branches on the specimen type (mesh vs. volume) to pick the right scene.
 
-**Tech Stack:** Godot 4.4 GDScript, gdUnit4 for unit tests (addon already vendored at `addons/gdUnit4`). Spec reference: `docs/superpowers/specs/2026-04-24-volumetric-transmission-design.md`.
+**Tech Stack:** Godot 4.6 GDScript, gdUnit4 for unit tests (addon already vendored at `addons/gdUnit4`). Spec reference: `docs/superpowers/specs/2026-04-24-volumetric-transmission-design.md`.
 
 **Worktree:** Work inside `~/Documents/vr-start/worktrees/volume-transmission` on branch `volume-transmission` (branched from `master`). The server-side work (see `2026-04-24-volume-transmission-server.md`) must be running locally during the final E2E task.
 
