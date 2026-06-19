@@ -9,6 +9,7 @@ var normals: PackedFloat32Array
 var flip_normals: bool = false
 
 var _cached_mesh: ArrayMesh = null
+var highlight_mesh: ArrayMesh = null
 
 
 func is_valid() -> bool:
@@ -19,10 +20,12 @@ func is_valid() -> bool:
 func get_data() -> ArrayMesh:
 	if _cached_mesh == null and is_valid():
 		_cached_mesh = MeshUtils.build_mesh(to_dict(), flip_normals)
+		highlight_mesh = _cached_mesh
 	return _cached_mesh
 
 func invalidate_mesh() -> void:
 	_cached_mesh = null
+	highlight_mesh = null
 
 ## Set data from a dictionary (as received from network or loaders).
 ## Supports both legacy format {"vertices": [...], "indices": [...]}
@@ -54,6 +57,7 @@ func set_from_dict(data: Dictionary) -> void:
 		normals = n
 
 	_cached_mesh = null
+	highlight_mesh = null
 	data_ready.emit()
 
 
@@ -71,6 +75,7 @@ func clear() -> void:
 	indices = PackedInt32Array()
 	normals = PackedFloat32Array()
 	_cached_mesh = null
+	highlight_mesh = null
 
 
 ## Set data from the binary envelope body.
@@ -119,5 +124,6 @@ func set_from_bytes(preamble: Dictionary, body: PackedByteArray, offset: int) ->
 		normals = PackedFloat32Array()
 
 	_cached_mesh = null
+	highlight_mesh = null
 	data_ready.emit()
 	return true

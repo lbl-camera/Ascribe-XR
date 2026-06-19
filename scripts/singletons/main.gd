@@ -28,6 +28,8 @@ var _is_submitter: bool = false
 ## would be freed before the HTTP polling loop finishes.
 var _active_job_client: AscribeLinkClient = null
 
+var procedural_request_id = 0
+var procedural_cancelled = false
 
 func _ready() -> void:
 	world_3d = $/root/Main/Sketchfab_Scene
@@ -195,6 +197,8 @@ func _position_specimen(specimen: Specimen) -> void:
 ## Show the procedural-parameter form on every peer for the given specimen.
 @rpc("any_peer", "call_local", "reliable")
 func show_procedural_ui(specimen_id: String, metadata: Dictionary) -> void:
+	procedural_request_id += 1
+	procedural_cancelled = false
 	_close_procedural_ui()
 
 	_active_specimen_id = specimen_id
@@ -224,14 +228,20 @@ func request_submit(function_name: String, params: Dictionary) -> void:
 		push_warning("SceneManager: request_submit called with no active procedural UI")
 		return
 	_is_submitter = true
+	procedural_cancelled = false
+	procedural_request_id += 1
+
+	var request_id = procedural_request_id
 	var room_id = "ascribe"
 	if Config.webrtcroomname:
 		room_id = Config.webrtcroomname
-	specimen_job_submitted.rpc(function_name, params, room_id)
+	specimen_job_submitted.rpc(function_name, params, room_id, request_id)
 
 
 @rpc("any_peer", "call_local", "reliable")
-func specimen_job_submitted(function_name: String, params: Dictionary, room_id: String) -> void:
+func specimen_job_submitted(function_name: String, params: Dictionary, room_id: String, request_id: int) -> void:
+	procedural_request_id = request_id
+	procedural_cancelled = false
 	_active_function_name = function_name
 	_active_room_id = room_id
 	_active_params = params
@@ -240,31 +250,55 @@ func specimen_job_submitted(function_name: String, params: Dictionary, room_id: 
 
 	# Only the peer that submitted (via request_submit) runs the job.
 	if _is_submitter:
-		_run_job(function_name, params, room_id)
+		_run_job(function_name, params, room_id, request_id)
 
 
-func _run_job(function_name: String, params: Dictionary, room_id: String) -> void:
+func _run_job(function_name: String, params: Dictionary, room_id: String, request_id: int) -> void:
 	_active_job_client = AscribeLinkClient.new(Config.ascribe_link_url)
 	_active_job_client.setup(self)
-	_active_job_client.job_progress.connect(_on_submitter_progress)
-	_active_job_client.job_complete.connect(_on_submitter_complete)
-	_active_job_client.job_error.connect(_on_submitter_error)
+	# pass in the requestID for the sake of the procedural ui
+	_active_job_client.job_progress.connect(func(text: String):
+		_on_submitter_progress(text, request_id)
+	)
+
+	_active_job_client.job_complete.connect(func(result: Dictionary):
+		_on_submitter_complete(result, request_id)
+	)
+
+	_active_job_client.job_error.connect(func(error: String):
+		_on_submitter_error(error, request_id)
+	)
+
 	_active_job_client.run_job(function_name, params, room_id)
 
 
-func _on_submitter_progress(text: String) -> void:
+func _on_submitter_progress(text: String, request_id: int) -> void:
+	# we need to cancel progress if the user has hit the cancel button
+	if procedural_cancelled or request_id != procedural_request_id:
+		return
+
 	specimen_progress.rpc(text)
 
 
-func _on_submitter_complete(result: Dictionary) -> void:
+func _on_submitter_complete(result: Dictionary, request_id: int) -> void:
+	# We should not submit anything
+	if procedural_cancelled or request_id != procedural_request_id:
+		_active_job_client = null
+		return
 	# Every peer (including the submitter) fetches the result from the room
 	# cache via the /data endpoint. The submitter just finished computing it,
 	# so the cache is warm for everyone.
-	specimen_job_done.rpc(_active_specimen_id, _active_function_name, _active_room_id)
+	specimen_job_done.rpc(_active_specimen_id, _active_function_name, _active_room_id, request_id)
 	_active_job_client = null
 
 
-func _on_submitter_error(error: String) -> void:
+func _on_submitter_error(error: String, request_id: int) -> void:
+	# No error if procedural cancel button has been pressed
+	# Nothing to Submit
+	if procedural_cancelled or request_id != procedural_request_id:
+		_active_job_client = null
+		return
+
 	specimen_job_error.rpc(error)
 	_active_job_client = null
 
@@ -276,9 +310,11 @@ func specimen_progress(text: String) -> void:
 
 
 @rpc("any_peer", "call_local", "reliable")
-func specimen_job_done(specimen_id: String, function_name: String, room_id: String) -> void:
+func specimen_job_done(specimen_id: String, function_name: String, room_id: String, request_id: int) -> void:
+	if procedural_cancelled or request_id != procedural_request_id:
+		return
 	# Each peer independently fetches the cached result and loads it as a mesh.
-	_fetch_and_load_result(specimen_id, function_name, room_id)
+	_fetch_and_load_result(specimen_id, function_name, room_id, request_id)
 
 
 @rpc("any_peer", "call_local", "reliable")
@@ -287,8 +323,11 @@ func specimen_job_error(error: String) -> void:
 		_active_procedural_ui.show_error(error)
 
 
-func _fetch_and_load_result(specimen_id: String, function_name: String, room_id: String) -> void:
+func _fetch_and_load_result(specimen_id: String, function_name: String, room_id: String, request_id: int) -> void:
 	var metadata := await _fetch_metadata_for_active(specimen_id)
+	# don't need to load if we cancelled
+	if procedural_cancelled or request_id != procedural_request_id:
+		return
 
 	var params_json := JSON.stringify(_active_params)
 	var query := "params=%s&room_id=%s" % [params_json.uri_encode(), room_id.uri_encode()]
@@ -299,6 +338,10 @@ func _fetch_and_load_result(specimen_id: String, function_name: String, room_id:
 	if packed == null:
 		push_error("SceneManager: Failed to load %s" % scene_path)
 		return
+	
+	if procedural_cancelled or request_id != procedural_request_id:
+		return
+	
 	var specimen: Specimen = packed.instantiate()
 
 	# Refuse mixed scale modes.
@@ -343,6 +386,17 @@ func _fetch_metadata_for_active(specimen_id: String) -> Dictionary:
 	client.setup(self)
 	return await client.fetch_specimen_metadata(specimen_id)
 
+@rpc("any_peer", "call_local", "reliable")
+func cancel_procedural_request() -> void:
+	procedural_cancelled = true
+	procedural_request_id += 1
+
+	MenuManager.close_menu("specimen")
+	show_mainmenu()
+
+	# optional, depending on your SceneManager:
+	# cancel_current_specimen_load()
+	# clear_pending_specimen()
 
 func _close_procedural_ui() -> void:
 	if _active_procedural_ui:

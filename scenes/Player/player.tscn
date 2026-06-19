@@ -14,7 +14,7 @@
 [ext_resource type="PackedScene" uid="uid://dgdb1texynduw" path="res://addons/godot-xr-tools/objects/virtual_keyboard.tscn" id="13_bwjto"]
 [ext_resource type="PackedScene" uid="uid://wtpox7m5vu2b" path="res://addons/godot-xr-tools/effects/fade.tscn" id="14_606se"]
 
-[node name="XROrigin3D" type="XROrigin3D" unique_id=1551876214]
+[node name="XROrigin3D" type="XROrigin3D" unique_id=1551876214 groups=["Player"]]
 script = ExtResource("1_ivps1")
 
 [node name="XRCamera3D" type="XRCamera3D" parent="." unique_id=101239405]
@@ -76,6 +76,7 @@ show_laser = 2
 laser_length = 1
 show_target = true
 collision_mask = 5242884
+collide_with_areas = true
 
 [node name="VirtualKeyboard" parent="." unique_id=943683133 instance=ExtResource("13_bwjto")]
 transform = Transform3D(1, 0, 0, 0, 0.75354, 0.657402, 0, -0.657402, 0.75354, 0, -0.49593, -0.728043)
