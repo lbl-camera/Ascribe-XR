@@ -259,8 +259,15 @@ func _on_submitter_progress(text: String) -> void:
 func _on_submitter_complete(result: Dictionary) -> void:
 	# Every peer (including the submitter) fetches the result from the room
 	# cache via the /data endpoint. The submitter just finished computing it,
-	# so the cache is warm for everyone.
-	specimen_job_done.rpc(_active_specimen_id, _active_function_name, _active_room_id)
+	# so the cache is warm for everyone. The result's "type" is authoritative
+	# for dynamic specimens (e.g. "AI Generate" can yield mesh OR volume), so
+	# forward it — the catalog metadata type is only a static default.
+	specimen_job_done.rpc(
+		_active_specimen_id,
+		_active_function_name,
+		_active_room_id,
+		str(result.get("type", "")),
+	)
 	_active_job_client = null
 
 
@@ -276,9 +283,10 @@ func specimen_progress(text: String) -> void:
 
 
 @rpc("any_peer", "call_local", "reliable")
-func specimen_job_done(specimen_id: String, function_name: String, room_id: String) -> void:
-	# Each peer independently fetches the cached result and loads it as a mesh.
-	_fetch_and_load_result(specimen_id, function_name, room_id)
+func specimen_job_done(specimen_id: String, function_name: String, room_id: String, result_type: String = "") -> void:
+	# Each peer independently fetches the cached result and loads it, using the
+	# runtime result type (not the static catalog type) to pick the renderer.
+	_fetch_and_load_result(specimen_id, function_name, room_id, result_type)
 
 
 @rpc("any_peer", "call_local", "reliable")
@@ -287,14 +295,19 @@ func specimen_job_error(error: String) -> void:
 		_active_procedural_ui.show_error(error)
 
 
-func _fetch_and_load_result(specimen_id: String, function_name: String, room_id: String) -> void:
+func _fetch_and_load_result(specimen_id: String, function_name: String, room_id: String, result_type: String = "") -> void:
 	var metadata := await _fetch_metadata_for_active(specimen_id)
 
 	var params_json := JSON.stringify(_active_params)
 	var query := "params=%s&room_id=%s" % [params_json.uri_encode(), room_id.uri_encode()]
 	var data_url := "%s/api/specimens/%s/data?%s" % [Config.ascribe_link_url, specimen_id, query]
 
-	var scene_path := _scene_path_for_type(metadata.get("type", "mesh"))
+	# Prefer the runtime result type (authoritative for dynamic specimens whose
+	# catalog type is a static guess, e.g. "AI Generate"); fall back to metadata.
+	var effective_type := SceneManagerHelpers.resolve_specimen_type(
+		result_type, str(metadata.get("type", ""))
+	)
+	var scene_path := _scene_path_for_type(effective_type)
 	var packed: PackedScene = load(scene_path)
 	if packed == null:
 		push_error("SceneManager: Failed to load %s" % scene_path)

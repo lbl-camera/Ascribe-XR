@@ -64,3 +64,26 @@ func _make_dummy_specimen(mode: int) -> Specimen:
 	var s := Specimen.new()
 	s.scale_mode = mode
 	return s
+
+
+# resolve_specimen_type rules:
+# - The runtime result type (from the completed job) is authoritative.
+# - Empty result type falls back to the catalog metadata type.
+# - Both empty falls back to "mesh".
+
+
+func test_resolve_specimen_type_result_overrides_catalog():
+	# AI Generate is advertised as "mesh" in the catalog but produced a volume.
+	assert_that(SceneManagerHelpers.resolve_specimen_type("volume", "mesh")).is_equal("volume")
+
+
+func test_resolve_specimen_type_falls_back_to_metadata_when_result_empty():
+	assert_that(SceneManagerHelpers.resolve_specimen_type("", "volume")).is_equal("volume")
+
+
+func test_resolve_specimen_type_result_mesh_overrides_catalog_volume():
+	assert_that(SceneManagerHelpers.resolve_specimen_type("mesh", "volume")).is_equal("mesh")
+
+
+func test_resolve_specimen_type_defaults_to_mesh_when_both_empty():
+	assert_that(SceneManagerHelpers.resolve_specimen_type("", "")).is_equal("mesh")
