@@ -1,3 +1,7 @@
+# Raw, unprocessed source data (TIFF stacks, zips). Keep out of git;
+# only the processed volume resources under specimen_data/ are tracked.
+raw-data/
+
 # Godot 4+ specific ignores
 .godot/
 /android/
