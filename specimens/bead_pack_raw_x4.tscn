@@ -2,7 +2,7 @@
 
 [ext_resource type="PackedScene" uid="uid://nsaby1sui3c" path="res://specimens/volume_specimen.tscn" id="1_nrh73"]
 [ext_resource type="Texture2D" uid="uid://d3bvf2icfwijo" path="res://assets/textures/thumbnails/bead_pack.png" id="2_nrh73"]
-[ext_resource type="ImageTexture3D" uid="uid://j62e63n6k4sp" path="res://specimen_data/bead_pack_raw_x4.tres" id="3_nrh73"]
+[ext_resource type="ImageTexture3D" uid="uid://j62e63n6k4sp" path="res://specimen_data/bead_pack_raw_x4.res" id="3_nrh73"]
 
 [node name="Specimen" unique_id=1870638612 instance=ExtResource("1_nrh73")]
 process_mode = 4

@@ -2,7 +2,7 @@
 
 [ext_resource type="PackedScene" uid="uid://5wygpbthgiou" path="res://scenes/Specimen/volumetric_specimen.tscn" id="1_oy6cd"]
 [ext_resource type="Texture2D" uid="uid://dcr68kgvh1b7l" path="res://assets/textures/logo/logowhite.png" id="2_oy6cd"]
-[ext_resource type="ImageTexture3D" uid="uid://blqoh8n68yo4e" path="res://specimen_data/rock_ct.tres" id="3_oy6cd"]
+[ext_resource type="ImageTexture3D" uid="uid://blqoh8n68yo4e" path="res://specimen_data/rock_ct.res" id="3_oy6cd"]
 
 [node name="Specimen2" unique_id=899165972 instance=ExtResource("1_oy6cd")]
 display_name = "Rock CT"

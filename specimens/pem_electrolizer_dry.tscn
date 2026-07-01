@@ -2,7 +2,7 @@
 
 [ext_resource type="PackedScene" uid="uid://nsaby1sui3c" path="res://specimens/volume_specimen.tscn" id="1_gd1fl"]
 [ext_resource type="Texture2D" uid="uid://vp03srlo6pan" path="res://assets/textures/thumbnails/GDL Fuel Cell.png" id="2_gd1fl"]
-[ext_resource type="ImageTexture3D" uid="uid://cb2xm6uv4cj8e" path="res://specimen_data/GDL_fuel_cell.tres" id="3_gd1fl"]
+[ext_resource type="ImageTexture3D" uid="uid://cb2xm6uv4cj8e" path="res://specimen_data/GDL_fuel_cell.res" id="3_gd1fl"]
 
 [node name="Specimen" unique_id=1030698190 instance=ExtResource("1_gd1fl")]
 process_mode = 4

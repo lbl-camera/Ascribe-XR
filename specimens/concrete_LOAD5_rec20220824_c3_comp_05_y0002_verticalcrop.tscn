@@ -2,7 +2,7 @@
 
 [ext_resource type="PackedScene" uid="uid://nsaby1sui3c" path="res://specimens/volume_specimen.tscn" id="1_fa7yi"]
 [ext_resource type="Texture2D" uid="uid://xlffg3gmed5x" path="res://assets/textures/thumbnails/concrete_volume.png" id="2_awi0m"]
-[ext_resource type="ImageTexture3D" uid="uid://bmt0isyyifrrj" path="res://specimen_data/concrete_LOAD5_rec20220824_c3_comp_05_y0002_verticalcrop.tres" id="3_awi0m"]
+[ext_resource type="ImageTexture3D" uid="uid://bmt0isyyifrrj" path="res://specimen_data/concrete_LOAD5_rec20220824_c3_comp_05_y0002_verticalcrop.res" id="3_awi0m"]
 
 [node name="Specimen" unique_id=680391026 instance=ExtResource("1_fa7yi")]
 process_mode = 4
