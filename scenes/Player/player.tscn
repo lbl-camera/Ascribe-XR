@@ -11,6 +11,7 @@
 [ext_resource type="PackedScene" uid="uid://diyu06cw06syv" path="res://addons/godot-xr-tools/player/player_body.tscn" id="6_keit0"]
 [ext_resource type="PackedScene" uid="uid://cqhw276realc" path="res://addons/godot-xr-tools/functions/function_pointer.tscn" id="7_qssuy"]
 [ext_resource type="Script" uid="uid://vyag4h2e7n0p" path="res://addons/godot-xr-tools/functions/movement_flight.gd" id="8_oprun"]
+[ext_resource type="Script" path="res://scenes/Player/ranged_pickup.gd" id="9_rngbm"]
 [ext_resource type="PackedScene" uid="uid://dgdb1texynduw" path="res://addons/godot-xr-tools/objects/virtual_keyboard.tscn" id="13_bwjto"]
 [ext_resource type="PackedScene" uid="uid://wtpox7m5vu2b" path="res://addons/godot-xr-tools/effects/fade.tscn" id="14_606se"]
 
@@ -42,8 +43,9 @@ metadata/_custom_type_script = "uid://dc4hg8kq5ia5y"
 [node name="LeftHand" parent="LeftHandController" unique_id=1748734250 instance=ExtResource("1_6xita")]
 
 [node name="FunctionPickup" parent="LeftHandController" unique_id=1484538014 instance=ExtResource("2_v33fx")]
+script = ExtResource("9_rngbm")
 ranged_distance = 10.0
-ranged_angle = 45.0
+ranged_radius = 0.5
 impulse_factor = 2.0
 
 [node name="XRToolsMovementFlight" type="Node3D" parent="LeftHandController" unique_id=574560575 groups=["movement_providers"]]
@@ -56,8 +58,9 @@ tracker = &"right_hand"
 [node name="RightHand" parent="RightHandController" unique_id=114374070 instance=ExtResource("2_4pri4")]
 
 [node name="FunctionPickup" parent="RightHandController" unique_id=1643629898 instance=ExtResource("2_v33fx")]
+script = ExtResource("9_rngbm")
 ranged_distance = 10.0
-ranged_angle = 45.0
+ranged_radius = 0.5
 impulse_factor = 2.0
 
 [node name="XRToolsMovementTurn" type="Node3D" parent="RightHandController" unique_id=1136175209 groups=["movement_providers"]]
