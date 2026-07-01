@@ -7,7 +7,7 @@ from PIL import Image
 import tifffile
 
 
-input_dir = Path(sys.argv[1])
+input_path = Path(sys.argv[1])
 output_dir = Path(sys.argv[2])
 down_sampling_factor_x = int(sys.argv[3])
 down_sampling_factor_y = int(sys.argv[4])
@@ -17,7 +17,11 @@ invert = int(sys.argv[7]) # this should be a 0 or 1
 
 output_dir.mkdir(parents=True, exist_ok=True)
 
-tif_files = sorted(list(input_dir.glob("*.tif")) + list(input_dir.glob("*.tiff")))
+# Accept either a single .tif/.tiff file or a directory of them
+if input_path.is_file():
+    tif_files = [input_path]
+else:
+    tif_files = sorted(list(input_path.glob("*.tif")) + list(input_path.glob("*.tiff")))
 
 if not tif_files:
     print("No TIFF files found.")
