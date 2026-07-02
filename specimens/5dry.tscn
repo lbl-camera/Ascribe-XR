@@ -2,7 +2,7 @@
 
 [ext_resource type="PackedScene" uid="uid://5wygpbthgiou" path="res://scenes/Specimen/volumetric_specimen.tscn" id="1_h2ol2"]
 [ext_resource type="Texture2D" uid="uid://bn67t84yo0dyq" path="res://assets/textures/thumbnails/brainreal.png" id="2_kej3u"]
-[ext_resource type="ImageTexture3D" uid="uid://cb2xm6uv4cj8e" path="res://specimen_data/GDL_fuel_cell.res" id="3_h2ol2"]
+[ext_resource type="ImageTexture3D" uid="uid://6n2x2i7owm56" path="res://specimen_data/5dry.res" id="3_h2ol2"]
 
 [node name="Specimen2" unique_id=899165972 instance=ExtResource("1_h2ol2")]
 process_mode = 4
