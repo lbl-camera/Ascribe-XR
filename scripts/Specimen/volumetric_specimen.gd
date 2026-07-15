@@ -12,6 +12,12 @@ var mat: ShaderMaterial
 
 var _data_http_request: HTTPRequest = null
 
+## Whether the slicing halo (grabbable slice-plane widget) is enabled.
+var _halo_enabled: bool = true
+
+## The shader exclusion planes captured at ready, restored when re-enabling the halo.
+var _halo_exclusion_planes: Array[NodePath] = []
+
 
 func _enter_tree():
 	super._enter_tree()
@@ -23,6 +29,7 @@ func _ready():
 	volume_layered = get_node("%VolumeLayeredShader")
 	var mesh_inst = volume_layered.get_child(0, true)
 	mat = mesh_inst.get_surface_override_material(0)
+	_halo_exclusion_planes = volume_layered.exclusion_planes
 
 
 func activate() -> void:
@@ -33,6 +40,9 @@ func activate() -> void:
 		var slider = ui_instance.get_node("%" + slider_name + "Slider")
 		slider.value_changed.connect(_update_shader.bind(slider_name))
 		slider.value = volume_layered[slider_name]
+	var halo_button: CheckButton = ui_instance.get_node("%slicing_haloCheckButton")
+	halo_button.button_pressed = _halo_enabled
+	halo_button.toggled.connect(_set_halo_enabled)
 	ui_instance.get_node("%GradientItemList").colormap_selected.connect(_update_shader_colormap)
 	ui_instance.get_node("%FileDialog").file_selected.connect(_on_file_dialog_file_selected)
 
@@ -44,11 +54,30 @@ func activate() -> void:
 
 func _enable_pickables() -> void:
 	$ScalableMultiplayerPickableObject.show()
-	$MultiplayerPickable.show()
 	$ScalableMultiplayerPickableObject.set_collision_layer_value(3, true)
-	$MultiplayerPickable.set_collision_layer_value(3, true)
 	$ScalableMultiplayerPickableObject.original_collision_layer = $ScalableMultiplayerPickableObject.collision_layer
-	$MultiplayerPickable.original_collision_layer = $MultiplayerPickable.collision_layer
+	if _halo_enabled:
+		$MultiplayerPickable.show()
+		$MultiplayerPickable.set_collision_layer_value(3, true)
+		$MultiplayerPickable.original_collision_layer = $MultiplayerPickable.collision_layer
+
+
+## Enable/disable the slicing halo: widget visibility, grabbability, and the
+## exclusion plane it drives in the volume shader.
+func _set_halo_enabled(enabled: bool) -> void:
+	_halo_enabled = enabled
+	var halo = $MultiplayerPickable
+	halo.visible = enabled
+	if enabled:
+		halo.set_collision_layer_value(3, true)
+		halo.original_collision_layer = halo.collision_layer
+		volume_layered.exclusion_planes = _halo_exclusion_planes
+	else:
+		if halo.is_picked_up():
+			halo.drop()
+		halo.collision_layer = 0
+		halo.original_collision_layer = 0
+		volume_layered.exclusion_planes = [] as Array[NodePath]
 
 
 func _on_file_dialog_file_selected(path: String) -> void:

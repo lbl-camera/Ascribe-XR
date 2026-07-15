@@ -13,11 +13,11 @@ grow_vertical = 2
 
 [node name="FileDialogLayer" type="CanvasLayer" parent="." unique_id=590413080]
 unique_name_in_owner = true
+visible = false
 
 [node name="FileDialog" parent="FileDialogLayer" unique_id=926405348 instance=ExtResource("2_wdy41")]
 unique_name_in_owner = true
 theme = null
-current_path = "C:/Users/lukew/OneDrive/Pictures/Documents"
 file_filters = Array[String](["*.zip", "*.bin", "*.npy"])
 
 [node name="SettingsLayer" type="CanvasLayer" parent="." unique_id=721217544]
@@ -113,6 +113,16 @@ max_value = 10.0
 step = 0.1
 value = 0.1
 exp_edit = true
+
+[node name="SlicingHalo" type="Label" parent="SettingsLayer/MarginContainer/VBoxContainer/GridContainer" unique_id=113123944]
+layout_mode = 2
+text = "Slicing Halo"
+
+[node name="slicing_haloCheckButton" type="CheckButton" parent="SettingsLayer/MarginContainer/VBoxContainer/GridContainer" unique_id=113123945]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 4
+button_pressed = true
 
 [node name="Gradient" type="Label" parent="SettingsLayer/MarginContainer/VBoxContainer/GridContainer" unique_id=113123943]
 layout_mode = 2
