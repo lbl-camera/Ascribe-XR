@@ -40,6 +40,22 @@ var microphoneaudiosamplescountSecondsSampleWindow = 10.0
 
 var talkingtimestart = 0
 
+# Flood watchdog: real-time is ~50 chunks/s (20ms chunks). If the audio server
+# free-runs (e.g. output device lost mid-session), AudioEffectOpusChunked is fed
+# samples at MHz rates and its int32 sample counter overflows -> negative-index
+# spam -> crash (and multi-GB logs). Detect the flood and kill mic capture first.
+const floodmaxchunksperframe = 200
+const floodchunkspersecondlimit = 500
+var floodchunkcount = 0
+var floodchunkseconds = 0.0
+var micfloodshutdown = false
+
+# The effect's int32 sample counter overflows after ~13.5h of 44.1kHz audio even
+# at real-time rates. Re-creating the encoder (any property set) resets it; do so
+# periodically while idle.
+const encoderresetinterval = 3600.0
+var encoderresetseconds = 0.0
+
 func setopusvalues(opussamplerate, opusframedurationms, opusbitrate, opuscomplexity, opusoptimizeforvoice):
 	assert (not currentlytalking)
 	audioopuschunkedeffect.opussamplerate = opussamplerate
@@ -85,14 +101,21 @@ func _ready():
 	
 	else:
 		print("Creating Microphone Stream, Player and Bus")
-		print(AudioServer.get_bus_index("MicrophoneBus"))
-		assert (AudioServer.get_bus_index("MicrophoneBus") == 1)
-		AudioServer.add_bus()
-		var microphonebusidx = AudioServer.get_bus_count() - 1
-		AudioServer.set_bus_name(microphonebusidx, "MicrophoneBus")
-		AudioServer.set_bus_mute(microphonebusidx, true)
-		audioopuschunkedeffect = ClassDB.instantiate("AudioEffectOpusChunked")
-		AudioServer.add_bus_effect(microphonebusidx, audioopuschunkedeffect)
+		var microphonebusidx = AudioServer.get_bus_index("MicrophoneBus")
+		if microphonebusidx != -1 and AudioServer.get_bus_effect_count(microphonebusidx) > 0 \
+				and AudioServer.get_bus_effect(microphonebusidx, 0).get_class() == "AudioEffectOpusChunked":
+			# Reuse the effect from default_bus_layout.tres. Creating a second
+			# MicrophoneBus with a duplicate effect leaves the bus-layout instance
+			# undrained: it discards chunks forever and its int32 sample counter
+			# eventually overflows into a negative-index crash.
+			audioopuschunkedeffect = AudioServer.get_bus_effect(microphonebusidx, 0)
+		else:
+			AudioServer.add_bus()
+			microphonebusidx = AudioServer.get_bus_count() - 1
+			AudioServer.set_bus_name(microphonebusidx, "MicrophoneBus")
+			AudioServer.set_bus_mute(microphonebusidx, true)
+			audioopuschunkedeffect = ClassDB.instantiate("AudioEffectOpusChunked")
+			AudioServer.add_bus_effect(microphonebusidx, audioopuschunkedeffect)
 
 		audiostreamplayermicrophone = AudioStreamPlayer.new()
 		audiostreamplayermicrophone.name = "AudioStreamPlayerMicrophone"
@@ -188,6 +211,20 @@ func processsendopuschunk():
 		opusframecount += 1
 	audioopuschunkedeffect.drop_chunk()
 
+func shutdownmicflood():
+	micfloodshutdown = true
+	push_error("TwoVoipMic: audio chunk flood detected (>%d chunks/s; audio device free-running?). Disabling microphone capture to prevent counter overflow crash." % floodchunkspersecondlimit)
+	if audiostreamplayermicrophone != null:
+		audiostreamplayermicrophone.stop()
+	if microphonefeed != null:
+		microphonefeed.set_active(false)
+	var busidx = AudioServer.get_bus_index("MicrophoneBus")
+	if busidx >= 0:
+		for i in range(AudioServer.get_bus_effect_count(busidx)):
+			AudioServer.set_bus_effect_enabled(busidx, i, false)
+	micnotplayingwarning = true
+	micaudiowarnings.emit("MicNotPlayingWarning", micnotplayingwarning)
+
 func _process(delta):
 	if microphonefeed != null and microphonefeed.is_active():
 		while true:
@@ -204,12 +241,27 @@ func _process(delta):
 			microphoneaudiosamplescountSeconds = 0.0
 			microphoneaudiosamplescountSecondsSampleWindow *= 1.5
 
-	if audioopuschunkedeffect != null:
+	encoderresetseconds += delta
+	if encoderresetseconds > encoderresetinterval and not currentlytalking and not pttpressed:
+		encoderresetseconds = 0.0
+		if audioopuschunkedeffect != null:
+			audioopuschunkedeffect.audiosamplerate = audioopuschunkedeffect.audiosamplerate  # forces createencoder, resetting the int32 sample counter
+
+	if audioopuschunkedeffect != null and not micfloodshutdown:
 		processtalkstreamends()
-		while audioopuschunkedeffect.chunk_available():
+		var chunksthisframe = 0
+		while audioopuschunkedeffect.chunk_available() and chunksthisframe < floodmaxchunksperframe:
 			speakingvolume = processvox()
 			processtalkstreamends()
 			processsendopuschunk()
+			chunksthisframe += 1
+		floodchunkcount += chunksthisframe
+		floodchunkseconds += delta
+		if floodchunkseconds >= 1.0:
+			if floodchunkcount > floodchunkspersecondlimit*floodchunkseconds:
+				shutdownmicflood()
+			floodchunkcount = 0
+			floodchunkseconds = 0.0
 
 	var lmicnotplayingwarning = (not microphonefeed.is_active() if microphonefeed else (audiostreamplayermicrophone == null or not audiostreamplayermicrophone.playing))
 	if micnotplayingwarning != lmicnotplayingwarning:
