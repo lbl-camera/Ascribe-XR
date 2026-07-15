@@ -17,7 +17,7 @@ var specimens_root: Node3D
 var _open_specimens: Array[Specimen] = []
 var _active_specimen: Specimen = null
 
-var _active_procedural_ui: Panel = null
+var _active_procedural_ui: Control = null
 var _active_specimen_id: String = ""
 var _active_function_name: String = ""
 var _active_room_id: String = ""
