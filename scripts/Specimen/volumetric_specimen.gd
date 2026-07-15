@@ -13,7 +13,7 @@ var mat: ShaderMaterial
 var _data_http_request: HTTPRequest = null
 
 ## Whether the slicing halo (grabbable slice-plane widget) is enabled.
-var _halo_enabled: bool = true
+var _halo_enabled: bool = false
 
 ## The shader exclusion planes captured at ready, restored when re-enabling the halo.
 var _halo_exclusion_planes: Array[NodePath] = []
@@ -30,6 +30,8 @@ func _ready():
 	var mesh_inst = volume_layered.get_child(0, true)
 	mat = mesh_inst.get_surface_override_material(0)
 	_halo_exclusion_planes = volume_layered.exclusion_planes
+	if not _halo_enabled:
+		volume_layered.exclusion_planes = [] as Array[NodePath]
 
 
 func activate() -> void:

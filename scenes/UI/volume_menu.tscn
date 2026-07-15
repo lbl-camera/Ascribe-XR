@@ -22,7 +22,6 @@ file_filters = Array[String](["*.zip", "*.bin", "*.npy"])
 
 [node name="SettingsLayer" type="CanvasLayer" parent="." unique_id=721217544]
 unique_name_in_owner = true
-visible = false
 
 [node name="MarginContainer" type="MarginContainer" parent="SettingsLayer" unique_id=836698440]
 anchors_preset = 15
@@ -118,11 +117,13 @@ exp_edit = true
 layout_mode = 2
 text = "Slicing Halo"
 
-[node name="slicing_haloCheckButton" type="CheckButton" parent="SettingsLayer/MarginContainer/VBoxContainer/GridContainer" unique_id=113123945]
+[node name="HBoxContainer" type="HBoxContainer" parent="SettingsLayer/MarginContainer/VBoxContainer/GridContainer" unique_id=221747710]
+layout_mode = 2
+
+[node name="slicing_haloCheckButton" type="CheckButton" parent="SettingsLayer/MarginContainer/VBoxContainer/GridContainer/HBoxContainer" unique_id=113123945]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_vertical = 4
-button_pressed = true
 
 [node name="Gradient" type="Label" parent="SettingsLayer/MarginContainer/VBoxContainer/GridContainer" unique_id=113123943]
 layout_mode = 2
