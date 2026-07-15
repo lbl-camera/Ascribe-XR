@@ -401,7 +401,8 @@ func append_progress(text: String) -> void:
 		_show_progress_ui()
 	if text.begins_with("Tool:"):
 		# Show the active tool in the status line instead of the log.
-		_tool_status_label.text = text
+		var tool_name := text.trim_prefix("Tool:").strip_edges()
+		_tool_status_label.text = "Using the %s tool..." % tool_name
 		return
 	# Any other message means the tool call is over — clear the status line.
 	_tool_status_label.text = ""
