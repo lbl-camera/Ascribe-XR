@@ -386,6 +386,11 @@ func on_submit_pressed() -> void:
 ## show a progress panel so every client sees the same loading screen.
 func enter_loading_state() -> void:
 	proc_ui_container.hide()
+	# Hide the ScrollContainer too — it expands vertically and would leave
+	# an empty gap above the progress log.
+	var scroll := get_node_or_null("MarginContainer/VBoxContainer2/ScrollContainer")
+	if scroll:
+		scroll.hide()
 	submit_button.hide()
 	_show_progress_ui()
 
