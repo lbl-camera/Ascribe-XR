@@ -100,7 +100,7 @@ func setup(control: Control, options: Dictionary = {}) -> void:
 	if viewport:
 		control.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 		# Spawn into the MarginContainer (margin border for all menus) if present
-		var content_parent: Node = viewport.get_node_or_null("MarginContainer")
+		var content_parent: Node = viewport.get_node_or_null("Panel/MarginContainer")
 		if not content_parent:
 			content_parent = viewport
 		content_parent.add_child(control)

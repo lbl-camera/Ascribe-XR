@@ -1,4 +1,4 @@
-extends Panel
+extends VBoxContainer
 
 ## Builds a form from a JSON Schema and defers submission to SceneManager.
 ## Submission, progress, and result loading are coordinated across peers by
@@ -388,7 +388,7 @@ func enter_loading_state() -> void:
 	proc_ui_container.hide()
 	# Hide the ScrollContainer too — it expands vertically and would leave
 	# an empty gap above the progress log.
-	var scroll := get_node_or_null("MarginContainer/VBoxContainer2/ScrollContainer")
+	var scroll := get_node_or_null("ScrollContainer")
 	if scroll:
 		scroll.hide()
 	submit_button.hide()
@@ -424,12 +424,8 @@ func _show_progress_ui() -> void:
 	_progress_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_progress_label.custom_minimum_size = Vector2(0, 400)
 
-	var vbox = get_node_or_null("MarginContainer/VBoxContainer2")
-	if vbox:
-		# Keep ButtonContainer last so it stays visible at the bottom.
-		vbox.add_child(_progress_label)
-		var button_container := vbox.get_node_or_null("ButtonContainer")
-		if button_container:
-			vbox.move_child(button_container, vbox.get_child_count() - 1)
-	else:
-		add_child(_progress_label)
+	# Keep ButtonContainer last so it stays visible at the bottom.
+	add_child(_progress_label)
+	var button_container := get_node_or_null("ButtonContainer")
+	if button_container:
+		move_child(button_container, get_child_count() - 1)
