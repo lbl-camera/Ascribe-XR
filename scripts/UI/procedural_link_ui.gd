@@ -23,6 +23,7 @@ var server_url: String = "http://localhost:8000"
 
 # Internal state
 var _progress_label: RichTextLabel = null
+var _tool_status_label: Label = null
 var _last_params: Dictionary = {}
 var _submitted: bool = false
 
@@ -398,12 +399,19 @@ func enter_loading_state() -> void:
 func append_progress(text: String) -> void:
 	if _progress_label == null:
 		_show_progress_ui()
+	if text.begins_with("Tool:"):
+		# Show the active tool in the status line instead of the log.
+		_tool_status_label.text = text
+		return
+	# Any other message means the tool call is over — clear the status line.
+	_tool_status_label.text = ""
 	_progress_label.append_text(text + "\n")
 
 
 func show_error(error: String) -> void:
 	if _progress_label == null:
 		_show_progress_ui()
+	_tool_status_label.text = ""
 	_progress_label.append_text("\n[ERROR] " + error + "\n")
 
 
@@ -424,8 +432,15 @@ func _show_progress_ui() -> void:
 	_progress_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_progress_label.custom_minimum_size = Vector2(0, 400)
 
+	# Grayish status line showing the tool the agent is actively using.
+	_tool_status_label = Label.new()
+	_tool_status_label.name = "ToolStatus"
+	_tool_status_label.add_theme_color_override("font_color", Color(0.6, 0.6, 0.6))
+	_tool_status_label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
+
 	# Keep ButtonContainer last so it stays visible at the bottom.
 	add_child(_progress_label)
+	add_child(_tool_status_label)
 	var button_container := get_node_or_null("ButtonContainer")
 	if button_container:
 		move_child(button_container, get_child_count() - 1)
