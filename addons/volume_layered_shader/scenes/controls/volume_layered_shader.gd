@@ -209,7 +209,9 @@ func _process(delta):
 		var node: Node = get_node(node_path)
 		if node is Node3D:
 			var xform: Transform3D = (node as Node3D).global_transform
-			var p: Plane           = to_local * Plane(xform.basis.z, xform.origin)
+			# The plane node's basis may carry scale; Plane transformation
+			# requires a unit normal to reconstruct a point on the plane.
+			var p: Plane           = to_local * Plane(xform.basis.z.normalized(), xform.origin)
 			plane_count += 1
 			plane_list.append(p.x)
 			plane_list.append(p.y)
