@@ -45,6 +45,9 @@ func activate() -> void:
 	var halo_button: CheckButton = ui_instance.get_node("%slicing_haloCheckButton")
 	halo_button.button_pressed = _halo_enabled
 	halo_button.toggled.connect(_set_halo_enabled)
+	var shading_button: CheckButton = ui_instance.get_node("%shadingCheckButton")
+	shading_button.button_pressed = volume_layered.shading
+	shading_button.toggled.connect(func(enabled): volume_layered.shading = enabled)
 	ui_instance.get_node("%GradientItemList").colormap_selected.connect(_update_shader_colormap)
 	ui_instance.get_node("%FileDialog").file_selected.connect(_on_file_dialog_file_selected)
 

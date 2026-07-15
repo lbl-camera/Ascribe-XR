@@ -139,6 +139,15 @@ var mat: Material = preload("res://addons/volume_layered_shader/materials/volume
 		mat.set_shader_parameter("gradient", value)
 		gradient = value
 
+@export var shading: bool = false:
+	get:
+		return shading
+	set(value):
+		if value == mat.get_shader_parameter("shading_enabled"):
+			return
+		mat.set_shader_parameter("shading_enabled", value)
+		shading = value
+
 @export var exclusion_planes: Array[NodePath]:
 	get:
 		return exclusion_planes
@@ -188,6 +197,9 @@ func _process(delta):
 	basis = basis * Basis.from_scale(Vector3(x, y, z) / min(x, y, z))
 	mesh_inst.transform = Transform3D(basis)
 
+	# The shader works entirely in mesh-local space, so hand it the planes
+	# already transformed out of world space.
+	var to_local: Transform3D = mesh_inst.global_transform.affine_inverse()
 	var plane_count: int = 0
 	var plane_list: PackedFloat32Array
 	for node_path in exclusion_planes:
@@ -195,11 +207,9 @@ func _process(delta):
 			continue
 
 		var node: Node = get_node(node_path)
-		#print("node_path ", node_path)
-		#print("node ", node)
 		if node is Node3D:
 			var xform: Transform3D = (node as Node3D).global_transform
-			var p: Plane           = Plane(xform.basis.z, xform.origin)
+			var p: Plane           = to_local * Plane(xform.basis.z, xform.origin)
 			plane_count += 1
 			plane_list.append(p.x)
 			plane_list.append(p.y)

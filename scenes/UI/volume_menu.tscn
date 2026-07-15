@@ -125,6 +125,18 @@ unique_name_in_owner = true
 layout_mode = 2
 size_flags_vertical = 4
 
+[node name="Shading" type="Label" parent="SettingsLayer/MarginContainer/VBoxContainer/GridContainer" unique_id=113123946]
+layout_mode = 2
+text = "Shading"
+
+[node name="HBoxContainer2" type="HBoxContainer" parent="SettingsLayer/MarginContainer/VBoxContainer/GridContainer" unique_id=221747711]
+layout_mode = 2
+
+[node name="shadingCheckButton" type="CheckButton" parent="SettingsLayer/MarginContainer/VBoxContainer/GridContainer/HBoxContainer2" unique_id=113123947]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 4
+
 [node name="Gradient" type="Label" parent="SettingsLayer/MarginContainer/VBoxContainer/GridContainer" unique_id=113123943]
 layout_mode = 2
 text = "Gradient"
