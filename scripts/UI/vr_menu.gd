@@ -99,7 +99,11 @@ func setup(control: Control, options: Dictionary = {}) -> void:
 	var viewport: SubViewport = _viewport_2d.get_node("Viewport")
 	if viewport:
 		control.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-		viewport.add_child(control)
+		# Spawn into the MarginContainer (margin border for all menus) if present
+		var content_parent: Node = viewport.get_node_or_null("MarginContainer")
+		if not content_parent:
+			content_parent = viewport
+		content_parent.add_child(control)
 		viewport.render_target_update_mode = SubViewport.UPDATE_ALWAYS
 
 		# Let Viewport2DIn3D know this is the active scene content
@@ -163,9 +167,9 @@ func _on_close_complete() -> void:
 	# Preserve content if requested — remove it from the viewport before
 	# queue_free destroys the entire VRMenu tree.
 	if _preserve_content and _content and is_instance_valid(_content):
-		var viewport: SubViewport = _viewport_2d.get_node_or_null("Viewport")
-		if viewport and _content.get_parent() == viewport:
-			viewport.remove_child(_content)
+		var parent := _content.get_parent()
+		if parent:
+			parent.remove_child(_content)
 	closed.emit()
 	queue_free()
 
