@@ -4,8 +4,6 @@
 [ext_resource type="Texture2D" uid="uid://bx3sryvmfghcv" path="res://assets/textures/thumbnails/volume.png" id="2_m4xt3"]
 
 [node name="Specimen" unique_id=370423473 instance=ExtResource("1_hag02")]
-process_mode = 4
-data_url = ""
 display_name = "Load Volume"
 thumbnail = ExtResource("2_m4xt3")
 

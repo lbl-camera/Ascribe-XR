@@ -10,7 +10,8 @@
 [ext_resource type="Texture2D" uid="uid://dix6m8icimqxe" path="res://assets/textures/thumbnails/jello.png" id="8_fkx36"]
 [ext_resource type="PackedScene" uid="uid://c8k84ysosm2jr" path="res://scenes/UI/filedialog.tscn" id="9_jet37"]
 
-[node name="Panel" type="Panel" unique_id=1939474117]
+[node name="Panel" type="Control" unique_id=1708492060]
+layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
@@ -20,41 +21,33 @@ grow_vertical = 2
 [node name="SettingsLayer" type="CanvasLayer" parent="." unique_id=784920872]
 unique_name_in_owner = true
 
-[node name="MarginContainer" type="MarginContainer" parent="SettingsLayer" unique_id=282611526]
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-theme_override_constants/margin_left = 20
-theme_override_constants/margin_top = 20
-theme_override_constants/margin_right = 20
-theme_override_constants/margin_bottom = 13
-
-[node name="VBoxContainer" type="VBoxContainer" parent="SettingsLayer/MarginContainer" unique_id=2109225774]
-layout_mode = 2
+[node name="VBoxContainer" type="VBoxContainer" parent="SettingsLayer" unique_id=2109225774]
+offset_left = 20.0
+offset_top = 20.0
+offset_right = 1132.0
+offset_bottom = 635.0
 theme_override_constants/separation = 4
 
-[node name="MaterialMenu" type="Control" parent="SettingsLayer/MarginContainer/VBoxContainer" unique_id=577353988]
+[node name="MaterialMenu" type="Control" parent="SettingsLayer/VBoxContainer" unique_id=577353988]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_vertical = 3
 
-[node name="Label" type="Label" parent="SettingsLayer/MarginContainer/VBoxContainer/MaterialMenu" unique_id=1498678994]
+[node name="Label" type="Label" parent="SettingsLayer/VBoxContainer/MaterialMenu" unique_id=1498678994]
 layout_mode = 0
 offset_right = 1112.0
 offset_bottom = 23.0
 text = "Material"
 horizontal_alignment = 1
 
-[node name="ScrollContainer" type="ScrollContainer" parent="SettingsLayer/MarginContainer/VBoxContainer/MaterialMenu" unique_id=1148206948]
+[node name="ScrollContainer" type="ScrollContainer" parent="SettingsLayer/VBoxContainer/MaterialMenu" unique_id=1148206948]
 layout_mode = 0
 offset_top = 27.0
 offset_right = 1112.0
 offset_bottom = 581.0
 size_flags_vertical = 3
 
-[node name="MaterialList" type="ItemList" parent="SettingsLayer/MarginContainer/VBoxContainer/MaterialMenu/ScrollContainer" unique_id=1334944437]
+[node name="MaterialList" type="ItemList" parent="SettingsLayer/VBoxContainer/MaterialMenu/ScrollContainer" unique_id=1334944437]
 unique_name_in_owner = true
 clip_contents = false
 layout_mode = 2
@@ -83,7 +76,7 @@ item_6/icon = ExtResource("7_jet37")
 item_7/text = "Jello"
 item_7/icon = ExtResource("8_fkx36")
 
-[node name="FlipNormals" type="CheckButton" parent="SettingsLayer/MarginContainer/VBoxContainer" unique_id=1243791770]
+[node name="FlipNormals" type="CheckButton" parent="SettingsLayer/VBoxContainer" unique_id=1243791770]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 0
@@ -146,5 +139,4 @@ visible = false
 
 [node name="FileDialog" parent="FileDialogLayer" unique_id=1043536977 instance=ExtResource("9_jet37")]
 unique_name_in_owner = true
-current_path = "C:/Users/lukew/OneDrive/Pictures/Documents"
 file_filters = Array[String](["*.fbx", "*.stl", "*.obj"])

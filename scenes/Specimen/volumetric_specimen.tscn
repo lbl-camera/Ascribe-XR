@@ -27,7 +27,9 @@ points = PackedVector3Array(0.190327, 0.0108668, 1.01587, -0.190327, -0.0208668,
 inner_radius = 0.946
 
 [node name="Specimen" unique_id=1965259195 instance=ExtResource("1_bjarh")]
+process_mode = 4
 script = ExtResource("2_siuyl")
+data_url = ""
 data_file = ""
 ui = ExtResource("3_epps1")
 
@@ -44,7 +46,7 @@ exclusion_planes = Array[NodePath]([NodePath("../../MultiplayerPickable/Marker3D
 shape = SubResource("BoxShape3D_dobnj")
 
 [node name="MultiplayerPickable" parent="." index="1" unique_id=717229823 instance=ExtResource("7_t54ks")]
-transform = Transform3D(-4.37114e-08, 1, 0, -1, -4.37114e-08, 0, 0, 0, 1, -0.320414, 0, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.32, 0)
 visible = false
 collision_layer = 0
 gravity_scale = 0.0
