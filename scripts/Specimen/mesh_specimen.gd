@@ -76,6 +76,7 @@ func _load_from_data_url() -> void:
 	_data_http_request.request_completed.connect(_on_data_url_completed)
 	add_child(_data_http_request)
 
+	GenTiming.mark("mesh: GET /data sending")
 	var err = _data_http_request.request(data_url)
 	if err != OK:
 		push_error("MeshSpecimen: Failed to start data request: %s" % error_string(err))
@@ -84,6 +85,7 @@ func _load_from_data_url() -> void:
 
 
 func _on_data_url_completed(result: int, response_code: int, headers: PackedStringArray, body: PackedByteArray) -> void:
+	GenTiming.mark("mesh: /data response received (%d bytes)" % body.size())
 	if ui_instance:
 		var progress_bar = ui_instance.get_node_or_null("%ProgressBar")
 		if progress_bar:
@@ -156,6 +158,7 @@ func _load_from_envelope(body: PackedByteArray) -> void:
 			ui_instance.get_node("LoadingLayer").hide()
 		return
 
+	GenTiming.mark("mesh: envelope decoded (MeshData built)")
 	_mesh_data = mesh_data
 	_set_mesh_from_data(mesh_data)
 
@@ -306,6 +309,7 @@ func _set_and_send_mesh(data: MeshData) -> void:
 
 func _set_pickable(node: Node3D) -> void:
 	_make_pickable(node)
+	GenTiming.mark("mesh: specimen displayed (pickable, loading hidden)")
 	if ui_instance:
 		ui_instance.get_node("%SettingsLayer").show()
 		ui_instance.get_node("%MaterialMenu").show()

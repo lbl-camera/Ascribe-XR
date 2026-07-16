@@ -378,6 +378,8 @@ func on_submit_pressed() -> void:
 		return
 
 	_submitted = true
+	GenTiming.reset()
+	GenTiming.mark("ui: submit pressed (%s)" % function_name)
 	_last_params = extract_parameters()
 	ui_accept.emit(_last_params)
 	SceneManager.request_submit(function_name, _last_params)

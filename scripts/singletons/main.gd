@@ -257,6 +257,7 @@ func _on_submitter_progress(text: String) -> void:
 
 
 func _on_submitter_complete(result: Dictionary) -> void:
+	GenTiming.mark("main: job_complete received, broadcasting job_done")
 	# Every peer (including the submitter) fetches the result from the room
 	# cache via the /data endpoint. The submitter just finished computing it,
 	# so the cache is warm for everyone. The result's "type" is authoritative
@@ -296,6 +297,7 @@ func specimen_job_error(error: String) -> void:
 
 
 func _fetch_and_load_result(specimen_id: String, function_name: String, room_id: String, result_type: String = "") -> void:
+	GenTiming.mark("main: _fetch_and_load_result begins (metadata fetch)")
 	var metadata := await _fetch_metadata_for_active(specimen_id)
 
 	var params_json := JSON.stringify(_active_params)
@@ -328,6 +330,7 @@ func _fetch_and_load_result(specimen_id: String, function_name: String, room_id:
 		_enter_specimen_mode_env()
 
 	_open_specimens.append(specimen)
+	GenTiming.mark("main: specimen node entering tree (starts /data fetch)")
 	specimens_root.add_child(specimen)
 	_position_specimen(specimen)
 	specimen.show()

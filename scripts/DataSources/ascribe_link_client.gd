@@ -111,6 +111,7 @@ func run_job(specimen_id: String, params: Dictionary, room_id: String = "ascribe
 	start_http.timeout = 10.0
 	var start_url := _base_url + "/api/specimens/" + specimen_id + "/start"
 	var start_body := JSON.stringify({"params": params, "room_id": room_id})
+	GenTiming.mark("client: POST /start sending")
 	var err := start_http.request(
 		start_url,
 		["Content-Type: application/json"],
@@ -123,6 +124,7 @@ func run_job(specimen_id: String, params: Dictionary, room_id: String = "ascribe
 		return
 
 	var start_response = await start_http.request_completed
+	GenTiming.mark("client: /start response received")
 	start_http.queue_free()
 
 	var start_result: int = start_response[0]
@@ -147,6 +149,7 @@ func run_job(specimen_id: String, params: Dictionary, room_id: String = "ascribe
 
 	# --- 2. Poll /progress until status is terminal ---
 	if start_status != "done":
+		GenTiming.mark("client: polling /progress begins")
 		var last_seq := -1
 		var consecutive_poll_failures := 0
 		while true:
@@ -195,6 +198,7 @@ func run_job(specimen_id: String, params: Dictionary, room_id: String = "ascribe
 				job_error.emit(str(prog_json.get("error", "unknown error")))
 				return
 			if st == "done":
+				GenTiming.mark("client: poll observed status=done")
 				break
 
 			await _parent.get_tree().create_timer(0.5).timeout
@@ -204,6 +208,7 @@ func run_job(specimen_id: String, params: Dictionary, room_id: String = "ascribe
 	_parent.add_child(result_http)
 	result_http.timeout = 10.0
 	var result_url := "%s/api/jobs/%s/result" % [_base_url, job_id]
+	GenTiming.mark("client: GET /result sending")
 	err = result_http.request(result_url)
 	if err != OK:
 		result_http.queue_free()
@@ -213,6 +218,7 @@ func run_job(specimen_id: String, params: Dictionary, room_id: String = "ascribe
 
 	var result_response = await result_http.request_completed
 	result_http.queue_free()
+	GenTiming.mark("client: /result response received (%d bytes)" % result_response[3].size())
 
 	var r_result: int = result_response[0]
 	var r_code: int = result_response[1]

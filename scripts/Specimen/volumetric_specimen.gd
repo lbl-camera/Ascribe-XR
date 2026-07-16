@@ -110,6 +110,7 @@ func _on_volume_loaded(data: Data) -> void:
 @rpc("any_peer", "call_local", "reliable")
 func _update_texture(volume_texture: Texture3D) -> void:
 	$ScalableMultiplayerPickableObject/VolumeLayeredShader.texture = volume_texture
+	GenTiming.mark("volume: specimen displayed (texture assigned)")
 	if ui_instance:
 		ui_instance.get_node("%LoadingLayer").hide()
 		ui_instance.get_node("%SettingsLayer").show()
@@ -138,6 +139,7 @@ func _load_from_data_url() -> void:
 	_data_http_request.request_completed.connect(_on_data_url_completed)
 	add_child(_data_http_request)
 
+	GenTiming.mark("volume: GET /data sending")
 	var err = _data_http_request.request(data_url)
 	if err != OK:
 		push_error("VolumeSpecimen: Failed to start data request: %s" % error_string(err))
@@ -146,6 +148,7 @@ func _load_from_data_url() -> void:
 
 
 func _on_data_url_completed(result: int, response_code: int, headers: PackedStringArray, body: PackedByteArray) -> void:
+	GenTiming.mark("volume: /data response received (%d bytes)" % body.size())
 	if _data_http_request:
 		_data_http_request.queue_free()
 		_data_http_request = null
@@ -184,7 +187,9 @@ func _on_data_url_completed(result: int, response_code: int, headers: PackedStri
 			ui_instance.get_node("%LoadingLayer").hide()
 		return
 
+	GenTiming.mark("volume: envelope decoded (VolumetricData built)")
 	var texture := data.get_data()
+	GenTiming.mark("volume: Texture3D built")
 	if texture:
 		_update_texture.rpc(texture)
 
