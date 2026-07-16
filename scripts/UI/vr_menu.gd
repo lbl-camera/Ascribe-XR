@@ -1,6 +1,6 @@
 @tool
 class_name VRMenu
-extends "res://addons/godot-xr-tools/objects/pickable.gd"
+extends LerpPositionPickable
 
 ## VR Menu — A grabbable, animated 3D panel that renders a 2D Control.
 ##

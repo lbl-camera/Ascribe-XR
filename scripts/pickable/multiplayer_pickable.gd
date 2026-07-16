@@ -1,4 +1,4 @@
-extends "res://addons/godot-xr-tools/objects/pickable.gd"
+extends LerpPositionPickable
 class_name MultiplayerPickable
 
 # these are configured as "Watch" in the MultiplayerSynchronizer
