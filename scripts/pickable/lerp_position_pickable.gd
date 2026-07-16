@@ -13,7 +13,7 @@ extends "res://addons/godot-xr-tools/objects/pickable.gd"
 
 
 ## If true, ranged Lerp grabs only lerp position, keeping the object's rotation.
-@export var lerp_position_only : bool = false
+@export var lerp_position_only : bool = true
 
 
 func pick_up(by: Node3D) -> void:
