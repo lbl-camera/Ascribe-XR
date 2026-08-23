@@ -1,0 +1,53 @@
+[gd_scene format=4 uid="uid://b_volbench_stepsize"]
+
+[ext_resource type="Script" uid="uid://0prb283dso34" path="res://testscenes/volume_benchmark.gd" id="1_bench"]
+[ext_resource type="Shader" path="res://testscenes/volume_shader_step_size.gdshader" id="2_shader"]
+[ext_resource type="Texture2D" uid="uid://bb8bdgbv3lc4m" path="res://addons/volume_layered_shader/textures/purple_gradient_texture.tres" id="3_grad"]
+
+[sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_sky"]
+sky_horizon_color = Color(0.64625, 0.65575, 0.67075, 1)
+ground_horizon_color = Color(0.64625, 0.65575, 0.67075, 1)
+
+[sub_resource type="Sky" id="Sky_env"]
+sky_material = SubResource("ProceduralSkyMaterial_sky")
+
+[sub_resource type="Environment" id="Environment_env"]
+background_mode = 2
+background_energy_multiplier = 0.75
+sky = SubResource("Sky_env")
+tonemap_mode = 2
+
+[sub_resource type="BoxMesh" id="BoxMesh_vol"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_vol"]
+render_priority = 0
+shader = ExtResource("2_shader")
+shader_parameter/gradient = ExtResource("3_grad")
+shader_parameter/zoom = 2.0
+shader_parameter/layers = 2
+shader_parameter/opacity = 0.0001
+shader_parameter/gamma = 1.715
+shader_parameter/color_scalar = 1.0
+shader_parameter/max_steps = 4096
+shader_parameter/step_size = 0.002
+shader_parameter/num_exclusion_planes = 0
+shader_parameter/exclusion_planes = PackedVector4Array(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
+
+[node name="VolumeBenchmark" type="Node3D"]
+script = ExtResource("1_bench")
+sweep_axis = 6
+fixed_data_size = Vector3i(512, 512, 512)
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Environment_env")
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
+transform = Transform3D(-0.866025, -0.433013, 0.25, 0, 0.5, 0.866025, -0.5, 0.75, -0.433013, 0, 2, 0)
+
+[node name="Camera3D" type="Camera3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0.7825155)
+
+[node name="VolumeMesh" type="MeshInstance3D" parent="."]
+transform = Transform3D(0.17034824, 0, -0.9853839, 0, 1, 0, 0.9853839, 0, 0.17034824, 0, 0, 0)
+mesh = SubResource("BoxMesh_vol")
+surface_material_override/0 = SubResource("ShaderMaterial_vol")
