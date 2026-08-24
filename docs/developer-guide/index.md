@@ -430,6 +430,137 @@ sphinx-build -W -b html docs docs/_build
 public --keep-going` on every push to `master` and publishes to GitHub
 Pages.
 
+## Agent conversation
+
+A persistent, room-scoped conversational agent: type to it in an in-world
+panel, it streams back answers, generates/iterates specimens, manipulates
+the scene and display via client-executed tools, and can see the user's
+viewport. Text-only for now — voice, floor control (the bind button), and
+local-launch subprocess mode are a follow-up plan (see below).
+
+### Architecture
+
+```
+Godot client                                ascribe-link server
+┌─────────────────────┐   /ws/agent/{room}  ┌───────────────────────────┐
+│ agent_panel.gd (UI)  │◄───────────────────►│ AgentWSController          │
+│   ↓ text             │   TEXT (JSON) +      │   ↓                        │
+│ AgentSession         │   BINARY (screenshot) │ AgentSessionManager       │
+│   (autoload, WS)     │                      │   (room → sockets +       │
+│   ↓ tool_call frames │                      │    AgentConversation)     │
+│ AgentToolDispatcher  │                      │   ↓                        │
+│   → SceneManager RPCs│                      │ AgentConversation          │
+│   (2 new RPCs)       │                      │   (worker thread, own     │
+└─────────────────────┘                      │    event loop, persistent │
+                                              │    claude_agent_sdk       │
+                                              │    client)                │
+                                              │   ↓ MCP tools (tools.py)  │
+                                              │ set_display_param,        │
+                                              │ load_specimen, ...        │
+                                              └───────────────────────────┘
+```
+
+Server side lives in `ascribe_link/agent_ws/` (ascribe-link repo):
+`protocol.py` (pure frame schemas), `session.py` (`AgentConversation`, one
+per room, serial turn queue), `tools.py` (the `"scene"` MCP server: server-compute
+tools like `submit_mesh`/`submit_volume`/`analyze_specimen`, and
+client-forwarded tools like `set_display_param`/`load_specimen`/`capture_viewport`),
+`manager.py` (`AgentSessionManager`: room registry, socket fan-out, tool-call
+request/response correlation), `controller.py` (the Litestar websocket route).
+
+Client side lives in `scripts/singletons/agent_session.gd` (`AgentSession`
+autoload, a `WebSocketPeer` client) + `agent_session_helpers.gd` (pure frame
+helpers), `scripts/singletons/agent_tool_dispatcher.gd` (`AgentToolDispatcher`,
+maps server-forwarded tool calls onto `SceneManager` RPCs) +
+`agent_tool_helpers.gd` (pure validation/mapping), and
+`scripts/UI/agent_panel.gd` + `scenes/UI/agent_panel.tscn` (the conversation
+panel, spawned through `MenuManager`).
+
+### Wire protocol
+
+TEXT frames are JSON objects with a `"type"` key; BINARY frames are
+`<u32 LE header_len><UTF-8 JSON header><raw payload>` (mirrors
+`ascribe_link/envelope.py`).
+
+| Direction | Type | Purpose |
+|---|---|---|
+| client→server | `text` | Submit a user turn (`{"text": "..."}`) |
+| client→server | `tool_result` | Reply to a `tool_call` (`{"request_id", "result"}`) |
+| client→server | `interrupt` | Cancel the turn currently running |
+| client→server | `end_conversation` | Tear down the room's conversation |
+| client→server | BINARY (`kind: screenshot`) | Reply to `capture_viewport`, or an unsolicited attached image |
+| server→client | `agent_text` | Streamed answer text |
+| server→client | `agent_text_done` | End of one turn's streamed answer |
+| server→client | `tool_call` | Client-executed tool request (`{"request_id", "name", "args", "executor"}`) |
+| server→client | `status` | Progress text (e.g. `"thinking"`, `"Using the X tool..."`) |
+| server→client | `error` | Validation/protocol error |
+| server→client | `history` | Sent on connect: prior turns + this socket's `client_id` |
+| server→client | `turn_queued` | A turn was queued behind another (position > 0) |
+
+Reserved but unimplemented (rejected with an `error` frame naming the type,
+not silently ignored): `bind`, `unbind`, `audio` (client→server);
+`speaker_bound`, `speaker_released`, `agent_audio`, `transcript`
+(server→client) — these arrive with the voice follow-up.
+
+### Running the fake server (no API key needed)
+
+`ascribe-link/tools/fake_agent_server.py` runs the *real* app
+(`create_app(enable_agent=True, agent_client_factory=...)`) with a scripted
+fake SDK client standing in for `claude_agent_sdk.ClaudeSDKClient` — useful
+for exercising the whole client/server stack (Godot included) without a
+model or API key:
+
+```
+cd C:\Users\rp\Documents\ascribe-link
+.venv\Scripts\python tools\fake_agent_server.py     # serves on 127.0.0.1:8000
+```
+
+Scripted behavior: any text gets a canned streamed reply; text containing
+"darker" additionally triggers a `set_display_param` tool call
+(`gamma=2.0` on specimen index 0); text containing "look" additionally
+triggers `capture_viewport`. Point a Godot client at
+`ascribe_link_url = "http://127.0.0.1:8000"` (see the cheatsheet below) and
+open the agent panel to try it live.
+
+A minimal Python smoke client, `ascribe-link/tools/smoke_ws_client.py`
+(uses the `websockets` package), connects, sends a text frame, and prints
+every frame until `agent_text_done`:
+
+```
+.venv\Scripts\python tools\smoke_ws_client.py "hello"
+.venv\Scripts\python tools\smoke_ws_client.py "make it darker"
+```
+
+To run the real server against the real SDK instead of the fake, start
+ascribe-link normally with `--enable-agent` (see `ascribe_link/cli.py`);
+this requires `claude-agent-sdk` installed and an API key in the
+environment.
+
+### Running the Godot-side gdUnit tests headless
+
+```
+"C:\Users\rp\Downloads\Godot_v4.6-stable_win64_console.exe" --path . --import
+"C:\Users\rp\Downloads\Godot_v4.6-stable_win64_console.exe" --path . -s addons/gdUnit4/bin/GdUnitCmdTool.gd -a res://tests/ --ignoreHeadlessMode
+```
+
+`--ignoreHeadlessMode` must come **after** `-a` — gdUnit4 otherwise refuses
+to run in a headless console session. The agent suites are
+`tests/test_agent_session_helpers.gd`, `tests/test_agent_tool_helpers.gd`,
+`tests/test_agent_panel_format.gd`, and `tests/test_agent_capture.gd`.
+
+### Deferred to the voice follow-up plan
+
+- Voice: bind button (floor control), mic Opus streaming via a
+  `transmitaudiopacket` signal tap (never a second `AudioEffectOpusChunked`
+  reader), faster-whisper STT, Kokoro TTS at 48 kHz/960-sample frames into
+  a dedicated `AudioStreamOpusChunked`, barge-in.
+- Floor-control UX beyond the serial per-room turn queue.
+- Local-launch subprocess mode (running ascribe-link as a child process of
+  the Godot client instead of a separately-started server).
+- `SceneManager` god-object split (`main.gd`'s `SpecimenLifecycle`/`JobRunner`
+  separation from the agent-centric design spec).
+- `/api/processing/invoke` deprecation.
+
 ## Configuration cheatsheet
 
 Edit `scripts/singletons/config.gd` to change runtime defaults:
