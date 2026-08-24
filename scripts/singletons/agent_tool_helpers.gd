@@ -39,6 +39,24 @@ static func validate_tool(name: String, args: Dictionary) -> String:
 			return "unknown tool '%s'" % name
 
 
+## Returns a copy of `args` with declared int-typed fields coerced to real
+## TYPE_INT values (JSON args always arrive as TYPE_FLOAT). Call only after
+## validate_tool has returned "" for the same (name, args). Unknown tool
+## names return `args` unchanged.
+static func coerce_args(name: String, args: Dictionary) -> Dictionary:
+	var out := args.duplicate()
+	var int_keys: Array[String] = []
+	match name:
+		"set_active_specimen", "remove_specimen":
+			int_keys = ["index"]
+		"set_display_param":
+			int_keys = ["index"]
+	for key in int_keys:
+		if out.has(key) and typeof(out[key]) == TYPE_FLOAT:
+			out[key] = int(round(out[key]))
+	return out
+
+
 static func _require_string(args: Dictionary, key: String) -> String:
 	if not args.has(key):
 		return "missing required key '%s'" % key
@@ -47,12 +65,18 @@ static func _require_string(args: Dictionary, key: String) -> String:
 	return ""
 
 
+## Accepts TYPE_INT, or a TYPE_FLOAT that is a whole number (JSON has no
+## int/float distinction, so numeric tool args always arrive as floats).
 static func _require_int(args: Dictionary, key: String) -> String:
 	if not args.has(key):
 		return "missing required key '%s'" % key
-	if typeof(args[key]) != TYPE_INT:
-		return "'%s' must be an int" % key
-	return ""
+	var value = args[key]
+	var t := typeof(value)
+	if t == TYPE_INT:
+		return ""
+	if t == TYPE_FLOAT and is_equal_approx(value, roundf(value)):
+		return ""
+	return "'%s' must be an int" % key
 
 
 static func _require_float(args: Dictionary, key: String) -> String:

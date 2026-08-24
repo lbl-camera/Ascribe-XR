@@ -24,7 +24,7 @@ func _on_tool_call_received(request_id: String, name: String, args: Dictionary, 
 		AgentSession.send_tool_result(request_id, {"error": err})
 		return
 
-	var result := _execute_tool(name, args)
+	var result := _execute_tool(name, AgentToolHelpers.coerce_args(name, args))
 	AgentSession.send_tool_result(request_id, result)
 
 
