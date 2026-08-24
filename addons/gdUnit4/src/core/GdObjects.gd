@@ -66,11 +66,18 @@ const TYPE_AS_STRING_MAPPINGS := {
 }
 
 
+class EditorNotifications:
+	# NOTE: Hardcoding to avoid runtime errors in exported projects when editor
+	#       classes are not available. These values are unlikely to change.
+	# See: EditorSettings.NOTIFICATION_EDITOR_SETTINGS_CHANGED
+	const NOTIFICATION_EDITOR_SETTINGS_CHANGED := 10000
+
+
 const NOTIFICATION_AS_STRING_MAPPINGS := {
 	TYPE_OBJECT: {
 		Object.NOTIFICATION_POSTINITIALIZE : "POSTINITIALIZE",
 		Object.NOTIFICATION_PREDELETE: "PREDELETE",
-		EditorSettings.NOTIFICATION_EDITOR_SETTINGS_CHANGED: "EDITOR_SETTINGS_CHANGED",
+		EditorNotifications.NOTIFICATION_EDITOR_SETTINGS_CHANGED: "EDITOR_SETTINGS_CHANGED",
 	},
 	TYPE_NODE: {
 		Node.NOTIFICATION_ENTER_TREE : "ENTER_TREE",
@@ -192,11 +199,11 @@ static func obj2dict(obj: Object, hashed_objects := Dictionary()) -> Dictionary:
 	return {"%s" % clazz_name : dict}
 
 
-static func equals(obj_a :Variant, obj_b :Variant, case_sensitive :bool = false, compare_mode :COMPARE_MODE = COMPARE_MODE.PARAMETER_DEEP_TEST) -> bool:
+static func equals(obj_a: Variant, obj_b: Variant, case_sensitive: bool = true, compare_mode: COMPARE_MODE = COMPARE_MODE.PARAMETER_DEEP_TEST) -> bool:
 	return _equals(obj_a, obj_b, case_sensitive, compare_mode, [], 0)
 
 
-static func equals_sorted(obj_a: Array[Variant], obj_b: Array[Variant], case_sensitive: bool = false, compare_mode: COMPARE_MODE = COMPARE_MODE.PARAMETER_DEEP_TEST) -> bool:
+static func equals_sorted(obj_a: Array[Variant], obj_b: Array[Variant], case_sensitive: bool = true, compare_mode: COMPARE_MODE = COMPARE_MODE.PARAMETER_DEEP_TEST) -> bool:
 	var a: Array[Variant] = obj_a.duplicate()
 	var b: Array[Variant] = obj_b.duplicate()
 	a.sort()
@@ -204,7 +211,7 @@ static func equals_sorted(obj_a: Array[Variant], obj_b: Array[Variant], case_sen
 	return equals(a, b, case_sensitive, compare_mode)
 
 
-static func _equals(obj_a :Variant, obj_b :Variant, case_sensitive :bool, compare_mode :COMPARE_MODE, deep_stack :Array, stack_depth :int ) -> bool:
+static func _equals(obj_a: Variant, obj_b: Variant, case_sensitive: bool, compare_mode: COMPARE_MODE, deep_stack: Array, stack_depth: int ) -> bool:
 	var type_a := typeof(obj_a)
 	var type_b := typeof(obj_b)
 	if stack_depth > 32:
@@ -279,10 +286,10 @@ static func _equals(obj_a :Variant, obj_b :Variant, case_sensitive :bool, compar
 
 		TYPE_STRING:
 			if case_sensitive:
+				return obj_a == obj_b
+			else:
 				@warning_ignore("unsafe_method_access")
 				return obj_a.to_lower() == obj_b.to_lower()
-			else:
-				return obj_a == obj_b
 	return obj_a == obj_b
 
 

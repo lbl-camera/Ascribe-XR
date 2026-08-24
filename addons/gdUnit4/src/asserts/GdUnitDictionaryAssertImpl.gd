@@ -31,10 +31,6 @@ func report_error(error :String) -> GdUnitDictionaryAssert:
 	return self
 
 
-func failure_message() -> String:
-	return _base.failure_message()
-
-
 func override_failure_message(message: String) -> GdUnitDictionaryAssert:
 	@warning_ignore("return_value_discarded")
 	_base.override_failure_message(message)
@@ -137,7 +133,8 @@ func _contains_keys(expected: Array, compare_mode: GdObjects.COMPARE_MODE) -> Gd
 	var keys_not_found :Array = expected_value.filter(_filter_by_key.bind((current as Dictionary).keys(), compare_mode))
 	if not keys_not_found.is_empty():
 		@warning_ignore("unsafe_cast")
-		return report_error(GdAssertMessages.error_contains_keys((current as Dictionary).keys() as Array, expected_value, keys_not_found, compare_mode))
+		return report_error(GdAssertMessages.error_contains_keys((current as Dictionary).keys() as Array, expected_value,
+			keys_not_found, compare_mode))
 	return report_success()
 
 
@@ -150,7 +147,7 @@ func _contains_key_value(key :Variant, value :Variant, compare_mode :GdObjects.C
 	var keys_not_found :Array = expected.filter(_filter_by_key.bind(dict_current.keys(), compare_mode))
 	if not keys_not_found.is_empty():
 		return report_error(GdAssertMessages.error_contains_keys(dict_current.keys() as Array, expected, keys_not_found, compare_mode))
-	if not GdObjects.equals(dict_current[key], value, false, compare_mode):
+	if not GdObjects.equals(dict_current[key], value, true, compare_mode):
 		return report_error(GdAssertMessages.error_contains_key_value(key, value, dict_current[key], compare_mode))
 	return report_success()
 
@@ -193,7 +190,7 @@ func not_contains_same_keys(...expected: Array) -> GdUnitDictionaryAssert:
 
 func _filter_by_key(element :Variant, values :Array, compare_mode :GdObjects.COMPARE_MODE, is_not :bool = false) -> bool:
 	for key :Variant in values:
-		if GdObjects.equals(key, element, false, compare_mode):
+		if GdObjects.equals(key, element, true, compare_mode):
 			return is_not
 	return !is_not
 

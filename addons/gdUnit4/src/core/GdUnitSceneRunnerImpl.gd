@@ -36,13 +36,11 @@ var _current_touch_drag_position: Vector2 = Vector2.ZERO
 
 # time factor settings
 var _time_factor := 1.0
-var _saved_iterations_per_second: float
 var _scene_auto_free := false
 
 
 func _init(p_scene: Variant, p_verbose: bool, p_hide_push_errors := false) -> void:
 	_verbose = p_verbose
-	_saved_iterations_per_second = Engine.get_physics_ticks_per_second()
 	@warning_ignore("return_value_discarded")
 	set_time_factor(1)
 	# handle scene loading by resource path
@@ -72,12 +70,11 @@ func _init(p_scene: Variant, p_verbose: bool, p_hide_push_errors := false) -> vo
 		return
 
 	_scene_tree().root.add_child(_current_scene)
+	Engine.set_meta("GdUnitSceneRunner", self)
 	# do finally reset all open input events when the scene is removed
 	@warning_ignore("return_value_discarded")
-	_scene_tree().root.child_exiting_tree.connect(func f(child :Node) -> void:
+	_scene_tree().root.child_exiting_tree.connect(func f(child: Node) -> void:
 		if child == _current_scene:
-			# we need to disable the processing to avoid input flush buffer errors
-			_current_scene.process_mode = Node.PROCESS_MODE_DISABLED
 			_reset_input_to_default()
 	)
 	_simulate_start_time = LocalTime.now()
@@ -103,6 +100,7 @@ func _notification(what: int) -> void:
 				_current_scene.free()
 		_is_disposed = true
 		_current_scene = null
+		Engine.remove_meta("GdUnitSceneRunner")
 
 
 func _scene_tree() -> SceneTree:
@@ -145,6 +143,7 @@ func simulate_action_release(action: String, event_index := -1) -> GdUnitSceneRu
 
 @warning_ignore("return_value_discarded")
 func simulate_key_pressed(key_code: int, shift_pressed := false, ctrl_pressed := false) -> GdUnitSceneRunner:
+	_push_warning_deprecated_arguments(shift_pressed, ctrl_pressed)
 	simulate_key_press(key_code, shift_pressed, ctrl_pressed)
 	await _scene_tree().process_frame
 	simulate_key_release(key_code, shift_pressed, ctrl_pressed)
@@ -152,30 +151,33 @@ func simulate_key_pressed(key_code: int, shift_pressed := false, ctrl_pressed :=
 
 
 func simulate_key_press(key_code: int, shift_pressed := false, ctrl_pressed := false) -> GdUnitSceneRunner:
+	_push_warning_deprecated_arguments(shift_pressed, ctrl_pressed)
 	__print_current_focus()
 	var event := InputEventKey.new()
 	event.pressed = true
 	event.keycode = key_code as Key
 	event.physical_keycode = key_code as Key
 	event.unicode = key_code
-	event.alt_pressed = key_code == KEY_ALT
-	event.shift_pressed = shift_pressed or key_code == KEY_SHIFT
-	event.ctrl_pressed = ctrl_pressed or key_code == KEY_CTRL
+	event.set_alt_pressed(key_code == KEY_ALT)
+	event.set_shift_pressed(shift_pressed)
+	event.set_ctrl_pressed(ctrl_pressed)
+	event.get_modifiers_mask()
 	_apply_input_modifiers(event)
 	_key_on_press.append(key_code)
 	return _handle_input_event(event)
 
 
 func simulate_key_release(key_code: int, shift_pressed := false, ctrl_pressed := false) -> GdUnitSceneRunner:
+	_push_warning_deprecated_arguments(shift_pressed, ctrl_pressed)
 	__print_current_focus()
 	var event := InputEventKey.new()
 	event.pressed = false
 	event.keycode = key_code as Key
 	event.physical_keycode = key_code as Key
 	event.unicode = key_code
-	event.alt_pressed = key_code == KEY_ALT
-	event.shift_pressed = shift_pressed or key_code == KEY_SHIFT
-	event.ctrl_pressed = ctrl_pressed or key_code == KEY_CTRL
+	event.set_alt_pressed(key_code == KEY_ALT)
+	event.set_shift_pressed(shift_pressed)
+	event.set_ctrl_pressed(ctrl_pressed)
 	_apply_input_modifiers(event)
 	_key_on_press.erase(key_code)
 	return _handle_input_event(event)
@@ -402,7 +404,7 @@ func set_time_factor(time_factor: float = 1.0) -> GdUnitSceneRunner:
 	_time_factor = min(9.0, time_factor)
 	__activate_time_factor()
 	__print("set time factor: %f" % _time_factor)
-	__print("set physics physics_ticks_per_second: %d" % (_saved_iterations_per_second*_time_factor))
+	__print("set physics physics_ticks_per_second: %d" % (get_project_physics_ticks_per_second() * _time_factor))
 	return self
 
 
@@ -485,6 +487,8 @@ func find_child(name: String, recursive: bool = true, owned: bool = false) -> No
 
 
 func _scene_name() -> String:
+	if scene() == null:
+		return "unknown"
 	var scene_script :GDScript = scene().get_script()
 	var scene_name :String = scene().get_name()
 	if not scene_script:
@@ -496,12 +500,16 @@ func _scene_name() -> String:
 
 func __activate_time_factor() -> void:
 	Engine.set_time_scale(_time_factor)
-	Engine.set_physics_ticks_per_second((_saved_iterations_per_second * _time_factor) as int)
+	Engine.set_physics_ticks_per_second((get_project_physics_ticks_per_second() * _time_factor) as int)
 
 
 func __deactivate_time_factor() -> void:
 	Engine.set_time_scale(1)
-	Engine.set_physics_ticks_per_second(_saved_iterations_per_second as int)
+	Engine.set_physics_ticks_per_second(get_project_physics_ticks_per_second())
+
+
+func get_project_physics_ticks_per_second() -> int:
+	return ProjectSettings.get_setting("physics/common/physics_ticks_per_second")
 
 
 # copy over current active modifiers
@@ -515,6 +523,13 @@ func _apply_input_modifiers(event: InputEvent) -> void:
 		_event.ctrl_pressed = _event.ctrl_pressed or last_input_event.ctrl_pressed
 		# this line results into reset the control_pressed state!!!
 		#event.command_or_control_autoremap = event.command_or_control_autoremap or _last_input_event.command_or_control_autoremap
+	if _last_input_event is InputEventKey and event is InputEventWithModifiers:
+		var last_input_event := _last_input_event as InputEventKey
+		var _event := event as InputEventWithModifiers
+		_event.shift_pressed = _event.shift_pressed or last_input_event.keycode == KEY_SHIFT
+		_event.alt_pressed = _event.alt_pressed or last_input_event.keycode == KEY_ALT
+		_event.ctrl_pressed = _event.ctrl_pressed or last_input_event.keycode == KEY_CTRL
+		_event.meta_pressed = _event.meta_pressed or  last_input_event.keycode == KEY_META
 
 
 # copy over current active mouse mask and combine with curren mask
@@ -620,3 +635,10 @@ func scene() -> Node:
 	if not _is_disposed:
 		push_error("The current scene instance is not valid anymore! check your test is valid. e.g. check for missing awaits.")
 	return null
+
+
+func _push_warning_deprecated_arguments(shift_pressed: bool, ctrl_pressed: bool) -> void:
+	if shift_pressed:
+		push_warning("Deprecated! Don't use 'shift_pressed' it will be removed in v7.0, checkout the documentaion how to use key combinations.")
+	if ctrl_pressed:
+		push_warning("Deprecated! Don't use 'ctrl_pressed' it will be removed in v7.0, checkout the documentaion how to use key combinations.")
