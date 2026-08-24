@@ -10,4 +10,8 @@ extends Node
 @export var ascribe_link_url = "http://127.0.0.1:8000"
 #@export var ascribe_link_url = "http://vision.lbl.gov:8000"
 
+## Agent conversation websocket base URL (room_id is appended)
+## Use 127.0.0.1 instead of localhost to avoid IPv6 issues on Windows
+@export var agent_ws_url = "ws://127.0.0.1:8000/ws/agent"
+
 const CHUNK_SIZE = 20000

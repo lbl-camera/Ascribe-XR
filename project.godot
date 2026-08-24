@@ -34,6 +34,11 @@ XrSimulator="*res://addons/xr-simulator/XRSimulator.tscn"
 SceneManager="*res://scripts/singletons/main.gd"
 Config="*uid://dvwptjg7itnl8"
 MenuManager="*res://scripts/singletons/menu_manager.gd"
+AgentSession="*res://scripts/singletons/agent_session.gd"
+
+[debug]
+
+gdscript/warnings/exclude_addons=true
 
 [display]
 
@@ -46,7 +51,7 @@ version_control/autoload_on_startup=true
 
 [editor_plugins]
 
-enabled=PackedStringArray("res://addons/godot-xr-tools/plugin.cfg", "res://addons/import_cleaner/addons/ImportCleaner/plugin.cfg", "res://addons/volume_layered_shader/plugin.cfg")
+enabled=PackedStringArray("res://addons/godot-xr-tools/plugin.cfg", "res://addons/import_cleaner/addons/ImportCleaner/plugin.cfg", "res://addons/volume_layered_shader/plugin.cfg", "res://addons/gdUnit4/plugin.cfg")
 
 [input]
 
