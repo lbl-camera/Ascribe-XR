@@ -36,10 +36,6 @@ Config="*uid://dvwptjg7itnl8"
 MenuManager="*res://scripts/singletons/menu_manager.gd"
 AgentSession="*res://scripts/singletons/agent_session.gd"
 
-[debug]
-
-gdscript/warnings/exclude_addons=true
-
 [display]
 
 window/vsync/vsync_mode=0
@@ -101,3 +97,4 @@ openxr/enabled=true
 openxr/default_action_map="uid://dhjvjc7ft8dmd"
 shaders/enabled=true
 openxr/extensions/meta/passthrough=true
+openxr/startup_alert=false
