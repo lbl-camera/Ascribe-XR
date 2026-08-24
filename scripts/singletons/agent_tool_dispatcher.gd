@@ -61,8 +61,5 @@ func _execute_tool(name: String, args: Dictionary) -> Dictionary:
 		"set_display_param":
 			SceneManager.set_display_param.rpc(args["index"], args["name"], args["value"])
 			return {"ok": true}
-		"capture_viewport":
-			# Handled separately (async) in _execute_tool_async; unreachable here.
-			return {"error": "not implemented"}
 		_:
 			return {"error": "unknown tool '%s'" % name}
