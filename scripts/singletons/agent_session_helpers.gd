@@ -42,6 +42,12 @@ static func parse_server_frame(json_text: String) -> Dictionary:
 		return {"error": "agent frame: invalid JSON"}
 	if not parsed.has("type") or not (parsed["type"] is String):
 		return {"error": "agent frame: missing 'type'"}
+	# Godot's JSON.parse_string() returns ALL numbers as float, regardless of
+	# whether the source JSON was an integer literal. Coerce known integer
+	# fields back to int so callers get the typing the wire protocol implies.
+	for key in ["client_id", "position", "executor"]:
+		if parsed.has(key):
+			parsed[key] = int(parsed[key])
 	return parsed
 
 

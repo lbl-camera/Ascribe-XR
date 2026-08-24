@@ -38,7 +38,7 @@ func test_parse_server_frame_tool_call():
 	assert_that(parsed["type"]).is_equal("tool_call")
 	assert_that(parsed["request_id"]).is_equal("r1")
 	assert_that(parsed["name"]).is_equal("load_specimen")
-	assert_that(parsed["args"]["a"]).is_equal(1)
+	assert_that(parsed["args"]["a"]).is_equal(1.0)
 	assert_that(parsed["executor"]).is_equal(0)
 
 
@@ -57,7 +57,11 @@ func test_parse_server_frame_error():
 func test_parse_server_frame_history():
 	var parsed := AgentSessionHelpers.parse_server_frame('{"type":"history","entries":[1,2],"client_id":3}')
 	assert_that(parsed["type"]).is_equal("history")
-	assert_that(parsed["entries"]).is_equal([1, 2])
+	# Godot's JSON parser returns all numbers as float, even inside arrays;
+	# entries contents are left untouched by parse_server_frame, so we cast
+	# here to document that reality rather than pretend they're already int.
+	assert_that(int(parsed["entries"][0])).is_equal(1)
+	assert_that(int(parsed["entries"][1])).is_equal(2)
 	assert_that(parsed["client_id"]).is_equal(3)
 
 
