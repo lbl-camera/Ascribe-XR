@@ -23,6 +23,11 @@ func _ready():
 	for i in range(%ItemList.item_count):
 		%ItemList.set_item_disabled(i, true)
 
+	var agent_button := Button.new()
+	agent_button.text = "Agent"
+	agent_button.pressed.connect(_on_agent_button_pressed)
+	%ItemList.get_parent().add_child(agent_button)
+
 	_link_client = AscribeLinkClient.new(Config.ascribe_link_url)
 	_link_client.setup(self)
 	_link_client.specimens_loaded.connect(_on_ascribe_link_specimens_loaded)
@@ -38,6 +43,20 @@ func _process(dt) -> void:
 			_ascribe_link_attempted = true
 			_link_client.fetch_specimens()
 	process_scene_load()
+
+
+# ---------------------------------------------------------------------------
+# Agent panel
+# ---------------------------------------------------------------------------
+
+func _on_agent_button_pressed() -> void:
+	# The conversation panel is spawned/owned by AscribeMain (preserve_content
+	# pattern, matching NetworkGateway); reach it as the main scene root.
+	var main := get_tree().root.get_child(0)
+	if main and main.has_method("_toggle_agent_menu"):
+		main._toggle_agent_menu()
+	else:
+		push_warning("MainMenuFlat: could not find AscribeMain to open the agent panel")
 
 
 # ---------------------------------------------------------------------------

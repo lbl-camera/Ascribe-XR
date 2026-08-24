@@ -3,6 +3,7 @@ extends Node3D
 @onready var NetworkGateway = $NetworkGateway
 
 var _prev_open_specimen_count: int = 0
+var _agent_panel: Control = null
 
 
 func _ready():
@@ -40,6 +41,21 @@ func _toggle_network_gateway_menu():
 			"slot": "network",
 			"screen_size": Vector2(3, 2),
 			"viewport_size": Vector2(690, 400),
+			"preserve_content": true,
+		})
+
+
+func _toggle_agent_menu():
+	if MenuManager.has_active_menu("agent"):
+		MenuManager.close_menu("agent")
+	else:
+		if _agent_panel == null:
+			_agent_panel = preload("res://scenes/UI/agent_panel.tscn").instantiate()
+			add_child(_agent_panel)
+		MenuManager.show_menu(_agent_panel, {
+			"slot": "agent",
+			"screen_size": Vector2(2.2, 1.4),
+			"viewport_size": Vector2i(1100, 700),
 			"preserve_content": true,
 		})
 
@@ -105,6 +121,9 @@ func _input(event):
 
 		if event.keycode == KEY_O and event.pressed:
 			_toggle_open_specimens_menu()
+
+		if event.keycode == KEY_A and event.pressed:
+			_toggle_agent_menu()
 
 
 func _physics_process(delta):
