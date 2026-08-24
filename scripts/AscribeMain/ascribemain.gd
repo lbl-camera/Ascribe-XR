@@ -122,9 +122,6 @@ func _input(event):
 		if event.keycode == KEY_O and event.pressed:
 			_toggle_open_specimens_menu()
 
-		if event.keycode == KEY_A and event.pressed:
-			_toggle_agent_menu()
-
 
 func _physics_process(delta):
 	var lowestfloorheight = -30
