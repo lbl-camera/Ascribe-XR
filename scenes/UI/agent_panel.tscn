@@ -37,6 +37,12 @@ unique_name_in_owner = true
 layout_mode = 2
 text = "Send"
 
+[node name="AttachViewCheckBox" type="CheckBox" parent="VBoxContainer/HBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+button_pressed = false
+text = "attach view"
+
 [node name="InterruptButton" type="Button" parent="VBoxContainer/HBoxContainer"]
 unique_name_in_owner = true
 visible = false

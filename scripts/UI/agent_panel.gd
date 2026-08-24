@@ -12,6 +12,7 @@ extends PanelContainer
 @onready var _send_button: Button = %SendButton
 @onready var _interrupt_button: Button = %InterruptButton
 @onready var _new_conversation_button: Button = %NewConversationButton
+@onready var _attach_view_checkbox: CheckBox = %AttachViewCheckBox
 
 ## True between the first agent_text chunk of a turn and agent_text_done.
 var _agent_turn_active: bool = false
@@ -83,10 +84,26 @@ func _submit() -> void:
 	var text := _line_edit.text.strip_edges()
 	if text.is_empty():
 		return
+	if _attach_view_checkbox.button_pressed:
+		await _try_attach_view()
 	_transcript.append_text(format_user_line(text) + "\n")
 	AgentSession.send_text(text)
 	_line_edit.text = ""
 	DisplayServer.virtual_keyboard_hide()
+
+
+## Best-effort viewport capture preceding a text send when "attach view" is
+## checked. Capture failures must never block sending the text message.
+func _try_attach_view() -> void:
+	var viewport := get_viewport()
+	if viewport == null:
+		push_warning("AgentPanel: no viewport available for attach view")
+		return
+	var jpeg: PackedByteArray = await AgentCapture.capture(viewport)
+	if jpeg.is_empty():
+		push_warning("AgentPanel: viewport capture failed for attach view")
+		return
+	AgentSession.send_screenshot(jpeg)
 
 
 func _on_line_edit_focus_entered() -> void:

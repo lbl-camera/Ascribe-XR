@@ -24,8 +24,24 @@ func _on_tool_call_received(request_id: String, name: String, args: Dictionary, 
 		AgentSession.send_tool_result(request_id, {"error": err})
 		return
 
-	var result := _execute_tool(name, AgentToolHelpers.coerce_args(name, args))
+	var coerced_args := AgentToolHelpers.coerce_args(name, args)
+
+	if name == "capture_viewport":
+		await _execute_capture_viewport(request_id)
+		return
+
+	var result := _execute_tool(name, coerced_args)
 	AgentSession.send_tool_result(request_id, result)
+
+
+## capture_viewport replies twice on the wire, in order: a `tool_result`
+## acknowledging execution, then a binary `screenshot` frame with the JPEG.
+## The server pairs the screenshot with this tool call by FIFO order per
+## room, so the ordering here matters.
+func _execute_capture_viewport(request_id: String) -> void:
+	var jpeg := await AgentCapture.capture(get_viewport())
+	AgentSession.send_tool_result(request_id, {"ok": true})
+	AgentSession.send_screenshot(jpeg)
 
 
 func _execute_tool(name: String, args: Dictionary) -> Dictionary:
@@ -46,6 +62,7 @@ func _execute_tool(name: String, args: Dictionary) -> Dictionary:
 			SceneManager.set_display_param.rpc(args["index"], args["name"], args["value"])
 			return {"ok": true}
 		"capture_viewport":
+			# Handled separately (async) in _execute_tool_async; unreachable here.
 			return {"error": "not implemented"}
 		_:
 			return {"error": "unknown tool '%s'" % name}
