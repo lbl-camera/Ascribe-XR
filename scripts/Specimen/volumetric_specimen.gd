@@ -121,6 +121,20 @@ func _update_shader(value: Variant, var_name: String) -> void:
 	volume_layered[var_name] = value
 
 
+## Agent-tool entry point: applies a display-param change (from
+## AgentToolDispatcher, via SceneManager.set_display_param) and keeps the
+## bound UI slider in sync if the specimen is currently active.
+func apply_display_param(param: String, value: float) -> void:
+	if not AgentToolHelpers.DISPLAY_PARAMS.has(param):
+		push_error("VolumeSpecimen.apply_display_param: unknown param '%s'" % param)
+		return
+	_update_shader(value, param)
+	if ui_instance:
+		var slider = ui_instance.get_node_or_null("%" + param + "Slider")
+		if slider:
+			slider.set_value_no_signal(value)
+
+
 func _update_shader_colormap(colormap_name: String, colormap: Variant) -> void:
 	volume_layered['gradient'] = colormap
 

@@ -153,6 +153,21 @@ func set_active_specimen(index: int) -> void:
 
 
 @rpc("any_peer", "call_local", "reliable")
+func set_room_scene_rpc(room: String) -> void:
+	set_room_scene(room)
+
+
+@rpc("any_peer", "call_local", "reliable")
+func set_display_param(index: int, param: String, value: float) -> void:
+	if index < 0 or index >= _open_specimens.size():
+		push_error("set_display_param: bad index %d" % index)
+		return
+	var spec := _open_specimens[index]
+	if spec.has_method("apply_display_param"):
+		spec.apply_display_param(param, value)
+
+
+@rpc("any_peer", "call_local", "reliable")
 func remove_specimen(index: int) -> void:
 	if index < 0 or index >= _open_specimens.size():
 		push_warning("SceneManager.remove_specimen: invalid index %d (size=%d)" % [index, _open_specimens.size()])
