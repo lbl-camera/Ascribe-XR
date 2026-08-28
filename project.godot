@@ -36,6 +36,7 @@ Config="*uid://dvwptjg7itnl8"
 MenuManager="*res://scripts/singletons/menu_manager.gd"
 AgentSession="*res://scripts/singletons/agent_session.gd"
 AgentToolDispatcher="*res://scripts/singletons/agent_tool_dispatcher.gd"
+AgentMic="*res://scripts/singletons/agent_mic.gd"
 
 [display]
 
@@ -96,6 +97,6 @@ textures/vram_compression/import_etc2_astc=true
 
 openxr/enabled=true
 openxr/default_action_map="uid://dhjvjc7ft8dmd"
+openxr/startup_alert=false
 shaders/enabled=true
 openxr/extensions/meta/passthrough=true
-openxr/startup_alert=false

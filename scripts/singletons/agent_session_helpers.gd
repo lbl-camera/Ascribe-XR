@@ -31,6 +31,38 @@ static func build_end_conversation_frame() -> String:
 	return JSON.stringify({"type": "end_conversation"})
 
 
+## Build a client->server "bind" frame (claim the speaker floor).
+static func build_bind_frame() -> String:
+	return JSON.stringify({"type": "bind"})
+
+
+## Build a client->server "unbind" frame (release the speaker floor).
+static func build_unbind_frame() -> String:
+	return JSON.stringify({"type": "unbind"})
+
+
+## Header for a client->server binary "audio" frame. Mirrors
+## ascribe_link/agent_ws/protocol.py:audio_header.
+static func audio_header(rate: int) -> Dictionary:
+	return {"kind": "audio", "rate": rate, "format": "s16le", "channels": 1}
+
+
+## Convert stereo audio frames (as captured by AudioEffectCapture) to mono
+## 16-bit little-endian PCM: average L/R, clamp to [-1, 1], scale to the
+## full s16 range.
+static func frames_to_pcm16_mono(frames: PackedVector2Array) -> PackedByteArray:
+	var out := PackedByteArray()
+	out.resize(frames.size() * 2)
+	for i in frames.size():
+		var frame := frames[i]
+		var mono: float = clampf((frame.x + frame.y) * 0.5, -1.0, 1.0)
+		var scale := 32767.0 if mono >= 0.0 else 32768.0
+		var sample := int(round(mono * scale))
+		sample = clampi(sample, -32768, 32767)
+		out.encode_s16(i * 2, sample)
+	return out
+
+
 ## Parse a server->client TEXT frame.
 ##
 ## Returns the decoded Dictionary on success (untyped pass-through -- typed

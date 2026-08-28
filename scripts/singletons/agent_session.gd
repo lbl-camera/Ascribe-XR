@@ -67,6 +67,21 @@ func send_screenshot(jpeg: PackedByteArray) -> void:
 	_socket.send(frame, WebSocketPeer.WRITE_MODE_BINARY)
 
 
+func send_bind() -> void:
+	_send_text_frame(AgentSessionHelpers.build_bind_frame())
+
+
+func send_unbind() -> void:
+	_send_text_frame(AgentSessionHelpers.build_unbind_frame())
+
+
+func send_audio(pcm16: PackedByteArray, rate: int) -> void:
+	if _socket == null or _socket.get_ready_state() != WebSocketPeer.STATE_OPEN:
+		return
+	var frame := AgentSessionHelpers.encode_binary(AgentSessionHelpers.audio_header(rate), pcm16)
+	_socket.send(frame, WebSocketPeer.WRITE_MODE_BINARY)
+
+
 func _open_socket() -> void:
 	_socket = WebSocketPeer.new()
 	var url := "%s/%s" % [Config.agent_ws_url, _room_id]
