@@ -15,6 +15,7 @@ var _bus_index: int = -1
 var _capture: AudioEffectCapture = null
 var _player: AudioStreamPlayer = null
 var _capturing: bool = false
+var _frames_sent: int = 0
 
 
 func start_capture() -> void:
@@ -28,6 +29,9 @@ func start_capture() -> void:
 		add_child(_player)
 	_player.play()
 	_capturing = true
+	_frames_sent = 0
+	print("[AgentMic] capture started (bus=%d, playing=%s, mix_rate=%d, input_device=%s)" % [
+		_bus_index, str(_player.playing), int(AudioServer.get_mix_rate()), AudioServer.input_device])
 
 
 func stop_capture() -> void:
@@ -57,4 +61,7 @@ func _process(_delta: float) -> void:
 		var frames := _capture.get_buffer(chunk_frames)
 		var pcm := AgentSessionHelpers.frames_to_pcm16_mono(frames)
 		AgentSession.send_audio(pcm, int(AudioServer.get_mix_rate()))
+		if _frames_sent == 0:
+			print("[AgentMic] first chunk sent (%d frames, %d bytes)" % [chunk_frames, pcm.size()])
+		_frames_sent += chunk_frames
 		available -= chunk_frames

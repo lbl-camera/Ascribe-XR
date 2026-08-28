@@ -215,6 +215,7 @@ func _on_tool_used(name: String) -> void:
 
 func _on_speaker_bound(client_id: int) -> void:
 	_floor_holder_id = client_id
+	print("[AgentPanel] speaker_bound: floor=%d, our client_id=%d" % [client_id, AgentSession.client_id])
 	if client_id == AgentSession.client_id:
 		AgentMic.start_capture()
 	_update_talk_button()
