@@ -17,6 +17,12 @@ var _playback: AudioStreamGeneratorPlayback = null
 var _is_playing_agent_audio: bool = false
 ## Frames received but not yet pushed into the generator's ring buffer.
 var _pending := PackedVector2Array()
+## True after a normal (non-interrupted) agent_audio_end while `_pending`
+## and/or the generator's ring buffer still hold unplayed audio. `_process`
+## keeps draining until `should_stop_draining` says playback has caught up,
+## then performs the actual stop. New tts_audio arriving while this is set
+## (the next turn starting) cancels the drain -- see `_on_tts_audio`.
+var _draining_to_end: bool = false
 
 var is_playing_agent_audio: bool:
 	get:
@@ -47,12 +53,27 @@ static func take_drainable(pending: PackedVector2Array, available: int) -> Array
 	return [pending.slice(0, available), pending.slice(available)]
 
 
+## Pure stop-decision for the drain-to-end path, extracted so it's unit
+## testable without a live AudioStreamGeneratorPlayback. `frames_available`
+## is `AudioStreamGeneratorPlayback.get_frames_available()`: the number of
+## free slots in the ring buffer, which climbs back toward the buffer's
+## full capacity as previously-pushed frames are consumed by playback. So
+## "buffer capacity worth of frames available" is a reasonable proxy for
+## "the ring buffer has drained" (nothing left in it still waiting to play).
+## `pending` must also be empty -- otherwise there's more audio queued that
+## hasn't even been pushed into the ring buffer yet.
+static func should_stop_draining(pending_empty: bool, frames_available: int, mix_rate: int) -> bool:
+	return pending_empty and frames_available >= int(BUFFER_LENGTH_S * mix_rate)
+
+
 func _ready() -> void:
 	_player = AudioStreamPlayer.new()
 	add_child(_player)
 	AgentSession.tts_audio.connect(_on_tts_audio)
 	AgentSession.agent_audio_ended.connect(_on_agent_audio_ended)
-	AgentSession.disconnected.connect(_on_agent_audio_ended)
+	# A dropped connection is not a "normal end" -- hard-stop immediately
+	# rather than trying to drain a queue that will never receive the rest.
+	AgentSession.disconnected.connect(_on_agent_audio_ended.bind(true))
 
 
 func _on_tts_audio(header: Dictionary, payload: PackedByteArray) -> void:
@@ -66,11 +87,18 @@ func _on_tts_audio(header: Dictionary, payload: PackedByteArray) -> void:
 
 	_pending.append_array(pcm16_to_frames(payload))
 	_is_playing_agent_audio = true
+	# A new turn's audio has arrived while we were draining the previous
+	# turn out -- cancel the drain and keep playing normally.
+	_draining_to_end = false
 	_drain_pending()
 
 
 func _process(_delta: float) -> void:
 	_drain_pending()
+	if _draining_to_end and _playback != null:
+		var mix_rate := int(_playback.get_stream().mix_rate)
+		if should_stop_draining(_pending.is_empty(), _playback.get_frames_available(), mix_rate):
+			_stop_playback()
 
 
 func _drain_pending() -> void:
@@ -83,8 +111,24 @@ func _drain_pending() -> void:
 		_playback.push_buffer(to_push)
 
 
-func _on_agent_audio_ended() -> void:
+func _stop_playback() -> void:
 	_player.stop()
 	_playback = null
 	_pending = PackedVector2Array()
 	_is_playing_agent_audio = false
+	_draining_to_end = false
+
+
+func _on_agent_audio_ended(interrupted: bool = false) -> void:
+	if interrupted:
+		# Barge-in/disconnect: drop whatever's queued and stop now.
+		_stop_playback()
+	elif _playback == null:
+		# Nothing was ever queued for this turn (e.g. an empty reply) --
+		# there's no ring buffer to drain, so there's nothing to wait for.
+		_stop_playback()
+	else:
+		# Synthesis finished, but playback may still be working through
+		# queued audio (synthesis outruns real-time on long replies) --
+		# keep draining until `_process` sees the buffer has caught up.
+		_draining_to_end = true

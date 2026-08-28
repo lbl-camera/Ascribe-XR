@@ -163,3 +163,50 @@ func test_agent_audio_ended_clears_pending():
 	voice._on_agent_audio_ended()
 	assert_that(voice._pending.size()).is_equal(0)
 	assert_that(voice._is_playing_agent_audio).is_false()
+
+
+# ---------------------------------------------------------------------------
+# should_stop_draining: the normal-end drain-to-completion decision.
+# ---------------------------------------------------------------------------
+
+
+func test_should_stop_draining_false_while_pending_nonempty():
+	assert_that(AgentVoiceScript.should_stop_draining(false, 12000, 24000)).is_false()
+
+
+func test_should_stop_draining_false_while_ring_buffer_not_drained():
+	# Pending empty, but the ring buffer still has unplayed frames queued
+	# (frames_available well below the buffer's full capacity).
+	assert_that(AgentVoiceScript.should_stop_draining(true, 1000, 24000)).is_false()
+
+
+func test_should_stop_draining_true_once_buffer_has_caught_up():
+	# Pending empty and frames_available has climbed back to the buffer's
+	# full capacity (0.5 s @ 24 kHz) -- nothing left queued or playing.
+	assert_that(AgentVoiceScript.should_stop_draining(true, 12000, 24000)).is_true()
+
+
+func test_agent_audio_ended_interrupted_hard_stops_even_with_playback():
+	var voice: Node = AgentVoiceScript.new()
+	voice._pending = _silence(48000)
+	voice._is_playing_agent_audio = true
+	voice._draining_to_end = false
+	voice._player = AudioStreamPlayer.new()
+	auto_free(voice)
+	auto_free(voice._player)
+	voice._on_agent_audio_ended(true)
+	assert_that(voice._pending.size()).is_equal(0)
+	assert_that(voice._is_playing_agent_audio).is_false()
+	assert_that(voice._draining_to_end).is_false()
+
+
+func test_agent_audio_ended_not_interrupted_without_playback_stops_immediately():
+	# No tts_audio ever arrived (_playback still null) -- nothing to drain.
+	var voice: Node = AgentVoiceScript.new()
+	voice._is_playing_agent_audio = true
+	voice._player = AudioStreamPlayer.new()
+	auto_free(voice)
+	auto_free(voice._player)
+	voice._on_agent_audio_ended(false)
+	assert_that(voice._is_playing_agent_audio).is_false()
+	assert_that(voice._draining_to_end).is_false()

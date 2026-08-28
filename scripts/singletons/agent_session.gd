@@ -17,7 +17,7 @@ signal tts_audio(header: Dictionary, payload: PackedByteArray)
 signal speaker_bound(client_id: int)
 signal speaker_released
 signal transcript_received(text: String, client_id: int)
-signal agent_audio_ended
+signal agent_audio_ended(interrupted: bool)
 
 const RECONNECT_BASE_SEC := 1.0
 const RECONNECT_MAX_SEC := 8.0
@@ -191,7 +191,9 @@ func _dispatch_frame(frame: Dictionary) -> void:
 		"transcript":
 			transcript_received.emit(str(frame.get("text", "")), _int_or(frame, "client_id", -1))
 		"agent_audio_end":
-			agent_audio_ended.emit()
+			# Null-safe default: an older/odd server payload without the flag
+			# is treated as a normal (non-interrupted) end.
+			agent_audio_ended.emit(bool(frame.get("interrupted", false)))
 		_:
 			# Unknown/reserved type: client-side leniency, server-side strictness.
 			error_received.emit("unknown frame type '%s'" % str(frame.get("type")))
