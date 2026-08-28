@@ -37,6 +37,12 @@ unique_name_in_owner = true
 layout_mode = 2
 text = "Send"
 
+[node name="TalkButton" type="Button" parent="VBoxContainer/HBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+toggle_mode = true
+text = "Talk"
+
 [node name="AttachViewCheckBox" type="CheckBox" parent="VBoxContainer/HBoxContainer"]
 unique_name_in_owner = true
 layout_mode = 2

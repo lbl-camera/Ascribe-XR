@@ -13,10 +13,17 @@ extends PanelContainer
 @onready var _interrupt_button: Button = %InterruptButton
 @onready var _new_conversation_button: Button = %NewConversationButton
 @onready var _attach_view_checkbox: CheckBox = %AttachViewCheckBox
+@onready var _talk_button: Button = %TalkButton
 
 ## True between the first agent_text chunk of a turn and agent_text_done.
 var _agent_turn_active: bool = false
 var _signals_connected: bool = false
+
+## client_id of whoever currently holds the speaker floor, or -1 if free.
+var _floor_holder_id: int = -1
+
+const _FLOOR_COLOR: Color = Color(1.0, 0.35, 0.35)
+const _DEFAULT_COLOR: Color = Color(1.0, 1.0, 1.0)
 
 
 func _ready() -> void:
@@ -27,10 +34,16 @@ func _ready() -> void:
 	_line_edit.focus_entered.connect(_on_line_edit_focus_entered)
 	_interrupt_button.pressed.connect(_on_interrupt_pressed)
 	_new_conversation_button.pressed.connect(_on_new_conversation_pressed)
+	_talk_button.toggled.connect(_on_talk_toggled)
 
 	_interrupt_button.hide()
 
 	AgentSession.connect_to_room()
+	_update_talk_button()
+
+
+func _process(_delta: float) -> void:
+	_update_talk_button()
 
 
 func _connect_signals() -> void:
@@ -45,6 +58,9 @@ func _connect_signals() -> void:
 	AgentSession.history_received.connect(_on_history_received)
 	AgentSession.error_received.connect(_on_error_received)
 	AgentSession.tool_call_received.connect(_on_tool_call_received)
+	AgentSession.speaker_bound.connect(_on_speaker_bound)
+	AgentSession.speaker_released.connect(_on_speaker_released)
+	AgentSession.transcript_received.connect(_on_transcript_received)
 	AgentToolDispatcher.tool_executed_remotely.connect(_on_tool_used)
 
 
@@ -66,6 +82,10 @@ static func format_agent_line(text: String) -> String:
 
 static func format_tool_used_line(name: String) -> String:
 	return "[color=gray]Agent used %s[/color]" % name
+
+
+static func format_peer_line(text: String, client_id: int) -> String:
+	return "[b]Peer %d[/b] " % client_id + _escape_bbcode(text)
 
 
 # ---------------------------------------------------------------------------
@@ -112,6 +132,13 @@ func _on_line_edit_focus_entered() -> void:
 
 func _on_interrupt_pressed() -> void:
 	AgentSession.send_interrupt()
+
+
+func _on_talk_toggled(pressed: bool) -> void:
+	if pressed:
+		AgentSession.send_bind()
+	else:
+		AgentSession.send_unbind()
 
 
 func _on_new_conversation_pressed() -> void:
@@ -178,3 +205,48 @@ func _on_tool_call_received(_request_id: String, name: String, _args: Dictionary
 
 func _on_tool_used(name: String) -> void:
 	_transcript.append_text(format_tool_used_line(name) + "\n")
+
+
+func _on_speaker_bound(client_id: int) -> void:
+	_floor_holder_id = client_id
+	if client_id == AgentSession.client_id:
+		AgentMic.start_capture()
+	_update_talk_button()
+
+
+func _on_speaker_released() -> void:
+	var we_held_floor: bool = _floor_holder_id == AgentSession.client_id
+	_floor_holder_id = -1
+	if we_held_floor:
+		AgentMic.stop_capture()
+		_talk_button.set_pressed_no_signal(false)
+	_update_talk_button()
+
+
+func _on_transcript_received(text: String, client_id: int) -> void:
+	if client_id == AgentSession.client_id:
+		_transcript.append_text(format_user_line(text) + "\n")
+	else:
+		_transcript.append_text(format_peer_line(text, client_id) + "\n")
+
+
+## Refreshes the Talk button's label/enabled/modulate state from current
+## floor ownership and agent-playback state. Priority: our floor > another's
+## floor > agent speaking (barge-in available) > default idle.
+func _update_talk_button() -> void:
+	if _floor_holder_id == AgentSession.client_id:
+		_talk_button.disabled = false
+		_talk_button.text = "Listening…"
+		_talk_button.modulate = _FLOOR_COLOR
+	elif _floor_holder_id != -1:
+		_talk_button.disabled = true
+		_talk_button.text = "(%d speaking)" % _floor_holder_id
+		_talk_button.modulate = _DEFAULT_COLOR
+	elif AgentVoice.is_playing_agent_audio:
+		_talk_button.disabled = false
+		_talk_button.text = "Interrupt & talk"
+		_talk_button.modulate = _DEFAULT_COLOR
+	else:
+		_talk_button.disabled = false
+		_talk_button.text = "Talk"
+		_talk_button.modulate = _DEFAULT_COLOR
