@@ -433,10 +433,10 @@ Pages.
 ## Agent conversation
 
 A persistent, room-scoped conversational agent: type to it in an in-world
-panel, it streams back answers, generates/iterates specimens, manipulates
-the scene and display via client-executed tools, and can see the user's
-viewport. Text-only for now — voice, floor control (the bind button), and
-local-launch subprocess mode are a follow-up plan (see below).
+panel (or talk to it — see [Voice](#voice) below), it streams back answers,
+generates/iterates specimens, manipulates the scene and display via
+client-executed tools, and can see the user's viewport. Local-launch
+subprocess mode is still a follow-up plan (see below).
 
 ### Architecture
 
@@ -496,11 +496,17 @@ TEXT frames are JSON objects with a `"type"` key; BINARY frames are
 | server→client | `error` | Validation/protocol error |
 | server→client | `history` | Sent on connect: prior turns + this socket's `client_id` |
 | server→client | `turn_queued` | A turn was queued behind another (position > 0) |
+| client→server | `bind` | Claim the speaker floor (barges in if the agent is mid-reply) |
+| client→server | `unbind` | Release the speaker floor, finalizing any buffered utterance |
+| client→server | BINARY (`kind: audio`) | Mic PCM16 mono chunks while holding the floor (`{"kind":"audio","rate":<int>,"format":"s16le","channels":1}`) |
+| server→client | `speaker_bound` | Floor granted (`{"client_id"}`) |
+| server→client | `speaker_released` | Floor released (utterance finalized or `unbind`/disconnect) |
+| server→client | `transcript` | Final STT transcript for the buffered utterance (`{"text", "client_id", "final": true}`) |
+| server→client | BINARY (`kind: tts`) | Agent reply audio, PCM16 mono @ 24 kHz (`{"kind":"tts","rate":24000,"format":"s16le","channels":1,"seq":<int>}`), fanned out to every socket in the room |
+| server→client | `agent_audio_end` | End of one turn's TTS audio |
 
-Reserved but unimplemented (rejected with an `error` frame naming the type,
-not silently ignored): `bind`, `unbind`, `audio` (client→server);
-`speaker_bound`, `speaker_released`, `agent_audio`, `transcript`
-(server→client) — these arrive with the voice follow-up.
+See [Voice](#voice) below for the full voice pipeline, install steps, and
+the human verification checklist.
 
 ### Running the fake server (no API key needed)
 
@@ -531,10 +537,119 @@ every frame until `agent_text_done`:
 .venv\Scripts\python tools\smoke_ws_client.py "make it darker"
 ```
 
+Pass `--voice` to the fake server to wire in fake STT/TTS engines
+(`tests/fake_voice.py`), then `--voice` on the smoke client to exercise
+the whole bind → audio → transcript → tts pipeline without any real speech
+model:
+
+```
+.venv\Scripts\python tools\fake_agent_server.py --port 8765 --voice
+.venv\Scripts\python tools\smoke_ws_client.py --voice --port 8765
+```
+
+The fake server's `ScriptedFakeSTT` always transcribes to `"make it
+darker"` regardless of the audio bytes sent, so it drives the same
+`set_display_param` tool-call flow as typing that phrase; `FakeTTS`
+returns a fixed 0.1 s 440 Hz sine at 24 kHz instead of running Kokoro. The
+smoke client streams 1.0 s of a synthetic 440 Hz tone + 2.2 s of silence
+as PCM16 mono @ 16 kHz (the trailing silence triggers the server's VAD
+endpointing) and asserts `speaker_bound`, `transcript`, at least one
+binary `tts` frame, `agent_audio_end`, and `speaker_released` all arrive
+within 30 s.
+
 To run the real server against the real SDK instead of the fake, start
 ascribe-link normally with `--enable-agent` (see `ascribe_link/cli.py`);
 this requires `claude-agent-sdk` installed and an API key in the
-environment.
+environment. Add `--voice` for the real voice pipeline (see below).
+
+### Voice
+
+Talk to the agent instead of typing: hold the panel's Talk button, speak,
+release (or pause ~2 s) — a caption appears for everyone in the room, the
+agent's spoken reply plays back through Kokoro's voice on every connected
+client, and pressing Talk again mid-reply barges in (stops playback
+immediately, grants you the floor).
+
+**Server side** (`ascribe_link/agent_ws/`): `stt.py` (`STTEngine` protocol +
+`FasterWhisperSTT`, lazy-imported so a server without the `voice` extra
+never touches `faster_whisper`), `tts.py` (`TTSEngine` protocol +
+`KokoroTTS` + a sentence chunker that feeds the streamed reply to TTS as
+sentences complete), `audio.py` (PCM16↔float32 + resample-to-16 kHz + RMS
+silence helpers, pure numpy), and floor control / the utterance pipeline /
+TTS fan-out in `manager.py`. Floor control is exclusive per room and
+server-arbitrated: `bind` while another socket holds the floor gets an
+`error` ("speaker slot is held"); `bind` while the agent is mid-reply is a
+barge-in (cancel TTS + interrupt the turn, then grant the floor). An
+utterance finalizes on `unbind`, after 2.0 s of trailing silence (VAD), or
+at a 60 s hard cap.
+
+**Install:**
+
+```
+pip install -e .[voice]
+```
+
+adds `faster-whisper`, `kokoro-onnx`, and `onnxruntime`. Without this
+extra, `--voice` logs a warning and the server falls back to text-only —
+the frames `bind`/`unbind`/audio never touch the missing imports.
+
+**Models auto-download on first use**, no manual setup:
+- faster-whisper caches `whisper-small` (or whatever `--stt-model` names)
+  in its own HuggingFace cache directory the first time an utterance is
+  transcribed.
+- kokoro-onnx downloads `kokoro-v1.0.onnx` + `voices-v1.0.bin` to
+  `~/.cache/ascribe-link/kokoro/` the first time a reply is synthesized.
+
+Both downloads happen lazily on first real use, not at server startup —
+expect the first "hello" round-trip to be noticeably slower than
+subsequent ones.
+
+**CLI flags** (`ascribe_link/cli.py`):
+
+| Flag | Default | Purpose |
+|---|---|---|
+| `--voice` | off | Enable the voice pipeline on `/ws/agent` (no-op without `--enable-agent`) |
+| `--stt-model` | `small` | faster-whisper model size (`tiny`/`base`/`small`/`medium`/`large-v3`, int8 CPU) |
+| `--tts-voice` | `af_heart` | kokoro-onnx voice name |
+
+```
+.venv\Scripts\python -m ascribe_link --enable-agent --voice
+```
+
+**Deviation from the spec (ruled):** voice frames carry raw little-endian
+PCM16 mono over the WebSocket, not Opus. Rationale: avoids native Opus
+codec dependencies in Python on Windows (no `AudioEffectOpusChunked`
+equivalent server-side); at 16 kHz mono for mic input and 24 kHz mono for
+TTS output, 32–48 KB/s is negligible on the LAN this app targets. Opus is
+a documented later optimization for WAN deployment, not needed for the
+current network.
+
+**Known risk — dual mic streams:** the agent voice path uses its own
+Godot bus (`AgentMicBus`) and its own `AudioEffectCapture` instance,
+deliberately never touching twovoip's `AudioEffectOpusChunked` — creating
+a second instance of that effect, or calling `drop_chunk()` on twovoip's,
+is a documented crash/contention (`addons/player-networking/twovoipr/two_voip_mic.gd:107-110,212`).
+This means two independent mic capture pipelines can be active at once
+(agent Talk + twovoip's always-on voice chat) sharing the same physical
+microphone input device. They've been kept isolated by construction, but
+this hasn't been stress-tested for platform-level mic contention (e.g. a
+driver that only allows one exclusive-mode capture stream) — the human
+checkpoint below explicitly verifies voice chat still works while using
+Talk.
+
+**Human checkpoint** (Ron, in ascribe-xr, after `pip install -e .[voice]`
+and starting the real server with `--enable-agent --voice`):
+
+1. Hold Talk, say "hello", release (or wait 2 s) → a caption appears, the
+   agent replies out loud in Kokoro's voice.
+2. With a volume loaded, say "make it darker" → gamma changes on the
+   volume.
+3. Press Talk again while the agent's reply is still playing → audio
+   stops immediately and the app starts listening for the next
+   utterance.
+4. With another client in the same voice-chat channel, confirm twovoip
+   voice chat still works normally before, during, and after using Talk
+   — the dual-mic-stream risk above.
 
 ### Running the Godot-side gdUnit tests headless
 
@@ -546,15 +661,19 @@ environment.
 `--ignoreHeadlessMode` must come **after** `-a` — gdUnit4 otherwise refuses
 to run in a headless console session. The agent suites are
 `tests/test_agent_session_helpers.gd`, `tests/test_agent_tool_helpers.gd`,
-`tests/test_agent_panel_format.gd`, and `tests/test_agent_capture.gd`.
+`tests/test_agent_panel_format.gd`, `tests/test_agent_capture.gd`, and
+`tests/test_agent_audio_helpers.gd` (voice: PCM framing, Talk button
+state, caption/barge-in helpers).
 
-### Deferred to the voice follow-up plan
+### Deferred to a later follow-up
 
-- Voice: bind button (floor control), mic Opus streaming via a
-  `transmitaudiopacket` signal tap (never a second `AudioEffectOpusChunked`
-  reader), faster-whisper STT, Kokoro TTS at 48 kHz/960-sample frames into
-  a dedicated `AudioStreamOpusChunked`, barge-in.
-- Floor-control UX beyond the serial per-room turn queue.
+- Opus voice transport for WAN (LAN currently uses raw PCM16 — see the
+  deviation note under [Voice](#voice) above).
+- Streaming partial captions (v1 sends one final `transcript` per
+  utterance).
+- Wrist-mounted Talk button (currently panel-button only, works in both
+  desktop and XR), Orpheus TTS backend, VOX/wake-word activation,
+  per-speaker voice identity to the agent.
 - Local-launch subprocess mode (running ascribe-link as a child process of
   the Godot client instead of a separately-started server).
 - `SceneManager` god-object split (`main.gd`'s `SpecimenLifecycle`/`JobRunner`
