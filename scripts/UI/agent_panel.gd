@@ -28,6 +28,9 @@ const _DEFAULT_COLOR: Color = Color(1.0, 1.0, 1.0)
 
 func _ready() -> void:
 	_connect_signals()
+	# Open the mic device now so the first Talk press hears the user
+	# immediately (cold WASAPI capture streams zeros for a second or two).
+	AgentMic.prewarm()
 
 	_send_button.pressed.connect(_on_send_pressed)
 	_line_edit.text_submitted.connect(_on_line_edit_submitted)

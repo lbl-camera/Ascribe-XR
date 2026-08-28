@@ -18,16 +18,26 @@ var _capturing: bool = false
 var _frames_sent: int = 0
 
 
-func start_capture() -> void:
-	if _capturing:
-		return
+## Open the mic device without sending anything. Windows streams zeros for a
+## second or two while the capture device warms up; calling this when the
+## agent panel opens means the first Talk press hears the user immediately.
+func prewarm() -> void:
 	_ensure_bus()
 	if _player == null:
 		_player = AudioStreamPlayer.new()
 		_player.stream = AudioStreamMicrophone.new()
 		_player.bus = BUS_NAME
 		add_child(_player)
-	_player.play()
+	if not _player.playing:
+		_player.play()
+		print("[AgentMic] prewarmed (device opening)")
+
+
+func start_capture() -> void:
+	if _capturing:
+		return
+	prewarm()
+	_capture.clear_buffer()  # drop warm-up/idle frames, start the utterance clean
 	_capturing = true
 	_frames_sent = 0
 	print("[AgentMic] capture started (bus=%d, playing=%s, mix_rate=%d, input_device=%s)" % [
@@ -35,9 +45,9 @@ func start_capture() -> void:
 
 
 func stop_capture() -> void:
+	# Keep the device open (warm) between utterances; _process drops idle
+	# frames while not capturing so the next Talk press starts instantly.
 	_capturing = false
-	if _player != null:
-		_player.stop()
 
 
 func _ensure_bus() -> void:
@@ -53,7 +63,13 @@ func _ensure_bus() -> void:
 
 
 func _process(_delta: float) -> void:
-	if not _capturing or _capture == null:
+	if _capture == null:
+		return
+	if not _capturing:
+		# Device stays warm; discard idle frames so they never leak into
+		# the next utterance and the ring buffer never overflows.
+		if _capture.get_frames_available() > 0:
+			_capture.clear_buffer()
 		return
 	var available := _capture.get_frames_available()
 	while available > 0:
