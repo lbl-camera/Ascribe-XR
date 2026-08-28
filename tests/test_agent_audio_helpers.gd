@@ -97,3 +97,69 @@ func test_pcm16_to_frames_negative_full_scale():
 	var frames := AgentVoiceScript.pcm16_to_frames(pcm)
 	assert_that(frames[0].x).is_equal(-1.0)
 	assert_that(frames[0].y).is_equal(-1.0)
+
+
+# ---------------------------------------------------------------------------
+# take_drainable: the pending-queue drain math (one Kokoro sentence is far
+# larger than the generator's ~0.5 s ring buffer, so it drains over frames).
+# ---------------------------------------------------------------------------
+
+static func _silence(n: int) -> PackedVector2Array:
+	var frames := PackedVector2Array()
+	frames.resize(n)
+	return frames
+
+
+func test_take_drainable_splits_large_payload_at_available():
+	# 2 s @ 24 kHz pending, 0.5 s (12000 frames) of ring buffer available.
+	var split := AgentVoiceScript.take_drainable(_silence(48000), 12000)
+	var to_push: PackedVector2Array = split[0]
+	var remaining: PackedVector2Array = split[1]
+	assert_that(to_push.size()).is_equal(12000)
+	assert_that(remaining.size()).is_equal(36000)
+
+
+func test_take_drainable_repeated_calls_empty_the_queue():
+	var pending := _silence(48000)
+	var pushed_total: int = 0
+	for _i in 4:
+		var split := AgentVoiceScript.take_drainable(pending, 12000)
+		var to_push: PackedVector2Array = split[0]
+		pushed_total += to_push.size()
+		pending = split[1]
+	assert_that(pushed_total).is_equal(48000)
+	assert_that(pending.size()).is_equal(0)
+
+
+func test_take_drainable_pushes_all_when_available_exceeds_pending():
+	var split := AgentVoiceScript.take_drainable(_silence(100), 12000)
+	var to_push: PackedVector2Array = split[0]
+	var remaining: PackedVector2Array = split[1]
+	assert_that(to_push.size()).is_equal(100)
+	assert_that(remaining.size()).is_equal(0)
+
+
+func test_take_drainable_no_room_keeps_everything_pending():
+	var split := AgentVoiceScript.take_drainable(_silence(48000), 0)
+	var to_push: PackedVector2Array = split[0]
+	var remaining: PackedVector2Array = split[1]
+	assert_that(to_push.size()).is_equal(0)
+	assert_that(remaining.size()).is_equal(48000)
+
+
+func test_take_drainable_empty_pending():
+	var split := AgentVoiceScript.take_drainable(PackedVector2Array(), 12000)
+	var to_push: PackedVector2Array = split[0]
+	assert_that(to_push.size()).is_equal(0)
+
+
+func test_agent_audio_ended_clears_pending():
+	var voice: Node = AgentVoiceScript.new()
+	voice._pending = _silence(48000)
+	voice._is_playing_agent_audio = true
+	voice._player = AudioStreamPlayer.new()
+	auto_free(voice)
+	auto_free(voice._player)
+	voice._on_agent_audio_ended()
+	assert_that(voice._pending.size()).is_equal(0)
+	assert_that(voice._is_playing_agent_audio).is_false()

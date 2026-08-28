@@ -6,9 +6,17 @@
 ## remain callable via `preload("res://scripts/singletons/agent_voice.gd")`.
 extends Node
 
+## Length of the AudioStreamGenerator ring buffer, in seconds. One Kokoro
+## sentence arrives as a single binary frame far larger than this buffer
+## (24k-120k frames vs ~12k), so payloads are queued in `_pending` and drained
+## into the playback a bufferful at a time from `_process`.
+const BUFFER_LENGTH_S := 0.5
+
 var _player: AudioStreamPlayer = null
 var _playback: AudioStreamGeneratorPlayback = null
 var _is_playing_agent_audio: bool = false
+## Frames received but not yet pushed into the generator's ring buffer.
+var _pending := PackedVector2Array()
 
 var is_playing_agent_audio: bool:
 	get:
@@ -29,40 +37,54 @@ static func pcm16_to_frames(pcm: PackedByteArray) -> PackedVector2Array:
 	return frames
 
 
+## Split `pending` at the generator's currently available frame count.
+## Returns [to_push, remaining] -- pure so the drain math is unit testable.
+static func take_drainable(pending: PackedVector2Array, available: int) -> Array:
+	if available <= 0 or pending.is_empty():
+		return [PackedVector2Array(), pending]
+	if available >= pending.size():
+		return [pending, PackedVector2Array()]
+	return [pending.slice(0, available), pending.slice(available)]
+
+
 func _ready() -> void:
 	_player = AudioStreamPlayer.new()
 	add_child(_player)
 	AgentSession.tts_audio.connect(_on_tts_audio)
 	AgentSession.agent_audio_ended.connect(_on_agent_audio_ended)
 	AgentSession.disconnected.connect(_on_agent_audio_ended)
-	AgentSession.error_received.connect(_on_error_received)
 
 
 func _on_tts_audio(header: Dictionary, payload: PackedByteArray) -> void:
 	if _playback == null:
 		var generator := AudioStreamGenerator.new()
 		generator.mix_rate = float(header.get("rate", 24000))
-		generator.buffer_length = 0.5
+		generator.buffer_length = BUFFER_LENGTH_S
 		_player.stream = generator
 		_player.play()
 		_playback = _player.get_stream_playback()
 
-	var frames := pcm16_to_frames(payload)
-	var available: int = _playback.get_frames_available()
-	if available < frames.size():
-		push_warning("AgentVoice: dropping %d frames (buffer full)" % (frames.size() - available))
-		if available > 0:
-			_playback.push_buffer(frames.slice(0, available))
-	else:
-		_playback.push_buffer(frames)
+	_pending.append_array(pcm16_to_frames(payload))
 	_is_playing_agent_audio = true
+	_drain_pending()
+
+
+func _process(_delta: float) -> void:
+	_drain_pending()
+
+
+func _drain_pending() -> void:
+	if _playback == null or _pending.is_empty():
+		return
+	var split := take_drainable(_pending, _playback.get_frames_available())
+	var to_push: PackedVector2Array = split[0]
+	_pending = split[1]
+	if not to_push.is_empty():
+		_playback.push_buffer(to_push)
 
 
 func _on_agent_audio_ended() -> void:
 	_player.stop()
 	_playback = null
+	_pending = PackedVector2Array()
 	_is_playing_agent_audio = false
-
-
-func _on_error_received(_message: String) -> void:
-	_on_agent_audio_ended()
