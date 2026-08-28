@@ -139,8 +139,13 @@ func _begin_reconnect() -> void:
 
 
 func _receive_packet() -> void:
-	var was_string := _socket.was_string_packet()
+	# ORDER MATTERS: was_string_packet() reports on the packet most recently
+	# retrieved with get_packet(). Calling it first classifies THIS packet by
+	# the PREVIOUS packet's type -- which silently misrouted the first frame
+	# of every connection (the history/client_id handshake) into the binary
+	# parser and broke every text<->binary boundary in the TTS stream.
 	var packet := _socket.get_packet()
+	var was_string := _socket.was_string_packet()
 	if was_string:
 		var json_text := packet.get_string_from_utf8()
 		_dispatch_frame(AgentSessionHelpers.parse_server_frame(json_text))
