@@ -25,9 +25,9 @@ func _ready():
 
 	var agent_button := Button.new()
 	agent_button.text = "Agent"
-	agent_button.custom_minimum_size = Vector2(0, 56)
+	agent_button.custom_minimum_size = Vector2(0, 200)
 	agent_button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	agent_button.add_theme_font_size_override("font_size", 24)
+	agent_button.add_theme_font_size_override("font_size", 80)
 	agent_button.pressed.connect(_on_agent_button_pressed)
 	%ItemList.get_parent().add_child(agent_button)
 
@@ -54,8 +54,9 @@ func _process(dt) -> void:
 
 func _on_agent_button_pressed() -> void:
 	# The conversation panel is spawned/owned by AscribeMain (preserve_content
-	# pattern, matching NetworkGateway); reach it as the main scene root.
-	var main := get_tree().root.get_child(0)
+	# pattern, matching NetworkGateway). current_scene is the main scene root;
+	# root.get_child(0) would be the first autoload, not AscribeMain.
+	var main := get_tree().current_scene
 	if main and main.has_method("_toggle_agent_menu"):
 		main._toggle_agent_menu()
 	else:
