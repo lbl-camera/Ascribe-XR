@@ -25,6 +25,9 @@ func _ready():
 
 	var agent_button := Button.new()
 	agent_button.text = "Agent"
+	agent_button.custom_minimum_size = Vector2(0, 56)
+	agent_button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	agent_button.add_theme_font_size_override("font_size", 24)
 	agent_button.pressed.connect(_on_agent_button_pressed)
 	%ItemList.get_parent().add_child(agent_button)
 
