@@ -44,3 +44,56 @@ func test_build_unbind_frame():
 	var json_text := AgentSessionHelpers.build_unbind_frame()
 	var parsed = JSON.parse_string(json_text)
 	assert_that(parsed["type"]).is_equal("unbind")
+
+
+const AgentVoiceScript = preload("res://scripts/singletons/agent_voice.gd")
+
+
+func test_decode_binary_round_trips_with_encode_binary():
+	var header := {"kind": "tts", "rate": 24000, "format": "s16le", "channels": 1, "seq": 3}
+	var payload := PackedByteArray([1, 2, 3, 4])
+	var frame := AgentSessionHelpers.encode_binary(header, payload)
+	var decoded := AgentSessionHelpers.decode_binary(frame)
+	assert_that(decoded.has("error")).is_false()
+	assert_that(decoded["header"]).is_equal(JSON.parse_string(JSON.stringify(header)))
+	assert_that(decoded["payload"]).is_equal(payload)
+
+
+func test_decode_binary_too_short_for_header_length():
+	var data := PackedByteArray([1, 2, 3])
+	var decoded := AgentSessionHelpers.decode_binary(data)
+	assert_that(decoded.has("error")).is_true()
+
+
+func test_decode_binary_truncated_header():
+	var data := PackedByteArray()
+	data.resize(4)
+	data.encode_u32(0, 100)
+	var decoded := AgentSessionHelpers.decode_binary(data)
+	assert_that(decoded.has("error")).is_true()
+
+
+func test_pcm16_to_frames_single_sample():
+	var pcm := PackedByteArray()
+	pcm.resize(2)
+	pcm.encode_s16(0, 1000)
+	var frames := AgentVoiceScript.pcm16_to_frames(pcm)
+	assert_that(frames.size()).is_equal(1)
+
+
+func test_pcm16_to_frames_positive_full_scale():
+	var pcm := PackedByteArray()
+	pcm.resize(2)
+	pcm.encode_s16(0, 32767)
+	var frames := AgentVoiceScript.pcm16_to_frames(pcm)
+	assert_that(frames[0].x).is_between(0.999, 1.0001)
+	assert_that(frames[0].y).is_between(0.999, 1.0001)
+
+
+func test_pcm16_to_frames_negative_full_scale():
+	var pcm := PackedByteArray()
+	pcm.resize(2)
+	pcm.encode_s16(0, -32768)
+	var frames := AgentVoiceScript.pcm16_to_frames(pcm)
+	assert_that(frames[0].x).is_equal(-1.0)
+	assert_that(frames[0].y).is_equal(-1.0)

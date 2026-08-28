@@ -92,3 +92,22 @@ static func encode_binary(header: Dictionary, payload: PackedByteArray) -> Packe
 	out.append_array(header_bytes)
 	out.append_array(payload)
 	return out
+
+
+## Decode a BINARY frame: <u32 LE header_len><UTF-8 JSON header><raw payload>.
+##
+## Returns {"header": Dictionary, "payload": PackedByteArray} on success, or
+## {"error": String} if the buffer is too short, the header is truncated, or
+## the header bytes are not a valid JSON object.
+static func decode_binary(data: PackedByteArray) -> Dictionary:
+	if data.size() < 4:
+		return {"error": "agent binary frame: too short for header length"}
+	var header_len: int = data.decode_u32(0)
+	if data.size() < 4 + header_len:
+		return {"error": "agent binary frame: truncated header"}
+	var header_bytes := data.slice(4, 4 + header_len)
+	var parsed = JSON.parse_string(header_bytes.get_string_from_utf8())
+	if parsed == null or not (parsed is Dictionary):
+		return {"error": "agent binary frame: invalid JSON header"}
+	var payload := data.slice(4 + header_len)
+	return {"header": parsed, "payload": payload}

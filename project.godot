@@ -37,6 +37,7 @@ MenuManager="*res://scripts/singletons/menu_manager.gd"
 AgentSession="*res://scripts/singletons/agent_session.gd"
 AgentToolDispatcher="*res://scripts/singletons/agent_tool_dispatcher.gd"
 AgentMic="*res://scripts/singletons/agent_mic.gd"
+AgentVoice="*res://scripts/singletons/agent_voice.gd"
 
 [display]
 

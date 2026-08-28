@@ -13,6 +13,11 @@ signal tool_call_received(request_id: String, name: String, args: Dictionary, ex
 signal history_received(client_id: int, entries: Array)
 signal error_received(message: String)
 signal turn_queued(position: int)
+signal tts_audio(header: Dictionary, payload: PackedByteArray)
+signal speaker_bound(client_id: int)
+signal speaker_released
+signal transcript_received(text: String, client_id: int)
+signal agent_audio_ended
 
 const RECONNECT_BASE_SEC := 1.0
 const RECONNECT_MAX_SEC := 8.0
@@ -140,9 +145,7 @@ func _receive_packet() -> void:
 		var json_text := packet.get_string_from_utf8()
 		_dispatch_frame(AgentSessionHelpers.parse_server_frame(json_text))
 	else:
-		# Binary frames from the server are not yet used by any server->client
-		# message type; reserved for future (e.g. agent_audio).
-		pass
+		_dispatch_binary_frame(AgentSessionHelpers.decode_binary(packet))
 
 
 func _dispatch_frame(frame: Dictionary) -> void:
@@ -171,6 +174,27 @@ func _dispatch_frame(frame: Dictionary) -> void:
 			history_received.emit(client_id, frame.get("entries", []))
 		"turn_queued":
 			turn_queued.emit(int(frame.get("position", 0)))
+		"speaker_bound":
+			speaker_bound.emit(int(frame.get("client_id", -1)))
+		"speaker_released":
+			speaker_released.emit()
+		"transcript":
+			transcript_received.emit(str(frame.get("text", "")), int(frame.get("client_id", -1)))
+		"agent_audio_end":
+			agent_audio_ended.emit()
 		_:
 			# Unknown/reserved type: client-side leniency, server-side strictness.
 			error_received.emit("unknown frame type '%s'" % str(frame.get("type")))
+
+
+func _dispatch_binary_frame(decoded: Dictionary) -> void:
+	if decoded.has("error"):
+		error_received.emit(str(decoded["error"]))
+		return
+	var header: Dictionary = decoded["header"]
+	var payload: PackedByteArray = decoded["payload"]
+	match header.get("kind"):
+		"tts":
+			tts_audio.emit(header, payload)
+		_:
+			push_warning("agent binary frame: unknown kind '%s'" % str(header.get("kind")))
