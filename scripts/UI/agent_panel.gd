@@ -193,6 +193,12 @@ func _on_history_received(_client_id: int, entries: Array) -> void:
 
 func _on_error_received(message: String) -> void:
 	_status_label.text = message
+	# A rejected bind ("speaker slot is held", "voice is not enabled", ...)
+	# leaves the Talk toggle stuck pressed with no floor to release; un-press it
+	# so the button reflects reality.
+	if _talk_button.button_pressed and _floor_holder_id != AgentSession.client_id:
+		_talk_button.set_pressed_no_signal(false)
+		_update_talk_button()
 
 
 func _on_tool_call_received(_request_id: String, name: String, _args: Dictionary, executor: int) -> void:

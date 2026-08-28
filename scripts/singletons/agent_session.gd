@@ -148,6 +148,16 @@ func _receive_packet() -> void:
 		_dispatch_binary_frame(AgentSessionHelpers.decode_binary(packet))
 
 
+## Coerce a frame field to int, tolerating an explicit JSON null (the server
+## can legitimately send `client_id: null` -- e.g. a transcript finalized for a
+## speaker that already disconnected). `int(null)` is a runtime error in GDScript.
+static func _int_or(frame: Dictionary, key: String, fallback: int) -> int:
+	var raw: Variant = frame.get(key, fallback)
+	if raw == null:
+		return fallback
+	return int(raw)
+
+
 func _dispatch_frame(frame: Dictionary) -> void:
 	if frame.has("error"):
 		error_received.emit(str(frame["error"]))
@@ -163,23 +173,23 @@ func _dispatch_frame(frame: Dictionary) -> void:
 				str(frame.get("request_id", "")),
 				str(frame.get("name", "")),
 				frame.get("args", {}),
-				int(frame.get("executor", 0))
+				_int_or(frame, "executor", -1)
 			)
 		"status":
 			status_changed.emit(str(frame.get("text", "")))
 		"error":
 			error_received.emit(str(frame.get("message", "")))
 		"history":
-			client_id = int(frame.get("client_id", -1))
+			client_id = _int_or(frame, "client_id", -1)
 			history_received.emit(client_id, frame.get("entries", []))
 		"turn_queued":
-			turn_queued.emit(int(frame.get("position", 0)))
+			turn_queued.emit(_int_or(frame, "position", 0))
 		"speaker_bound":
-			speaker_bound.emit(int(frame.get("client_id", -1)))
+			speaker_bound.emit(_int_or(frame, "client_id", -1))
 		"speaker_released":
 			speaker_released.emit()
 		"transcript":
-			transcript_received.emit(str(frame.get("text", "")), int(frame.get("client_id", -1)))
+			transcript_received.emit(str(frame.get("text", "")), _int_or(frame, "client_id", -1))
 		"agent_audio_end":
 			agent_audio_ended.emit()
 		_:

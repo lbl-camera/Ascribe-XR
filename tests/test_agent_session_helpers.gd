@@ -110,3 +110,28 @@ func test_encode_binary_roundtrip_via_binary_envelope():
 	assert_that(parsed.has("preamble")).is_true()
 	assert_that(parsed["preamble"]["kind"]).is_equal("screenshot")
 	assert_that(parsed["offset"]).is_equal(data.size() - payload.size())
+
+
+# ---------------------------------------------------------------------------
+# AgentSession._int_or: the server can send an explicit JSON null client_id
+# (transcript finalized for a speaker that already disconnected); int(null)
+# is a runtime error in GDScript.
+# ---------------------------------------------------------------------------
+
+const AgentSessionScript = preload("res://scripts/singletons/agent_session.gd")
+
+
+func test_int_or_returns_value_when_present():
+	assert_that(AgentSessionScript._int_or({"client_id": 3}, "client_id", -1)).is_equal(3)
+
+
+func test_int_or_returns_fallback_when_missing():
+	assert_that(AgentSessionScript._int_or({}, "client_id", -1)).is_equal(-1)
+
+
+func test_int_or_returns_fallback_when_null():
+	assert_that(AgentSessionScript._int_or({"client_id": null}, "client_id", -1)).is_equal(-1)
+
+
+func test_int_or_coerces_float():
+	assert_that(AgentSessionScript._int_or({"position": 2.0}, "position", 0)).is_equal(2)
