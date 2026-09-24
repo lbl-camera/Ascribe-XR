@@ -55,6 +55,9 @@ func _ready() -> void:
 	press_to_hold = true
 	release_mode = ReleaseMode.FROZEN
 
+	# Flat panel: turn to face the hand on ranged grabs
+	preserve_orientation = false
+
 
 ## Configure the menu with a Control and options dictionary.
 func setup(control: Control, options: Dictionary = {}) -> void:

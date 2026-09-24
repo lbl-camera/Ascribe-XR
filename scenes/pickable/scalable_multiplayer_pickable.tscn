@@ -23,6 +23,7 @@ sleeping = true
 lock_rotation = true
 freeze = true
 script = ExtResource("2_fa851")
+ranged_grab_method = 2
 min_scale = 0.1
 max_scale = 10.0
 scale_smoothing = 0.1
