@@ -7,17 +7,15 @@ extends MeshInstance3D
 ## Add as a child of any XRToolsPickable. XRToolsFunctionPickup requests a
 ## highlight on the object it would grab next, so this shows the user which
 ## pickable a grab will take before they squeeze. The box is fitted to the
-## parent's BoxShape3D collision shapes each time the highlight turns on, so it
-## tracks runtime rescaling.
+## parent's collision shapes (any type) each time the highlight turns on, so it
+## tracks runtime rescaling. A held object stays outlined only while another
+## hand targets it (the holder clears its own highlight request on pickup).
 
 ## Outline color
 @export var color := Color(1.0, 0.85, 0.2, 1.0)
 
 ## Extra margin around the collision bounds, in meters
 @export var margin := 0.01
-
-## Hide the outline while the pickable is held
-@export var hide_when_held := true
 
 
 func _ready() -> void:
@@ -34,30 +32,24 @@ func _ready() -> void:
 	var parent := get_parent()
 	if parent and parent.has_signal("highlight_updated"):
 		parent.highlight_updated.connect(_on_highlight_updated)
-	if parent and parent.has_signal("picked_up"):
-		parent.picked_up.connect(func(_p): if hide_when_held: visible = false)
 
 
-func _on_highlight_updated(pickable: Node, enable: bool) -> void:
-	if enable and hide_when_held and pickable.has_method("is_picked_up") \
-			and pickable.is_picked_up():
-		enable = false
+func _on_highlight_updated(_pickable: Node, enable: bool) -> void:
 	if enable:
 		_rebuild()
 	visible = enable
 
 
-# Build a line box around the union of the parent's box collision shapes
+# Build a line box around the union of the parent's collision shape bounds
 func _rebuild() -> void:
 	var parent := get_parent() as Node3D
 	var bounds := AABB()
 	var first := true
 	for child in parent.get_children():
 		var cs := child as CollisionShape3D
-		if not cs or cs.disabled or not cs.shape is BoxShape3D:
+		if not cs or cs.disabled or not cs.shape:
 			continue
-		var half: Vector3 = (cs.shape as BoxShape3D).size * 0.5
-		var box := cs.transform * AABB(-half, half * 2.0)
+		var box := cs.transform * cs.shape.get_debug_mesh().get_aabb()
 		bounds = box if first else bounds.merge(box)
 		first = false
 	if first:

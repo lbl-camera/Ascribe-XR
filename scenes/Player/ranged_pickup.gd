@@ -53,6 +53,10 @@ func _update_colliders() -> void:
 # Select the ranged candidate whose collider bounding box is closest to the
 # hand, rather than the one whose pivot is most aligned with the forward axis.
 func _get_closest_ranged() -> Node3D:
+	var held := _held_candidate(_object_in_ranged_area)
+	if held:
+		return held
+
 	var new_closest_obj: Node3D = null
 	var new_closest_distance := MAX_GRAB_DISTANCE2
 	var hand_pos := global_transform.origin
@@ -77,6 +81,23 @@ func _get_closest_ranged() -> Node3D:
 
 	# Return best object
 	return new_closest_obj
+
+
+# Prefer an object the other hand is already holding: a second grab on it
+# (e.g. two-handed scaling) is almost always what's intended, and otherwise
+# whatever sits behind the held object wins on distance.
+func _get_closest_grab() -> Node3D:
+	var held := _held_candidate(_object_in_grab_area)
+	return held if held else super._get_closest_grab()
+
+
+# First candidate that is already held by another pickup and accepts a
+# second grab from this one, or null.
+func _held_candidate(candidates: Array) -> Node3D:
+	for o in candidates:
+		if o.is_picked_up() and o.can_pick_up(self):
+			return o
+	return null
 
 
 # World-space AABB enclosing all of the object's (enabled) collision shapes.

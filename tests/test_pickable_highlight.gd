@@ -25,3 +25,19 @@ func test_vr_menu_highlight() -> void:
 
 func test_scalable_pickable_highlight() -> void:
 	await _check("res://scenes/pickable/scalable_multiplayer_pickable.tscn")
+
+
+func test_convex_collider_is_outlined() -> void:
+	var root: Node = auto_free(load("res://scenes/pickable/scalable_multiplayer_pickable.tscn").instantiate())
+	var cs := CollisionShape3D.new()
+	var shape := ConvexPolygonShape3D.new()
+	shape.points = PackedVector3Array([Vector3(-1, 0, 0), Vector3(1, 0, 0), Vector3(0, 2, 0), Vector3(0, 0, 1)])
+	cs.shape = shape
+	root.add_child(cs)
+	add_child(root)
+	await await_idle_frame()
+	var hl: PickableHighlight = root.get_node("PickableHighlight")
+	root.request_highlight(self, true)
+	assert_bool(hl.visible).is_true()
+	assert_object(hl.mesh).is_not_null()
+	assert_vector(hl.mesh.get_aabb().size).is_greater(Vector3(1.9, 1.9, 0.9))
