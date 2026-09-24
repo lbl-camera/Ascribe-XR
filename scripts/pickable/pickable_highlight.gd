@@ -10,12 +10,12 @@ extends MeshInstance3D
 ## parent's collision shapes (any type) each time the highlight turns on, so it
 ## tracks runtime rescaling. A held object stays outlined only while another
 ## hand targets it (the holder clears its own highlight request on pickup).
+## The color says which hand is targeting it (see [method color_for]).
 
-## Shared highlight color, also used by custom highlight effects
-const DEFAULT_COLOR := Color(1.0, 0.85, 0.2, 1.0)
-
-## Outline color
-@export var color := DEFAULT_COLOR
+## Highlight colors by requesting hand, shared with custom highlight effects
+const LEFT_COLOR := Color(0.3, 0.8, 1.0, 1.0)
+const RIGHT_COLOR := Color(1.0, 0.85, 0.2, 1.0)
+const BOTH_COLOR := Color(1.0, 1.0, 1.0, 1.0)
 
 ## Extra margin around the collision bounds, in meters
 @export var margin := 0.01
@@ -23,10 +23,10 @@ const DEFAULT_COLOR := Color(1.0, 0.85, 0.2, 1.0)
 
 func _ready() -> void:
 	visible = false
+	set_process(false)
 	cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	var mat := StandardMaterial3D.new()
 	mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-	mat.albedo_color = color
 	mat.no_depth_test = true
 	mat.render_priority = 10
 	material_override = mat
@@ -37,10 +37,36 @@ func _ready() -> void:
 		parent.highlight_updated.connect(_on_highlight_updated)
 
 
+# Color for a pickable's current highlight, based on which hand(s) request it
+static func color_for(pickable: Node) -> Color:
+	var left := false
+	var right := false
+	for from in pickable.get("_highlight_requests").keys():
+		var controller := (from as Node).get_parent() as XRController3D if is_instance_valid(from) else null
+		if controller and controller.tracker == &"left_hand":
+			left = true
+		else:
+			right = true
+	if left and right:
+		return BOTH_COLOR
+	return LEFT_COLOR if left else RIGHT_COLOR
+
+
 func _on_highlight_updated(_pickable: Node, enable: bool) -> void:
 	if enable:
 		_rebuild()
+		_update_color()
 	visible = enable
+	set_process(enable)
+
+
+# The requesting hand can change without the highlight toggling
+func _process(_delta: float) -> void:
+	_update_color()
+
+
+func _update_color() -> void:
+	(material_override as StandardMaterial3D).albedo_color = color_for(get_parent())
 
 
 # Build a line box around the union of the parent's collision shape bounds

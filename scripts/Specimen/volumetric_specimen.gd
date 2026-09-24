@@ -243,12 +243,21 @@ func _on_multiplayer_pickable_highlight_updated(_pickable: Variant, enable: Vari
 	if not $MultiplayerPickable.is_picked_up():
 		$MultiplayerPickable/aura.visible = enable
 	$MultiplayerPickable/donut.material_override = _halo_highlight_material() if enable else null
+	set_process(enable)
 
 
-# Unshaded material tinting the slicing halo ring in the shared highlight color
+# Keep the halo tint matched to the targeting hand while highlighted
+func _process(_delta: float) -> void:
+	if not $MultiplayerPickable/donut.material_override:
+		set_process(false)
+	else:
+		_halo_highlight_mat.albedo_color = PickableHighlight.color_for($MultiplayerPickable)
+
+
+# Unshaded material tinting the slicing halo ring in the targeting hand's color
 func _halo_highlight_material() -> StandardMaterial3D:
 	if not _halo_highlight_mat:
 		_halo_highlight_mat = StandardMaterial3D.new()
 		_halo_highlight_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-		_halo_highlight_mat.albedo_color = PickableHighlight.DEFAULT_COLOR
+	_halo_highlight_mat.albedo_color = PickableHighlight.color_for($MultiplayerPickable)
 	return _halo_highlight_mat
