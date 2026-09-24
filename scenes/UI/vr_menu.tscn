@@ -1,5 +1,6 @@
 [gd_scene format=3 uid="uid://ckrdksdxshrs7"]
 
+[ext_resource type="Script" path="res://scripts/pickable/pickable_highlight.gd" id="hl_script"]
 [ext_resource type="Script" uid="uid://1id0q8i7gwbp" path="res://scripts/UI/vr_menu.gd" id="1_vrmenu"]
 [ext_resource type="Script" uid="uid://eavk7267igp7" path="res://addons/godot-xr-tools/objects/viewport_2d_in_3d.gd" id="2_v2d3d"]
 [ext_resource type="Script" uid="uid://cpl5yiyf1ypft" path="res://addons/godot-xr-tools/objects/viewport_2d_in_3d_body.gd" id="3_v2dbody"]
@@ -88,3 +89,6 @@ viewport_size = Vector2(1024, 614)
 [node name="CollisionShape3D" type="CollisionShape3D" parent="Viewport2DIn3D/StaticBody3D" unique_id=1524281763]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -0.01)
 shape = SubResource("BoxShape3D_pointer")
+
+[node name="PickableHighlight" type="MeshInstance3D" parent="."]
+script = ExtResource("hl_script")

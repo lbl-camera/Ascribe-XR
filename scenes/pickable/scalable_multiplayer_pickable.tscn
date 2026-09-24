@@ -1,5 +1,6 @@
 [gd_scene format=3 uid="uid://doq5u7h5wo2vf"]
 
+[ext_resource type="Script" path="res://scripts/pickable/pickable_highlight.gd" id="hl_script"]
 [ext_resource type="PackedScene" uid="uid://c8l60rnugru40" path="res://addons/godot-xr-tools/objects/pickable.tscn" id="1_jqoqb"]
 [ext_resource type="Script" uid="uid://b6vuc0km8hjo1" path="res://scripts/pickable/scalable_multiplayer_pickable.gd" id="2_fa851"]
 
@@ -35,3 +36,6 @@ replicated_angular_velocity = Vector3(0, 0, 0)
 
 [node name="MultiplayerSynchronizer" type="MultiplayerSynchronizer" parent="." index="0" unique_id=911008921]
 replication_config = SubResource("SceneReplicationConfig_ag8uh")
+
+[node name="PickableHighlight" type="MeshInstance3D" parent="." index="1"]
+script = ExtResource("hl_script")
