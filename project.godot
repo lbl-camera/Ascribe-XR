@@ -102,3 +102,4 @@ openxr/default_action_map="uid://dhjvjc7ft8dmd"
 openxr/startup_alert=false
 shaders/enabled=true
 openxr/extensions/meta/passthrough=true
+openxr/extensions/hand_tracking=true
