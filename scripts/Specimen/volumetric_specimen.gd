@@ -228,6 +228,9 @@ func _get_content_type(headers: PackedStringArray) -> String:
 			_load_volume_file(value)
 
 
+var _halo_highlight_mat: StandardMaterial3D
+
+
 func _on_multiplayer_pickable_picked_up(_pickable: Variant) -> void:
 	$MultiplayerPickable/aura.visible = true
 
@@ -239,3 +242,13 @@ func _on_multiplayer_pickable_dropped(_pickable: Variant) -> void:
 func _on_multiplayer_pickable_highlight_updated(_pickable: Variant, enable: Variant) -> void:
 	if not $MultiplayerPickable.is_picked_up():
 		$MultiplayerPickable/aura.visible = enable
+	$MultiplayerPickable/donut.material_override = _halo_highlight_material() if enable else null
+
+
+# Unshaded material tinting the slicing halo ring in the shared highlight color
+func _halo_highlight_material() -> StandardMaterial3D:
+	if not _halo_highlight_mat:
+		_halo_highlight_mat = StandardMaterial3D.new()
+		_halo_highlight_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		_halo_highlight_mat.albedo_color = PickableHighlight.DEFAULT_COLOR
+	return _halo_highlight_mat

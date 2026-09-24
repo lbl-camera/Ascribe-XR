@@ -11,8 +11,11 @@ extends MeshInstance3D
 ## tracks runtime rescaling. A held object stays outlined only while another
 ## hand targets it (the holder clears its own highlight request on pickup).
 
+## Shared highlight color, also used by custom highlight effects
+const DEFAULT_COLOR := Color(1.0, 0.85, 0.2, 1.0)
+
 ## Outline color
-@export var color := Color(1.0, 0.85, 0.2, 1.0)
+@export var color := DEFAULT_COLOR
 
 ## Extra margin around the collision bounds, in meters
 @export var margin := 0.01
