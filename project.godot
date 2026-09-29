@@ -100,6 +100,6 @@ textures/vram_compression/import_etc2_astc=true
 openxr/enabled=true
 openxr/default_action_map="uid://dhjvjc7ft8dmd"
 openxr/startup_alert=false
+openxr/extensions/hand_tracking=true
 shaders/enabled=true
 openxr/extensions/meta/passthrough=true
-openxr/extensions/hand_tracking=true
